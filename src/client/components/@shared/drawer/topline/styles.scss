@@ -1,0 +1,20 @@
+@import 'mixins';
+
+.wrapper {
+    @include whiteContainer;
+
+    display: grid;
+    align-items: center;
+    grid-template-columns: auto auto 1fr;
+    grid-gap: 12px;
+    padding: 20px 30px;
+}
+
+.title {
+    color: gray;
+    margin: 0;
+}
+
+.btn {
+    @include button-reset;
+}
