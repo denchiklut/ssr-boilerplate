@@ -17,7 +17,7 @@ const config = {
     ],
     output: {
         path: join(__dirname, '../dist'),
-        publicPath: devServerUrl,
+        publicPath: '/',
         filename: 'js/[name].[fullhash].js'
     },
     module: {
