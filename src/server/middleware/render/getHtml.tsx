@@ -35,7 +35,6 @@ function getHtml(reactHtml: string, chunkExtractor: ChunkExtractor) {
             <meta http-equiv='X-UA-Compatible' content='ie=edge'>
             <meta name='theme-color' content='#53b374'>
             <link rel='apple-touch-icon' href='icons/favicon.png'/>
-            ${IS_DEV ? '' : <link rel='manifest' href='manifest.json' />}
             ${linkTags}
             ${styleTags}
         </head>
