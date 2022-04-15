@@ -2,7 +2,7 @@ import { join } from 'path'
 import { rootDir } from './env'
 
 export const alias = {
-    'react-dom': '@hot-loader/react-dom',
+    // 'react-dom': '@hot-loader/react-dom',
     '@shared': join(rootDir, 'src/client/components/@shared'),
     config: join(rootDir, 'config'),
     src: join(rootDir, 'src'),

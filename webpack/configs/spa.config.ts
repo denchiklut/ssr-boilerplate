@@ -1,4 +1,5 @@
 import { join } from 'path'
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
@@ -10,11 +11,7 @@ const config = {
     name: 'spa',
     target: 'web',
     devtool: 'inline-source-map',
-    entry: [
-        'react-hot-loader/patch',
-        'css-hot-loader/hotModuleReplacement',
-        join(rootDir, 'src', 'client', 'main.tsx')
-    ],
+    entry: [join(rootDir, 'src', 'client', 'main.tsx')],
     output: {
         path: join(__dirname, '../dist'),
         publicPath: '/',
@@ -45,6 +42,7 @@ const config = {
         plugins.workboxBoxPlugin,
         plugins.forkTsCheckerWebpackPlugin,
         plugins.environmentPlugin,
+        new NodePolyfillPlugin(),
         plugins.definePlugin({ spa: true }),
         ...plugins.htmlWebpackPlugin({ spa: true })
     ].filter(Boolean)

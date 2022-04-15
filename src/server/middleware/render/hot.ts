@@ -12,6 +12,6 @@ export default [
         serverSideRender: true,
         writeToDisk: true
     }),
-    hotMiddleware(compiler),
+    // hotMiddleware(compiler),
     renderBundle
 ]

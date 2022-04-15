@@ -1,8 +1,6 @@
 import { Workbox } from 'workbox-window'
-import { Store } from '@reduxjs/toolkit'
-import { toggleAlert } from 'client/entities/ui/alerts/alerts.slice'
 
-export function registerSW(store: Store) {
+export function registerSW() {
     if ('serviceWorker' in navigator) {
         const wb = new Workbox('/service-worker.js', { scope: '/' })
 
@@ -24,7 +22,6 @@ export function registerSW(store: Store) {
             if (event.data.type === 'CACHE_UPDATED') {
                 const { updatedURL } = event.data.payload
 
-                store.dispatch(toggleAlert({ name: 'pwa', open: true, data: updatedURL }))
                 console.log(`A newer version of ${updatedURL} is available!`)
             }
         })
