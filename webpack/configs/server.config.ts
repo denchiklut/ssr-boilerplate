@@ -9,11 +9,11 @@ import { alias } from '../utils/alias'
 const config = {
     name: 'server',
     target: 'node',
-    devtool: false,
+    devtool: 'source-map',
     node: { __dirname: false },
     entry: join(rootDir, 'src', 'server', 'index.ts'),
     output: {
-        filename: 'js/[name].server.js',
+        filename: 'js/server/[name].js',
         libraryTarget: 'commonjs2',
         path: join(rootDir, 'dist')
     },

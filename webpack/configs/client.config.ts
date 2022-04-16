@@ -2,22 +2,21 @@ import { join } from 'path'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { rootDir, isDev, isProd } from '../utils/env'
+import { rootDir, isDev } from '../utils/env'
 import { alias } from '../utils/alias'
-import { optimization } from '../utils/optimization'
 
 const config = {
     name: 'client',
     target: 'web',
-    devtool: isProd ? false : 'inline-source-map',
+    devtool: 'source-map',
     entry: [
-        isDev && 'css-hot-loader/hotModuleReplacement',
         isDev && 'webpack-hot-middleware/client',
+        isDev && 'css-hot-loader/hotModuleReplacement',
         join(rootDir, 'src', 'client', 'main.tsx')
     ].filter(Boolean),
     output: {
         path: join(rootDir, 'dist'),
-        filename: 'js/[name].[contenthash].client.js',
+        filename: 'js/client/[name].[contenthash].js',
         publicPath: '/'
     },
     module: {
@@ -37,21 +36,17 @@ const config = {
         extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss']
     },
     plugins: [
+        plugins.cleanPlugin,
         plugins.miniCssExtractPlugin,
         plugins.loadablePlugin,
-        plugins.esLintPlugin,
         plugins.copyPlugin,
         plugins.workboxBoxPlugin,
-        plugins.refreshPlugin,
         plugins.hmr,
-        plugins.forkTsCheckerWebpackPlugin,
-        plugins.environmentPlugin,
-        plugins.lodashPlugin,
-        plugins.circularDependency,
+        plugins.refreshPlugin,
+        // plugins.forkTsCheckerWebpackPlugin,
         plugins.definePlugin(),
         ...plugins.htmlWebpackPlugin()
-    ].filter(Boolean),
-    optimization
+    ].filter(Boolean)
 }
 
 export default config

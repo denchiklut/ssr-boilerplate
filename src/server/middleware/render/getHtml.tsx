@@ -3,8 +3,7 @@ import { resolve } from 'path'
 import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom/server'
 import { ChunkExtractor } from '@loadable/server'
-
-import App from '@shared/app'
+import { App } from '@shared/app'
 
 export default function (location: string) {
     const statsFile = resolve('./dist/loadable-stats.json')
@@ -15,7 +14,6 @@ export default function (location: string) {
             <App />
         </StaticRouter>
     )
-
     const reactHtml = renderToString(jsx)
 
     return { html: getHtml(reactHtml, chunkExtractor) }

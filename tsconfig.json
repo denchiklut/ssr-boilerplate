@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "es2020",
+        "target": "esnext",
+        "module": "esnext",
         "lib": ["esnext", "dom"],
         "strict": true,
         "baseUrl": ".",

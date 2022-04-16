@@ -1,17 +1,23 @@
-import { Routes, Route } from 'react-router-dom'
+import { Suspense } from 'react'
+import loadable from '@loadable/component'
+import { Routes, Route, BrowserRouter } from 'react-router-dom'
+import { Loader } from '@shared/loader'
+import { Drawer } from '@shared/drawer'
 
-import { Drawer } from '../drawer'
-import About from 'pages/about'
-import Home from 'pages/home'
+const About = loadable(() => import('pages/about'))
+const Home = loadable(() => import('pages/home'))
 
 import './styles.scss'
 
-const App = () => (
-    <Routes>
-        <Route path='/' element={<Drawer />}>
-            <Route index element={<Home />} />
-            <Route path='/about' element={<About />} />
-        </Route>
-    </Routes>
+export const App = () => (
+    <BrowserRouter>
+        <Suspense fallback={<Loader />}>
+            <Routes>
+                <Route path='/' element={<Drawer />}>
+                    <Route index element={<Home />} />
+                    <Route path='/about' element={<About />} />
+                </Route>
+            </Routes>
+        </Suspense>
+    </BrowserRouter>
 )
-export default App

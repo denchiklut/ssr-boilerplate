@@ -10,7 +10,7 @@ import { devServerConfig, devServerUrl } from '../utils/devServer'
 const config = {
     name: 'spa',
     target: 'web',
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
     entry: [join(rootDir, 'src', 'client', 'main.tsx')],
     output: {
         path: join(__dirname, '../dist'),

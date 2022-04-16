@@ -9,9 +9,8 @@ const compiler = webpack({ ...config, mode: 'development' })
 
 export default [
     devMiddleware(compiler, {
-        serverSideRender: true,
-        writeToDisk: true
+        publicPath: config.output.publicPath
     }),
-    // hotMiddleware(compiler),
+    hotMiddleware(compiler, { path: '/__webpack_hmr' }),
     renderBundle
 ]
