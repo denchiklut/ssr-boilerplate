@@ -1,6 +1,6 @@
-import React, { FC, MouseEvent } from 'react'
-import cn from 'classnames'
+import type { FC, MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
+import cn from 'classnames'
 
 import css from './styles.scss'
 

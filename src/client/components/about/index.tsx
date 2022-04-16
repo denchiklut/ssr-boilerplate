@@ -1,8 +1,6 @@
-import React, { FC } from 'react'
-
 import css from './styles.scss'
 
-export const About: FC = () => {
+export const About = () => {
     return (
         <div className={css.wrapper}>
             <h3>About page</h3>

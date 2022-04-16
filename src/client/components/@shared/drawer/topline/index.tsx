@@ -1,4 +1,4 @@
-import React, { FC, MouseEvent } from 'react'
+import type { FC, MouseEvent } from 'react'
 import MenuIcon from './img/menu.icon.svg'
 import css from './styles.scss'
 

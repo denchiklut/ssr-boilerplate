@@ -22,6 +22,6 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
-        "jsx": "react"
+        "jsx": "react-jsx"
     }
 }

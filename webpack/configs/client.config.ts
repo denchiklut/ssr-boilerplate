@@ -11,7 +11,6 @@ const config = {
     target: 'web',
     devtool: isProd ? false : 'inline-source-map',
     entry: [
-        isDev && 'react-hot-loader/patch',
         isDev && 'css-hot-loader/hotModuleReplacement',
         isDev && 'webpack-hot-middleware/client',
         join(rootDir, 'src', 'client', 'main.tsx')
@@ -43,13 +42,14 @@ const config = {
         plugins.esLintPlugin,
         plugins.copyPlugin,
         plugins.workboxBoxPlugin,
+        plugins.refreshPlugin,
         plugins.hmr,
         plugins.forkTsCheckerWebpackPlugin,
         plugins.environmentPlugin,
         plugins.lodashPlugin,
         plugins.circularDependency,
         plugins.definePlugin(),
-        ...plugins.htmlWebpackPlugin(),
+        ...plugins.htmlWebpackPlugin()
     ].filter(Boolean),
     optimization
 }
