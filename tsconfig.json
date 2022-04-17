@@ -1,27 +1,25 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "module": "esnext",
-        "lib": ["esnext", "dom"],
-        "strict": true,
-        "baseUrl": ".",
-        "paths": {
-            "src/*": ["src/*"],
-            "server/*": ["src/server/*"],
-            "client/*": ["src/client/*"],
-            "errors/*": ["src/client/errors/*"],
-            "webpack/*": ["webpack/*"],
-            "components/*": ["src/client/components/*"],
-            "@shared/*": ["src/client/components/@shared/*"],
-            "pages/*": ["src/client/pages/*"],
-            "utils/*": ["src/client/utils/*"],
-            "assets/*": ["src/client/assets/*"],
-            "config/*": ["config/*"]
-        },
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "jsx": "react-jsx"
+  "compilerOptions": {
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "esnext",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"],
+      "server/*": ["src/server/*"],
+      "client/*": ["src/client/*"],
+      "errors/*": ["src/client/errors/*"],
+      "components/*": ["src/client/components/*"],
+      "@shared/*": ["src/client/components/@shared/*"],
+      "pages/*": ["src/client/pages/*"],
+      "utils/*": ["src/client/utils/*"],
+      "assets/*": ["src/client/assets/*"],
+      "config/*": ["config/*"]
     }
+  }
 }

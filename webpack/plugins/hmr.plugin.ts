@@ -1,4 +1,4 @@
 import { HotModuleReplacementPlugin } from 'webpack'
+import { IS_DEV } from '../env'
 
-
-export const hmr = new HotModuleReplacementPlugin()
+export const hmr = IS_DEV && new HotModuleReplacementPlugin()

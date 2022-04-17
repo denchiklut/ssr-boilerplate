@@ -3,19 +3,19 @@ import nodeExternals from 'webpack-node-externals'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { rootDir } from '../utils/env'
-import { alias } from '../utils/alias'
+import { SRC_DIR, DIST_DIR } from '../env'
 
 const config = {
     name: 'server',
     target: 'node',
     devtool: 'source-map',
     node: { __dirname: false },
-    entry: join(rootDir, 'src', 'server', 'index.ts'),
+    entry: join(SRC_DIR, 'server'),
     output: {
-        filename: 'js/server/[name].js',
+        filename: 'server.js',
         libraryTarget: 'commonjs2',
-        path: join(rootDir, 'dist')
+        path: DIST_DIR,
+        publicPath: '/static/'
     },
     module: {
         rules: [
@@ -24,14 +24,13 @@ const config = {
             rules.htmlRule,
             rules.mediasRule,
             rules.fontsRule,
-            rules.sassRule,
             rules.cssRule,
             ...rules.svgRules
         ]
     },
     resolve: {
-        alias,
-        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss']
+        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss'],
+        plugins: [plugins.tsPaths]
     },
     plugins: [plugins.miniCssExtractPlugin, plugins.environmentPlugin, plugins.definePlugin({ server: true })],
     externals: [nodeExternals()]

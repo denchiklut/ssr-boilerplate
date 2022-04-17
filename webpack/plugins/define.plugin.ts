@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import { DefinePlugin } from 'webpack'
+import { IS_DEV } from '../env'
 
-import { isDev } from '../utils/env'
 
 interface Props {
     server?: boolean
@@ -11,7 +11,7 @@ interface Props {
 dotenv.config()
 const config = (isServer: boolean, spa: boolean) => ({
     IS_SERVER: isServer,
-    IS_DEV: isDev,
+    IS_DEV,
     IS_SPA: spa,
     'process.env': {
         API: JSON.stringify(process.env.API),

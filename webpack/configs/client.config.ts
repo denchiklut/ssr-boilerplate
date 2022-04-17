@@ -2,21 +2,16 @@ import { join } from 'path'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { rootDir, isDev } from '../utils/env'
-import { alias } from '../utils/alias'
+import { SRC_DIR, DIST_DIR, IS_DEV } from '../env'
 
 const config = {
     name: 'client',
     target: 'web',
     devtool: 'source-map',
-    entry: [
-        isDev && 'webpack-hot-middleware/client',
-        isDev && 'css-hot-loader/hotModuleReplacement',
-        join(rootDir, 'src', 'client', 'main.tsx')
-    ].filter(Boolean),
+    entry: [IS_DEV && 'webpack-hot-middleware/client', join(SRC_DIR, 'client')].filter(Boolean),
     output: {
-        path: join(rootDir, 'dist'),
-        filename: 'js/client/[name].[contenthash].js',
+        path: DIST_DIR,
+        filename: 'js/client/[name].js',
         publicPath: '/'
     },
     module: {
@@ -26,24 +21,20 @@ const config = {
             rules.htmlRule,
             rules.mediasRule,
             rules.fontsRule,
-            rules.sassRule,
             rules.cssRule,
             ...rules.svgRules
         ]
     },
     resolve: {
-        alias,
-        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss']
+        modules: ['src', 'node_modules'],
+        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss'],
+        plugins: [plugins.tsPaths]
     },
     plugins: [
-        plugins.cleanPlugin,
-        plugins.miniCssExtractPlugin,
         plugins.loadablePlugin,
-        plugins.copyPlugin,
-        plugins.workboxBoxPlugin,
-        plugins.hmr,
+        plugins.miniCssExtractPlugin,
         plugins.refreshPlugin,
-        // plugins.forkTsCheckerWebpackPlugin,
+        plugins.hmr,
         plugins.definePlugin(),
         ...plugins.htmlWebpackPlugin()
     ].filter(Boolean)

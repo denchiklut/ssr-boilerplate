@@ -1,11 +1,5 @@
 import { Router } from 'express'
-
 import { appRoutes } from './app'
-import { staticRoutes } from './static'
 
-const router = Router()
-
-staticRoutes(router)
+export const router = Router()
 appRoutes(router)
-
-export { router }

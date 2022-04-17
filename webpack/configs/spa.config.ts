@@ -1,17 +1,14 @@
 import { join } from 'path'
-import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
-
-import * as rules from '../rules'
+import { devServerConfig } from '../utils/devServer'
 import * as plugins from '../plugins'
-import { rootDir } from '../utils/env'
-import { alias } from '../utils/alias'
-import { devServerConfig, devServerUrl } from '../utils/devServer'
+import * as rules from '../rules'
+import { SRC_DIR } from '../env'
 
 const config = {
     name: 'spa',
     target: 'web',
     devtool: 'source-map',
-    entry: [join(rootDir, 'src', 'client', 'main.tsx')],
+    entry: join(SRC_DIR, 'client'),
     output: {
         path: join(__dirname, '../dist'),
         publicPath: '/',
@@ -24,25 +21,20 @@ const config = {
             rules.htmlRule,
             rules.mediasRule,
             rules.fontsRule,
-            rules.sassRule,
             rules.cssRule,
             ...rules.svgRules
         ]
     },
     devServer: devServerConfig,
     resolve: {
-        alias,
-        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss']
+        extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss'],
+        plugins: [plugins.tsPaths]
     },
     plugins: [
-        plugins.miniCssExtractPlugin,
         plugins.loadablePlugin,
-        plugins.esLintPlugin,
-        plugins.copyPlugin,
-        plugins.workboxBoxPlugin,
-        plugins.forkTsCheckerWebpackPlugin,
-        plugins.environmentPlugin,
-        new NodePolyfillPlugin(),
+        plugins.miniCssExtractPlugin,
+        plugins.refreshPlugin,
+        plugins.hmr,
         plugins.definePlugin({ spa: true }),
         ...plugins.htmlWebpackPlugin({ spa: true })
     ].filter(Boolean)

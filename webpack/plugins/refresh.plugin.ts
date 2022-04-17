@@ -1,4 +1,4 @@
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
-import { isDev } from '../utils/env'
+import { IS_DEV } from '../env'
 
-export const refreshPlugin = isDev && new ReactRefreshWebpackPlugin()
+export const refreshPlugin = IS_DEV && new ReactRefreshWebpackPlugin()

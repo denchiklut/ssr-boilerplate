@@ -5,7 +5,7 @@ import { babelLoader } from './useLoaders'
  */
 export const typescriptRule = {
     test: /\.tsx?$/,
-    use: [babelLoader, { loader: 'ts-loader', options: { transpileOnly: true } }],
+    use: [babelLoader],
     exclude: /node_modules/
 }
 

@@ -1,8 +1,8 @@
 import { EnvironmentPlugin } from 'webpack'
-import { isDev } from '../utils/env'
+import { IS_DEV } from '../env'
 
 const config = {
-    DEBUG: isDev ? 'APP-NAME:*' : false
+    DEBUG: IS_DEV ? 'APP-NAME:*' : false
 }
 
 export const environmentPlugin = new EnvironmentPlugin(config)

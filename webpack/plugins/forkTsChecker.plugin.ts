@@ -1,13 +1,13 @@
 import { join } from 'path'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { ForkTsCheckerWebpackPluginOptions } from 'fork-ts-checker-webpack-plugin/lib/plugin-options'
+import { IS_DEV, ROOT_DIR } from '../env'
 
-import { isDev, rootDir } from '../utils/env'
 
 const config = {
-    async: isDev,
+    async: IS_DEV,
     typescript: {
-        configFile: join(rootDir, 'tsconfig.json')
+        configFile: join(ROOT_DIR, 'tsconfig.json')
     }
 } as ForkTsCheckerWebpackPluginOptions
 

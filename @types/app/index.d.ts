@@ -7,8 +7,8 @@ interface Window {
     IS_DEV: boolean
 }
 
-namespace Express {
+declare namespace Express {
     interface Response {
-        renderBundle(): void
+        renderApp(): void
     }
 }

@@ -1,18 +1,18 @@
 import { join } from 'path'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
+import { IS_PROD, SRC_DIR } from '../env'
 
-import { isProd, rootDir } from '../utils/env'
 
 const offlineConfig = {
     filename: 'offline.html',
     inject: true,
-    template: join(rootDir, 'src/client/assets/offline/index.html')
+    template: join(SRC_DIR, 'client/assets/offline/index.html')
 }
 
 const spaConfig = {
     filename: 'index.html',
     inject: true,
-    template: join(rootDir, 'src/client/assets/index.html')
+    template: join(SRC_DIR, 'client/assets/index.html')
 }
 
 interface Props {
@@ -20,4 +20,4 @@ interface Props {
 }
 
 export const htmlWebpackPlugin = ({ spa = false }: Props = {}) =>
-    [isProd && new HtmlWebpackPlugin(offlineConfig), spa && new HtmlWebpackPlugin(spaConfig)].filter(Boolean)
+    [IS_PROD && new HtmlWebpackPlugin(offlineConfig), spa && new HtmlWebpackPlugin(spaConfig)].filter(Boolean)
