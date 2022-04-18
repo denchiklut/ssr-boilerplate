@@ -2,7 +2,7 @@ import { cssLoader, sassLoader, miniCssExtractLoader, postCssLoader } from './us
 
 /** css **/
 export const cssRule = {
-    test: /\.css$/,
+    test: /\.(sa|sc|c)ss$/,
     use: [
         miniCssExtractLoader,
         {
@@ -13,6 +13,8 @@ export const cssRule = {
                     localIdentName: '[local]__[contenthash:base64:5]'
                 }
             }
-        }
+        },
+        postCssLoader,
+        sassLoader
     ]
 }

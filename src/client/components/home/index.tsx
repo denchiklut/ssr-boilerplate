@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import css from './styles.css'
+import css from './styles.scss'
 
 export const Home = () => {
     const [count, setCount] = useState(0)
