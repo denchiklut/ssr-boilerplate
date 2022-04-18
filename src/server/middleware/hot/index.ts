@@ -1,10 +1,11 @@
-import webpack, { Configuration } from 'webpack'
+import webpack, { type Configuration } from 'webpack'
 import devMiddleware from 'webpack-dev-middleware'
 import hotMiddleware from 'webpack-hot-middleware'
+import config from '../../../../webpack/configs/client.config'
 import { render } from '../render'
 
-export const hot = (config: Configuration) => {
-    const compiler = webpack({ ...config, mode: 'development' })
+export const hot = () => {
+    const compiler = webpack({ ...(config as Configuration), mode: 'development' })
     return [
         IS_DEV &&
             devMiddleware(compiler, {

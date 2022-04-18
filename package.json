@@ -9,10 +9,11 @@
   "description": "Админка для модераторов",
   "author": "ollylut@gmail.com",
   "scripts": {
-    "build": "NODE_ENV=production webpack --mode production",
+    "build": "webpack --mode production",
     "start:webpack": "webpack --mode development",
     "start:server": "nodemon index.js",
-    "start": "NODE_ENV=development run-s --print-label start:*",
+    "dev": "NODE_ENV=development run-s --print-label start:*",
+    "start": "NODE_ENV=production run-s --print-label build start:server",
     "spa": "webpack serve --mode development --config webpack/configs/spa.config.ts",
     "test": "jest --coverage --coverage-reporters=lcov",
     "postinstall": "husky install",
