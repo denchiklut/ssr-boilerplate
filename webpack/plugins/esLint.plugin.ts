@@ -1,10 +1,9 @@
-import { join } from 'path'
 import ESLintPlugin from 'eslint-webpack-plugin'
+import { SRC_DIR } from '../env'
 
-import { rootDir } from '../utils/env'
 
 const config = {
-    context: join(rootDir, 'src'),
+    context: SRC_DIR,
     extensions: ['js', 'jsx', 'ts', 'tsx']
 }
 

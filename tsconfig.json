@@ -1,33 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "es2020",
-    "lib": ["esnext", "dom"],
-    "strict": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "esnext",
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "src/*": ["src/*"],
       "server/*": ["src/server/*"],
       "client/*": ["src/client/*"],
       "errors/*": ["src/client/errors/*"],
-      "store/*": ["src/client/store/*"],
-      "webpack/*": ["webpack/*"],
-      "game/*": ["src/client/game/*"],
-      "common/*": ["src/client/app/common/*"],
       "components/*": ["src/client/components/*"],
       "@shared/*": ["src/client/components/@shared/*"],
       "pages/*": ["src/client/pages/*"],
-      "resources/*": ["src/client/resources/*"],
-      "api/*": ["src/client/resources/api/*"],
-      "schemas/*": ["src/client/resources/schemas/*"],
       "utils/*": ["src/client/utils/*"],
       "assets/*": ["src/client/assets/*"],
       "config/*": ["config/*"]
-    },
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "jsx": "react"
+    }
   }
 }

@@ -1,13 +1,13 @@
 import { join } from 'path'
 import CopyPlugin from 'copy-webpack-plugin'
+import { IS_PROD, ROOT_DIR, SRC_DIR } from '../env'
 
-import { rootDir, isProd } from '../utils/env'
 
 const config = {
     patterns: [
-        { from: join(rootDir, 'src/client/assets/icons'), to: './icons' },
-        { from: join(rootDir, 'pwa/manifest.json'), to: './' }
+        { from: join(SRC_DIR, 'client/assets/icons'), to: './icons' },
+        { from: join(ROOT_DIR, 'pwa/manifest.json'), to: './' }
     ]
 }
 
-export const copyPlugin = isProd && new CopyPlugin(config)
+export const copyPlugin = IS_PROD && new CopyPlugin(config)

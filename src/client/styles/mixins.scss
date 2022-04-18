@@ -50,7 +50,7 @@ $mobile: 'only screen and (max-width: #{$mobile-width})';
 @mixin verticalEllipsis($numLine, $height) {
     overflow: hidden;
     max-height: $height;
-    display: -webkit-box;
+    display: box;
     -webkit-line-clamp: $numLine;
     -webkit-box-orient: vertical;
 }
@@ -224,7 +224,7 @@ $mobile: 'only screen and (max-width: #{$mobile-width})';
 }
 
 @mixin font-reset() {
-    font-family: 'SeroPro', sans-serif;
+    font-family: SeroPro, sans-serif;
     font-style: normal;
     letter-spacing: normal;
     font-stretch: normal;
@@ -240,7 +240,7 @@ $mobile: 'only screen and (max-width: #{$mobile-width})';
     border: none;
     cursor: pointer;
     background: none;
-    -webkit-appearance: button;
+    appearance: button;
 }
 
 @mixin link-reset() {

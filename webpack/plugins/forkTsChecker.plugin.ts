@@ -1,16 +1,14 @@
 import { join } from 'path'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-import { ForkTsCheckerWebpackPluginOptions } from 'fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions'
+import { ForkTsCheckerWebpackPluginOptions } from 'fork-ts-checker-webpack-plugin/lib/plugin-options'
+import { IS_DEV, ROOT_DIR } from '../env'
 
-import { isDev, rootDir } from '../utils/env'
 
 const config = {
-    async: isDev,
+    async: IS_DEV,
     typescript: {
-        configFile: join(rootDir, 'tsconfig.json')
-    },
-    eslint: { enabled: true, files: './src/**/*.{ts,tsx,js,jsx}' },
-    logger: { infrastructure: 'silent', issues: 'console' }
+        configFile: join(ROOT_DIR, 'tsconfig.json')
+    }
 } as ForkTsCheckerWebpackPluginOptions
 
 export const forkTsCheckerWebpackPlugin = new ForkTsCheckerWebpackPlugin(config)

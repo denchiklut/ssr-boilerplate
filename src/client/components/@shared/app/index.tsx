@@ -1,36 +1,16 @@
-import React, { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { Route, Switch } from 'react-router'
-import _throttle from 'lodash/throttle'
-import { hot } from 'react-hot-loader/root'
+import { Suspense } from 'react'
+import loadable from '@loadable/component'
+import { Routes, Route } from 'react-router-dom'
+import { Loader } from '@shared/loader'
 
-import { Drawer } from '@shared/drawer'
-import { ErrorBoundary } from '@shared/error-boundary'
-import { useScreenActions } from 'client/entities/ui/ui.actions'
-import routes from 'client/routes'
+const HomePage = loadable(() => import('pages/home'))
+const AboutPage = loadable(() => import('pages/about'))
 
-import './styles.scss'
-
-const App = () => {
-    const dispatch = useDispatch()
-    const { changeScreen } = useScreenActions(dispatch)
-
-    useEffect(() => {
-        addEventListener('resize', _throttle(changeScreen, 500))
-        changeScreen()
-    }, [changeScreen])
-
-    return (
-        <ErrorBoundary>
-            <Drawer>
-                <Switch>
-                    {routes.map(route => (
-                        <Route key={route.path} {...route} />
-                    ))}
-                </Switch>
-            </Drawer>
-        </ErrorBoundary>
-    )
-}
-
-export default hot(App)
+export const App = () => (
+    <Suspense fallback={<Loader />}>
+        <Routes>
+            <Route index element={<HomePage />} />
+            <Route path='/about' element={<AboutPage />} />
+        </Routes>
+    </Suspense>
+)

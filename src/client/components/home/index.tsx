@@ -1,12 +1,14 @@
-import React, { FC } from 'react'
+import { useState } from 'react'
+import css from './styles.css'
 
-import css from './styles.scss'
+export const Home = () => {
+    const [count, setCount] = useState(0)
 
-export const Home: FC = () => {
     return (
         <div className={css.wrapper}>
-            <h3>Home page</h3>
-            <p>This is main page</p>
+            <h3>Home page!</h3>
+            <p>count {count}</p>
+            <button onClick={() => setCount(count + 1)}>Increase</button>
         </div>
     )
 }

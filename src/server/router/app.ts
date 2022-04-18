@@ -1,13 +1,9 @@
 import { Router } from 'express'
-
-import { renderApp } from 'server/controller'
-import { render } from 'server/middleware'
-import routes from 'client/routes'
-
-const allRoutes = Object.values(routes)
-    .map(({ path }) => path)
-    .filter(i => i !== '*')
+import type { Configuration } from 'webpack'
+import { render } from '../controller/render'
+import { hot } from '../middleware/hot'
+import config from '../../../webpack/configs/client.config'
 
 export function appRoutes(router: Router) {
-    router.get([...allRoutes, '/__webpack_hmr'], [render], renderApp)
+    router.get('*', [...hot(config as Configuration)], render)
 }
