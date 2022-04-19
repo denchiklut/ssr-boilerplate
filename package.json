@@ -1,13 +1,13 @@
 {
-  "name": "ssr-app",
+  "name": "ssr-boilerplate",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/denchiklut/ssr-app.git"
+    "url": "https://github.com/denchiklut/ssr-boilerplate.git"
   },
   "license": "MIT",
-  "description": "Админка для модераторов",
-  "author": "ollylut@gmail.com",
+  "description": "ssr boilerplate",
+  "author": "Karl: ollylut@gmail.com",
   "scripts": {
     "build": "webpack --mode production",
     "start:webpack": "webpack --mode development",
