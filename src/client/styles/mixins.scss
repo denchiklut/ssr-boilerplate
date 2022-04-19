@@ -9,11 +9,6 @@ $yellow: #ffd60a;
 $grey: #4b545b;
 $darkGray: #4b545b;
 
-$link-color: $blue;
-$border-color: darken($darkGray, 0.2);
-$afro: #242629;
-$lightBlue: #323236;
-
 $g-font-size: 24px;
 $c-font-size: 20px;
 $b-font-size: 18px;
@@ -64,22 +59,6 @@ $mobile: 'only screen and (max-width: #{$mobile-width})';
     @include square($num);
 
     border-radius: 50%;
-}
-
-@mixin offset($x: -50%, $y: -50%) {
-    transform: translate($x, $y);
-}
-
-@mixin offsetX($x: -50%) {
-    transform: translateX($x);
-}
-
-@mixin offsetY($y: -50%) {
-    transform: translateY($y);
-}
-
-@mixin no-offset() {
-    @include offset(0, 0);
 }
 
 @mixin h1($fw: 500) {
@@ -207,54 +186,4 @@ $mobile: 'only screen and (max-width: #{$mobile-width})';
 @mixin g-text() {
     font-size: $g-font-size;
     line-height: 32px;
-}
-
-@mixin element-reset() {
-    box-sizing: border-box;
-    outline: none;
-    box-shadow: none;
-
-    &:focus {
-        outline: none;
-    }
-
-    &::-moz-focus-inner {
-        border: none;
-    }
-}
-
-@mixin font-reset() {
-    font-family: SeroPro, sans-serif;
-    font-style: normal;
-    letter-spacing: normal;
-    font-stretch: normal;
-    text-decoration: none;
-    text-transform: none;
-    text-indent: 0;
-    text-shadow: none;
-}
-
-@mixin button-reset() {
-    @include element-reset();
-
-    border: none;
-    cursor: pointer;
-    background: none;
-    appearance: button;
-}
-
-@mixin link-reset() {
-    @include element-reset();
-
-    text-decoration: none;
-}
-
-@mixin link-color-reset($color) {
-    &:visited {
-        color: $color;
-    }
-
-    &:link {
-        color: $color;
-    }
 }

@@ -1,36 +1,46 @@
-## запуск проекта
+# SSR Boilerplate
 
-### Шаг 1. Настройка проекта
+[![license](https://img.shields.io/github/license/nhn/tui.editor.svg)](https://github.com/nhn/tui.editor/blob/master/LICENSE) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/nhn/tui.editor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
-Перед тем как начать работу с проектом выполните команду:
+You can use this project as a boilerplate for your SSR applications. Feel free to suggest improvements
+
+## Features
+
+-   [x] Server side render
+-   [x] `HMR`
+-   [x] Code splitting
+-   [x] `SPA` mode
+-   [x] `Webpack 5`
+-   [x] `React 18`
+
+## Startup project
+
+### Step 1. Project setup
+
+Before starting work with the project, run the command:
 
 ```
 yarn install
 ```
 
+### Step 2. Starting the project
 
-### Шаг 2. Переменные окружения
-
-Добавьте фал `.env` по аналогии с `.env.example`
-
-
-### Шаг 3. Запуск проекта
-
-Чтобы запустить проект в **SSR** режиме выполните команду
+To run the project in **SSR** mode, run the command
 
 ```
 yarn dev
 ```
 
-Для запуска проекта в **SPA** режиме выполните команду
+To run the project in **SPA** mode, run the command
 
 ```
 yarn spa
 ```
 
-Для запуска проекта в **Prod** режиме выполните команду
+To run the project in **Prod** mode, run the command
 
 ```
 yarn start
 ```
-Готово! Проект запустится на http://localhost:5000
+
+Ready! The app will start on `http://localhost:5000`
