@@ -1,5 +1,5 @@
 import { About } from 'components/about'
 
-export default function AboutPage() {
-  return <About />
+export default () => {
+    return <About />
 }
