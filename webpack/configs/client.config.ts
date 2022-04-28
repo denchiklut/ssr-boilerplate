@@ -10,7 +10,7 @@ const config = {
     entry: [IS_DEV && 'webpack-hot-middleware/client', './src/client'].filter(Boolean),
     output: {
         path: DIST_DIR,
-        filename: 'js/client/[name].js',
+        filename: IS_DEV ? 'js/client/[name].js' : 'js/client/[name].[contenthash].js',
         publicPath: '/'
     },
     module: {
