@@ -1,4 +1,4 @@
-import { babelLoader } from './useLoaders'
+import { babelLoader } from './loaders'
 
 /**
  * @see https://webpack.js.org/guides/typescript/#loader

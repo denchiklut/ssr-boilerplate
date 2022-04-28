@@ -1,6 +1,6 @@
-import { join } from 'path'
+import { resolve } from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import { ROOT_DIR, SRC_DIR } from '../env'
+import { SRC_DIR } from '../env'
 
 export const cssLoader = {
     loader: 'css-loader'
@@ -10,7 +10,7 @@ export const postCssLoader = {
     loader: 'postcss-loader',
     options: {
         postcssOptions: {
-            config: join(ROOT_DIR, 'config/postcss/postcss.js')
+            config: './config/postcss/postcss.js'
         }
     }
 }
@@ -29,7 +29,7 @@ export const sassLoader = {
     loader: 'sass-loader',
     options: {
         sassOptions: {
-            includePaths: [join(SRC_DIR, 'client/styles')]
+            includePaths: [resolve(SRC_DIR, 'client/styles')]
         }
     }
 }

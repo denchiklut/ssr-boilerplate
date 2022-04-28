@@ -1,14 +1,13 @@
-import { join } from 'path'
-
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { SRC_DIR, DIST_DIR, IS_DEV } from '../env'
+import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
 const config = {
     name: 'client',
     target: 'web',
     devtool: 'source-map',
-    entry: [IS_DEV && 'webpack-hot-middleware/client', join(SRC_DIR, 'client')].filter(Boolean),
+    context: ROOT_DIR,
+    entry: [IS_DEV && 'webpack-hot-middleware/client', './src/client'].filter(Boolean),
     output: {
         path: DIST_DIR,
         filename: 'js/client/[name].js',

@@ -1,16 +1,16 @@
-import { join } from 'path'
 import { devServerConfig } from '../utils/devServer'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
-import { SRC_DIR } from '../env'
+import { DIST_DIR, ROOT_DIR } from '../env'
 
 const config = {
     name: 'spa',
     target: 'web',
     devtool: 'source-map',
-    entry: join(SRC_DIR, 'client'),
+    context: ROOT_DIR,
+    entry: './src/client',
     output: {
-        path: join(__dirname, '../dist'),
+        path: DIST_DIR,
         publicPath: '/',
         filename: 'js/[name].[fullhash].js'
     },

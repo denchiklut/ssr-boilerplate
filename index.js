@@ -1,4 +1,4 @@
-const { app } = require('./dist/server.js')
+const { app } = require('./dist/js/server/main.js')
 
 const port = process.env.PORT || 5000
 
