@@ -25,19 +25,19 @@ yarn install
 
 ### Step 2. Starting the project
 
-To run the project in **SSR** mode, run the command
+To start the project in **SSR** mode, run the command
 
 ```
 yarn dev
 ```
 
-To run the project in **SPA** mode, run the command
+To start the project in **SPA** mode, run the command
 
 ```
 yarn spa
 ```
 
-To run the project in **Prod** mode, run the command
+To start the project in **Prod** mode, run the command
 
 ```
 yarn start

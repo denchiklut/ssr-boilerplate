@@ -1,11 +1,11 @@
 import { ChunkExtractor } from '@loadable/server'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
-  const scriptTags = chunkExtractor.getScriptTags()
-  const linkTags = chunkExtractor.getLinkTags()
-  const styleTags = chunkExtractor.getStyleTags()
+    const scriptTags = chunkExtractor.getScriptTags()
+    const linkTags = chunkExtractor.getLinkTags()
+    const styleTags = chunkExtractor.getStyleTags()
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
     <head>

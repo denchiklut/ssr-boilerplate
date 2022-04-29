@@ -35,8 +35,8 @@ const config = {
         plugins.miniCssExtractPlugin,
         plugins.refreshPlugin,
         plugins.hmr,
-        plugins.definePlugin({ spa: true }),
-        ...plugins.htmlWebpackPlugin({ spa: true })
+        plugins.htmlWebpackPlugin,
+        plugins.definePlugin({ spa: true })
     ].filter(Boolean)
 }
 

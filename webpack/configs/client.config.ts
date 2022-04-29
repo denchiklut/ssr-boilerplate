@@ -34,8 +34,7 @@ const config = {
         plugins.miniCssExtractPlugin,
         plugins.refreshPlugin,
         plugins.hmr,
-        plugins.definePlugin(),
-        ...plugins.htmlWebpackPlugin()
+        plugins.definePlugin()
     ].filter(Boolean)
 }
 

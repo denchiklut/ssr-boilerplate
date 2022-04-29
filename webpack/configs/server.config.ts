@@ -9,7 +9,7 @@ const config = {
     name: 'server',
     target: 'node',
     devtool: 'source-map',
-    entry: join(SRC_DIR, 'server'),
+    entry: './src/server',
     context: ROOT_DIR,
     output: {
         filename: 'js/server/[name].js',
@@ -29,11 +29,10 @@ const config = {
         ]
     },
     resolve: {
-        modules: ['src', 'node_modules'],
         extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss'],
         plugins: [plugins.tsPaths]
     },
-    plugins: [plugins.miniCssExtractPlugin, plugins.environmentPlugin, plugins.definePlugin({ server: true })],
+    plugins: [plugins.miniCssExtractPlugin, plugins.definePlugin({ server: true })],
     externals: [nodeExternals()]
 }
 
