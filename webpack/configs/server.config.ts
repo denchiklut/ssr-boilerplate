@@ -1,9 +1,8 @@
-import { join } from 'path'
 import nodeExternals from 'webpack-node-externals'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { SRC_DIR, DIST_DIR, ROOT_DIR } from '../env'
+import { DIST_DIR, ROOT_DIR } from '../env'
 
 const config = {
     name: 'server',
