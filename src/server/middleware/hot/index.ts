@@ -6,17 +6,28 @@ import config from '../../../../webpack/configs/client.config'
 import { render } from '../render'
 
 export const hot = () => {
+    const isDev = process.env.NODE_ENV === 'development'
     const compiler = webpack({
-        ...(config as Configuration),
-        context: resolve(__dirname, '../../..'),
-        mode: 'development'
-    })
+        ...config,
+        mode: isDev ? 'development' : 'production',
+        context: resolve(__dirname, '../../../../..')
+    } as Configuration)
+
+    if (isDev) {
+        compiler.hooks.done.tap('BuildStatsPlugin', () => {
+            console.log('Clearing /client/ module cache from server')
+            Object.keys(require.cache).forEach(id => {
+                if (!/\/node_modules\//.test(id)) delete require.cache[id]
+            })
+        })
+    }
+
     return [
-        IS_DEV &&
+        isDev &&
             devMiddleware(compiler, {
                 publicPath: config.output.publicPath
             }),
-        IS_DEV && hotMiddleware(compiler),
+        isDev && hotMiddleware(compiler),
         render
     ].filter(Boolean)
 }

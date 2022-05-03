@@ -8,10 +8,10 @@ const config = {
     name: 'server',
     target: 'node',
     devtool: 'source-map',
-    entry: './src/server',
+    entry: './src/client/components/@shared/app',
     context: ROOT_DIR,
     output: {
-        filename: 'js/server/[name].js',
+        filename: '[name].server.js',
         libraryTarget: 'commonjs2',
         path: DIST_DIR,
         publicPath: '/'

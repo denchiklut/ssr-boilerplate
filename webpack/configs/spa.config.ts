@@ -7,6 +7,7 @@ const config = {
     name: 'spa',
     target: 'web',
     devtool: 'source-map',
+    mode: 'development',
     context: ROOT_DIR,
     entry: './src/client',
     output: {
