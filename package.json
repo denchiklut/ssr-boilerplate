@@ -1,6 +1,6 @@
 {
   "name": "ssr-boilerplate",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/denchiklut/ssr-boilerplate.git"
@@ -9,31 +9,15 @@
   "description": "ssr boilerplate",
   "author": "Karl: ollylut@gmail.com",
   "scripts": {
-    "build": "rm -rf dist && webpack --mode production",
-    "start:webpack": "rm -rf dist && webpack --mode development",
-    "start:server": "nodemon index.js",
-    "dev": "NODE_ENV=development run-s --print-label start:*",
-    "start": "NODE_ENV=production run-s --print-label build start:server",
-    "spa": "rm -rf dist && webpack serve --mode development --config webpack/configs/spa.config.ts",
+    "dev": "ts-node scripts/dev.ts",
+    "spa": "ts-node scripts/spa.ts",
+    "start": "ts-node --transpile-only scripts/start.ts",
     "test": "jest --coverage --coverage-reporters=lcov",
     "postinstall": "husky install",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "lint": "run-p lint:**",
     "lint:script": "eslint --fix --cache --quiet --ext .ts,.tsx ./",
     "lint:style": "stylelint --fix \"src/**/*.{css,scss}\""
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ],
-    "*.{css,scss}": [
-      "stylelint --fix",
-      "prettier --write"
-    ],
-    "*.{html,md,json}": [
-      "prettier --write"
-    ]
   },
   "dependencies": {
     "@loadable/component": "^5.15.2",
@@ -47,6 +31,7 @@
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.17.10",
     "@babel/core": "^7.17.9",
     "@babel/plugin-transform-runtime": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
@@ -69,6 +54,7 @@
     "@types/mini-css-extract-plugin": "^2.5.0",
     "@types/react-dom": "^18.0.1",
     "@types/react-router-dom": "^5.3.3",
+    "@types/rimraf": "^3.0.2",
     "@types/webpack-dev-middleware": "^5.0.2",
     "@types/webpack-env": "^1.16.4",
     "@types/webpack-hot-middleware": "^2.25.6",
@@ -98,6 +84,7 @@
     "prettier": "^2.6.2",
     "react-refresh": "^0.13.0",
     "regenerator-runtime": "^0.13.9",
+    "rimraf": "^3.0.2",
     "sass": "^1.51.0",
     "sass-loader": "^12.6.0",
     "stylelint": "^14.8.0",
@@ -106,12 +93,12 @@
     "stylelint-order": "^5.0.0",
     "ts-jest": "^27.1.4",
     "ts-loader": "^9.2.9",
+    "ts-node": "^10.7.0",
     "tsconfig-paths-webpack-plugin": "^3.5.2",
     "typescript": "^4.6.3",
     "webpack": "^5.72.0",
-    "webpack-cli": "^4.9.2",
     "webpack-dev-middleware": "^5.3.1",
-    "webpack-dev-server": "4.8.1",
+    "webpack-dev-server": "^4.8.1",
     "webpack-hot-middleware": "2.25.1",
     "webpack-node-externals": "^3.0.0"
   }

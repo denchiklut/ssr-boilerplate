@@ -2,6 +2,7 @@ import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
+console.log('******* IS_DEV *******', IS_DEV)
 const config = {
     name: 'client',
     target: 'web',
@@ -10,7 +11,7 @@ const config = {
     entry: [IS_DEV && 'webpack-hot-middleware/client', './src/client'].filter(Boolean),
     output: {
         path: DIST_DIR,
-        filename: IS_DEV ? 'js/client/[name].js' : 'js/client/[name].[contenthash].js',
+        filename: IS_DEV ? '[name].client.js' : '[name].[contenthash].client.js',
         publicPath: '/'
     },
     module: {
