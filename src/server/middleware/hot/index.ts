@@ -15,10 +15,10 @@ export const hot = () => {
 
     if (isDev) {
         compiler.hooks.done.tap('BuildStatsPlugin', () => {
-            console.log('Clearing /client/ module cache from server')
-            Object.keys(require.cache).forEach(id => {
-                if (!/\/node_modules\//.test(id)) delete require.cache[id]
-            })
+            console.log('Clearing cache from server')
+            Object.keys(require.cache)
+                .filter(id => /\.server\.js$/.test(id))
+                .forEach(id => delete require.cache[id])
         })
     }
 
