@@ -2,7 +2,6 @@ import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
-console.log('******* IS_DEV *******', IS_DEV)
 const config = {
     name: 'client',
     target: 'web',
