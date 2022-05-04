@@ -13,15 +13,6 @@ export const hot = () => {
         context: resolve(__dirname, '../../../../..')
     } as Configuration)
 
-    if (isDev) {
-        compiler.hooks.done.tap('BuildStatsPlugin', () => {
-            console.log('Clearing cache from server')
-            Object.keys(require.cache)
-                .filter(id => /\.server\.js$/.test(id))
-                .forEach(id => delete require.cache[id])
-        })
-    }
-
     return [
         isDev &&
             devMiddleware(compiler, {
