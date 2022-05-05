@@ -9,9 +9,11 @@
   "description": "ssr boilerplate",
   "author": "Karl: ollylut@gmail.com",
   "scripts": {
-    "dev": "NODE_ENV=development npx ts-node src/server",
+    "dev": "NODE_ENV=development ts-node src/server",
     "spa": "NODE_ENV=development webpack serve --config webpack/configs/spa.config.ts",
-    "start": "rm -rf dist && NODE_ENV=production tsc --project src/server && NODE_ENV=production webpack && node dist/src/server",
+    "start": "rm -rf dist && NODE_ENV=production run-s prod:*",
+    "prod:build": "tsc --project src/server && webpack",
+    "prod:start": "node dist/src/server",
     "test": "jest --coverage --coverage-reporters=lcov",
     "postinstall": "husky install",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",

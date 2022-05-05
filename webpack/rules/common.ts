@@ -13,7 +13,7 @@ export const typescriptRule = {
  * @see https://webpack.js.org/loaders/babel-loader
  */
 export const javascriptRule = {
-    test: /\.(js|jsx)$/,
+    test: /\.jsx?$/,
     use: [babelLoader],
     exclude: /node_modules/
 }
