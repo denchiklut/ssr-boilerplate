@@ -1,10 +1,11 @@
+import type { Configuration } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, ROOT_DIR } from '../env'
 
-const config = {
+const config: Configuration = {
     name: 'server',
     target: 'node',
     devtool: 'source-map',
@@ -28,10 +29,11 @@ const config = {
         ]
     },
     resolve: {
+        modules: ['src', 'node_modules'],
         extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx', '.scss'],
         plugins: [plugins.tsPaths]
     },
-    plugins: [plugins.miniCssExtractPlugin, plugins.definePlugin({ server: true })],
+    plugins: [plugins.miniCssExtractPlugin, plugins.limitPlugin, plugins.definePlugin({ server: true })],
     externals: [nodeExternals()]
 }
 

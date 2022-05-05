@@ -1,13 +1,14 @@
+import type { Configuration } from 'webpack'
 import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
-const config = {
+const config: Configuration = {
     name: 'client',
     target: 'web',
     devtool: 'source-map',
     context: ROOT_DIR,
-    entry: [IS_DEV && 'webpack-hot-middleware/client', './src/client'].filter(Boolean),
+    entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client'].filter(Boolean),
     output: {
         path: DIST_DIR,
         filename: IS_DEV ? '[name].client.js' : '[name].[contenthash].client.js',
