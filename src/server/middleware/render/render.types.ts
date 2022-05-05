@@ -1,3 +1,3 @@
-export interface Stats {
-    children: { name: string; assetsByChunkName: { main: string[] }; outputPath: string }[]
-}
+import { Stats as WebpackStats } from 'webpack-dev-middleware'
+
+export type Stats = ReturnType<WebpackStats['toJson']>
