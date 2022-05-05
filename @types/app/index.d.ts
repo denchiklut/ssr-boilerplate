@@ -8,3 +8,5 @@ declare namespace Express {
         renderApp(): void
     }
 }
+
+declare module 'require-from-string'
