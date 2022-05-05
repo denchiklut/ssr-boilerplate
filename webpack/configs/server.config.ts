@@ -3,13 +3,14 @@ import nodeExternals from 'webpack-node-externals'
 
 import * as rules from '../rules'
 import * as plugins from '../plugins'
-import { DIST_DIR, ROOT_DIR } from '../env'
+import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
 const config: Configuration = {
     name: 'server',
     target: 'node',
     devtool: 'source-map',
     entry: './src/client/components/@shared/app',
+    mode: IS_DEV ? 'development' : 'production',
     context: ROOT_DIR,
     output: {
         filename: '[name].server.js',

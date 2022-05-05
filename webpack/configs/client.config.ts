@@ -8,6 +8,7 @@ const config: Configuration = {
     target: 'web',
     devtool: 'source-map',
     context: ROOT_DIR,
+    mode: IS_DEV ? 'development' : 'production',
     entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client'].filter(Boolean),
     output: {
         path: DIST_DIR,

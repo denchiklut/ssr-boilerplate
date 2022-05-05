@@ -10,8 +10,8 @@
   "author": "Karl: ollylut@gmail.com",
   "scripts": {
     "dev": "NODE_ENV=development npx ts-node src/server",
-    "spa": "ts-node scripts/spa.ts",
-    "start": "ts-node --transpile-only scripts/start.ts",
+    "spa": "NODE_ENV=development webpack serve --mode development --config webpack/configs/spa.config.ts",
+    "start": "rm -rf dist && NODE_ENV=production tsc --project src/server && NODE_ENV=production webpack --mode production && node dist/src/server",
     "test": "jest --coverage --coverage-reporters=lcov",
     "postinstall": "husky install",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
@@ -97,6 +97,7 @@
     "tsconfig-paths-webpack-plugin": "^3.5.2",
     "typescript": "^4.6.3",
     "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2",
     "webpack-dev-middleware": "^5.3.1",
     "webpack-dev-server": "^4.8.1",
     "webpack-hot-middleware": "2.25.1",

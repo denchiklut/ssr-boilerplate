@@ -1,4 +1,10 @@
+import { join, resolve } from 'path'
+import type { Response } from 'express'
 import { ChunkExtractor } from '@loadable/server'
+import requireFromString from 'require-from-string'
+import type { Stats } from './render.types'
+
+const isDev = process.env.NODE_ENV === 'development'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
     const scriptTags = chunkExtractor.getScriptTags()
@@ -7,29 +13,37 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 
     return `
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
     <head>
-        <meta charset="UTF-8">
+        <meta charset='UTF-8'>
         <title>Sneakers shop</title>
         ${linkTags}
         ${styleTags}
     </head>
     <body>
-        <div id="root">${reactHtml}</div>
+        <div id='root'>${reactHtml}</div>
         ${scriptTags}
     </body>
 </html>`
 }
 
-export const getApp = () => {
-    const isDev = (process.env.NODE_ENV = 'development')
+export const getStats = (res: Response) => {
+    if (!isDev) return { statsFile: resolve('./dist/loadable-stats.json') }
 
-    if (isDev) {
-        console.log('Clearing cache from server')
-        Object.keys(require.cache)
-            .filter(id => /\.server\.js$/.test(id))
-            .forEach(id => delete require.cache[id])
-    }
+    const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
+    return { stats: stats.children.find(child => child.name === 'client') }
+}
 
-    return require('../../../../main.server.js')
+export const getApp = (res: Response) => {
+    if (!isDev) return require('../../../../main.server.js')
+
+    const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
+    const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
+    const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
+    const rendererFileName = assetsByChunkName.main.find(asset => asset.endsWith('.js'))
+
+    return requireFromString(
+        outputFileSystem.readFileSync(join(outputPath, rendererFileName), 'utf-8'),
+        rendererFileName
+    )
 }

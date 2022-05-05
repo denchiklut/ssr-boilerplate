@@ -2,31 +2,11 @@ import { NextFunction, Request, Response } from 'express'
 import { ChunkExtractor } from '@loadable/server'
 import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom/server'
-import requireFromString from 'require-from-string'
-import { getHtml } from './render.util'
-import path from 'path'
-
-interface Stats {
-    children: { name: string; assetsByChunkName: { main: string[] }; outputPath: string }[]
-}
+import { getApp, getStats, getHtml } from './render.util'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
-    const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
-    const client = stats.children.find(child => child.name === 'client')
-    const server = stats.children.find(child => child.name === 'server')
-    const chunkExtractor = new ChunkExtractor({ stats: client })
-
-    function getApp() {
-        const { assetsByChunkName, outputPath } = server
-        const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
-        const rendererFileName = assetsByChunkName.main.find(asset => asset.endsWith('.js'))
-        return requireFromString(
-            outputFileSystem.readFileSync(path.join(outputPath, rendererFileName), 'utf-8'),
-            rendererFileName
-        )
-    }
-
-    const { App } = getApp()
+    const chunkExtractor = new ChunkExtractor(getStats(res))
+    const { App } = getApp(res)
 
     res.renderApp = () => {
         const location = req.url
