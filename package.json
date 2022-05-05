@@ -10,8 +10,8 @@
   "author": "Karl: ollylut@gmail.com",
   "scripts": {
     "dev": "NODE_ENV=development npx ts-node src/server",
-    "spa": "NODE_ENV=development webpack serve --mode development --config webpack/configs/spa.config.ts",
-    "start": "rm -rf dist && NODE_ENV=production tsc --project src/server && NODE_ENV=production webpack --mode production && node dist/src/server",
+    "spa": "NODE_ENV=development webpack serve --config webpack/configs/spa.config.ts",
+    "start": "rm -rf dist && NODE_ENV=production tsc --project src/server && NODE_ENV=production webpack && node dist/src/server",
     "test": "jest --coverage --coverage-reporters=lcov",
     "postinstall": "husky install",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
