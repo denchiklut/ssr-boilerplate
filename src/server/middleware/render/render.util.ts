@@ -16,7 +16,7 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 <html lang='en'>
     <head>
         <meta charset='UTF-8'>
-        <title>Sneakers shop</title>
+        <title>SSR app</title>
         ${linkTags}
         ${styleTags}
     </head>
