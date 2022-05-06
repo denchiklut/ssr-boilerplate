@@ -35,15 +35,15 @@ export const getStats = (res: Response) => {
 }
 
 export const getApp = (res: Response) => {
-    if (!isDev) return require('../../../../main.server.js')
+    if (!isDev) return require('../../../../app.server.js')
 
     const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
     const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
     const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
-    const rendererFileName = assetsByChunkName.main.find(asset => asset.endsWith('.js'))
+    const serverAppFileName = assetsByChunkName.main.find(asset => asset === 'app.server.js')
 
     return requireFromString(
-        outputFileSystem.readFileSync(join(outputPath, rendererFileName), 'utf-8'),
-        rendererFileName
+        outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8'),
+        serverAppFileName
     )
 }

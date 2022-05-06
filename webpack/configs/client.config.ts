@@ -6,7 +6,7 @@ import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 const config: Configuration = {
     name: 'client',
     target: 'web',
-    devtool: 'source-map',
+    devtool: IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
     context: ROOT_DIR,
     mode: IS_DEV ? 'development' : 'production',
     entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client'].filter(Boolean),

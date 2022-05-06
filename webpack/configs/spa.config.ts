@@ -6,7 +6,7 @@ import { DIST_DIR, ROOT_DIR } from '../env'
 const config = {
     name: 'spa',
     target: 'web',
-    devtool: 'source-map',
+    devtool: 'eval-cheap-module-source-map',
     mode: 'development',
     context: ROOT_DIR,
     entry: './src/client',
