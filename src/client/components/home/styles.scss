@@ -1,3 +1,5 @@
+@import 'mixins';
+
 .wrapper {
-    background: gainsboro;
+    background: $background;
 }
