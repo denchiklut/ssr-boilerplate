@@ -1,18 +1,10 @@
 {
-	"useTabs": true,
-	"tabWidth": 4,
-	"singleQuote": true,
-	"trailingComma": "none",
 	"semi": false,
+	"tabWidth": 4,
+	"useTabs": true,
+	"singleQuote": true,
+	"jsxSingleQuote": true,
+	"trailingComma": "none",
 	"arrowParens": "avoid",
-	"endOfLine": "auto",
-	"overrides": [
-		{
-			"files": ["*.tsx"],
-			"options": {
-				"parser": "typescript",
-				"jsxSingleQuote": true
-			}
-		}
-	]
+	"endOfLine": "auto"
 }

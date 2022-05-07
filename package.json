@@ -16,7 +16,7 @@
 		"prod:start": "node dist/src/server",
 		"test": "jest --coverage --coverage-reporters=lcov",
 		"postinstall": "husky install",
-		"prettier": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
+		"prettier": "prettier --write \"src/**/*.{ts,tsx,html,css,scss}\"",
 		"lint": "run-p lint:**",
 		"lint:script": "eslint --fix --cache --quiet --ext .ts,.tsx ./",
 		"lint:style": "stylelint --fix \"src/**/*.{css,scss}\""
@@ -70,7 +70,7 @@
 		"css-loader": "6.7.1",
 		"cssnano": "^5.1.7",
 		"eslint": "^8.14.0",
-		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-react": "^7.29.4",
 		"express": "^4.18.0",
 		"html-loader": "^3.1.0",

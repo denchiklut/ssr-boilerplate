@@ -17,6 +17,9 @@ ij_css_use_double_quotes = false
 [*.scss]
 ij_scss_use_double_quotes = false
 
+[*.html]
+ij_scss_use_double_quotes = false
+
 [*.ts]
 ij_typescript_enforce_trailing_comma = remove
 ij_typescript_force_semicolon_style = false
