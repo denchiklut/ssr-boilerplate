@@ -5,32 +5,14 @@
     "trailingComma": "none",
     "semi": false,
     "arrowParens": "avoid",
-    "endOfLine": "lf",
+    "endOfLine": "auto",
     "overrides": [
-        {
-            "files": ["*.ts"],
-            "options": {
-                "parser": "typescript"
-            }
-        },
         {
             "files": ["*.tsx"],
             "options": {
                 "parser": "typescript",
                 "jsxBracketSameLine": false,
                 "jsxSingleQuote": true
-            }
-        },
-        {
-          "files": ["*.scss"],
-          "options": {
-            "parser": "scss"
-          }
-        },
-        {
-            "files": ["*.json"],
-            "options": {
-                "parser": "json"
             }
         }
     ]
