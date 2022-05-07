@@ -1,19 +1,18 @@
 {
-    "useTabs": false,
-    "tabWidth": 4,
-    "singleQuote": true,
-    "trailingComma": "none",
-    "semi": false,
-    "arrowParens": "avoid",
-    "endOfLine": "auto",
-    "overrides": [
-        {
-            "files": ["*.tsx"],
-            "options": {
-                "parser": "typescript",
-                "jsxBracketSameLine": false,
-                "jsxSingleQuote": true
-            }
-        }
-    ]
+	"useTabs": true,
+	"tabWidth": 4,
+	"singleQuote": true,
+	"trailingComma": "none",
+	"semi": false,
+	"arrowParens": "avoid",
+	"endOfLine": "auto",
+	"overrides": [
+		{
+			"files": ["*.tsx"],
+			"options": {
+				"parser": "typescript",
+				"jsxSingleQuote": true
+			}
+		}
+	]
 }

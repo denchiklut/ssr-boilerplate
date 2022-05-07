@@ -7,11 +7,11 @@ import type { Stats } from './render.types'
 const isDev = process.env.NODE_ENV === 'development'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
-    const scriptTags = chunkExtractor.getScriptTags()
-    const linkTags = chunkExtractor.getLinkTags()
-    const styleTags = chunkExtractor.getStyleTags()
+	const scriptTags = chunkExtractor.getScriptTags()
+	const linkTags = chunkExtractor.getLinkTags()
+	const styleTags = chunkExtractor.getStyleTags()
 
-    return `
+	return `
 <!DOCTYPE html>
 <html lang='en'>
     <head>
@@ -28,22 +28,22 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 }
 
 export const getStats = (res: Response) => {
-    if (!isDev) return { statsFile: resolve('./dist/loadable-stats.json') }
+	if (!isDev) return { statsFile: resolve('./dist/loadable-stats.json') }
 
-    const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
-    return { stats: stats.children.find(child => child.name === 'client') }
+	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
+	return { stats: stats.children.find(child => child.name === 'client') }
 }
 
 export const getApp = (res: Response) => {
-    if (!isDev) return require('../../../../app.server.js')
+	if (!isDev) return require('../../../../app.server.js')
 
-    const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
-    const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
-    const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
-    const serverAppFileName = assetsByChunkName.main.find(asset => asset === 'app.server.js')
+	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
+	const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
+	const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
+	const serverAppFileName = assetsByChunkName.main.find(asset => asset === 'app.server.js')
 
-    return requireFromString(
-        outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8'),
-        serverAppFileName
-    )
+	return requireFromString(
+		outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8'),
+		serverAppFileName
+	)
 }

@@ -1,15 +1,23 @@
 {
-  "presets": [
-    "@babel/preset-typescript",
-    ["@babel/preset-env", {
-      "useBuiltIns": "usage",
-      "corejs": 3
-    }],
-    ["@babel/preset-react", { "runtime": "automatic" }]
-  ],
-  "plugins": [
-    "@loadable/babel-plugin",
-    "@babel/plugin-transform-runtime"
-  ]
+	"presets": [
+		"@babel/preset-typescript",
+		[
+			"@babel/preset-env",
+			{
+				"useBuiltIns": "usage",
+				"corejs": 3
+			}
+		],
+		[
+			"@babel/preset-react",
+			{
+				"runtime": "automatic"
+			}
+		]
+	],
+	"plugins": [
+		"@loadable/babel-plugin",
+		"@babel/plugin-transform-runtime"
+	]
 }
 

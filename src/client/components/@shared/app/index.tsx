@@ -7,10 +7,10 @@ const HomePage = loadable(() => import('pages/home'))
 const AboutPage = loadable(() => import('pages/about'))
 
 export const App = () => (
-    <Suspense fallback={<Loader />}>
-        <Routes>
-            <Route index element={<HomePage />} />
-            <Route path='/about' element={<AboutPage />} />
-        </Routes>
-    </Suspense>
+	<Suspense fallback={<Loader />}>
+		<Routes>
+			<Route index element={<HomePage />} />
+			<Route path='/about' element={<AboutPage />} />
+		</Routes>
+	</Suspense>
 )

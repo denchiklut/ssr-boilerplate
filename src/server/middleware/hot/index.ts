@@ -5,16 +5,16 @@ import webpackConfigs from '../../../../webpack.config'
 import { render } from '../render'
 
 export const hot = () => {
-    const isDev = process.env.NODE_ENV === 'development'
-    const compiler = webpack(webpackConfigs)
+	const isDev = process.env.NODE_ENV === 'development'
+	const compiler = webpack(webpackConfigs)
 
-    return [
-        isDev &&
-            devMiddleware(compiler, {
-                publicPath: webpackConfigs[0].output.publicPath,
-                serverSideRender: true
-            }),
-        isDev && hotMiddleware(compiler),
-        render
-    ].filter(Boolean)
+	return [
+		isDev &&
+			devMiddleware(compiler, {
+				publicPath: webpackConfigs[0].output.publicPath,
+				serverSideRender: true
+			}),
+		isDev && hotMiddleware(compiler),
+		render
+	].filter(Boolean)
 }

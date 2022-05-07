@@ -1,4 +1,4 @@
-import { cssLoader, sassLoader, miniCssExtractLoader, postCssLoader } from './loaders'
+import { cssLoader, miniCssExtractLoader, postCssLoader, sassLoader } from './loaders'
 
 /** css **/
 export const cssRule = {
