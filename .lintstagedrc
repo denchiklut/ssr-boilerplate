@@ -1,13 +1,14 @@
 {
-   "*.{ts,tsx}": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ],
-    "*.{css,scss}": [
-      "stylelint --fix",
-      "prettier --write"
-    ],
-    "*.{html,md,json}": [
-      "prettier --write"
-    ]
+	"*.{ts,tsx}": [
+		"jest --passWithNoTests --findRelatedTests",
+		"eslint --cache --fix",
+		"prettier --write"
+	],
+	"*.{css,scss}": [
+		"stylelint --fix",
+		"prettier --write"
+	],
+	"*.{html,md,json}": [
+		"prettier --write"
+	]
 }

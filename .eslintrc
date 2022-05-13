@@ -1,6 +1,10 @@
 {
 	"parser": "@typescript-eslint/parser",
-	"plugins": ["@typescript-eslint", "prettier", "react"],
+	"plugins": [
+		"@typescript-eslint",
+		"prettier",
+		"react"
+	],
 	"env": {
 		"browser": true,
 		"jest": true

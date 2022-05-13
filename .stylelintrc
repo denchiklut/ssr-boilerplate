@@ -17,15 +17,21 @@
 		],
 		"order/order": [
 			"declarations",
-			{ "type": "at-rule", "name": "media"},
+			{ "type": "at-rule", "name": "media" },
 			{ "type": "rule", "selector": "^&::(before|after)" },
 			{ "type": "rule", "selector": "^&:\\w" },
 			{ "type": "rule", "selector": "^&_" },
 			{ "type": "rule", "selector": "^." }
 		],
 		"string-no-newline": null,
-		"property-no-unknown": [true, { "ignoreProperties": ["composes"] }],
-		"selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["global"]}],
+		"property-no-unknown": [
+			true,
+			{ "ignoreProperties": ["composes"] }
+		],
+		"selector-pseudo-class-no-unknown": [
+			true,
+			{ "ignorePseudoClasses": ["global"] }
+		],
 		"at-rule-no-unknown": [
 			true,
 			{
