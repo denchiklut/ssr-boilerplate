@@ -23,7 +23,7 @@ pipeline {
 				}
 			}
 			steps {
-				echo "Deploying to ${Environment}."
+				echo "Deploying to ${params.Environment}."
 			}
 		}
 	}
