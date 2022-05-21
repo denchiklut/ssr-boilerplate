@@ -1,23 +1,29 @@
 pipeline {
 	agent any
 	parameters {
-		choice(name: 'Environment', choices: ['Prod', 'Stage', 'Dev'], description: 'Pick something')
+		choice(name: 'API_MODE', choices: ['Prod', 'Stage', 'Dev'], description: 'Pick something')
 	}
 	stages {
-		stage('build') {
+		stage('Build') {
 			steps {
-				echo "Building ${params.Environment}"
+				echo "Building ${params.API_MODE}"
 			}
 		}
-		stage('test') {
+		stage('Test') {
 			steps {
 				echo 'Testing app'
 			}
 		}
 
-		stage('deploy') {
+		stage('Deploy') {
+			input {
+				message "Where to deploy?"
+				parameters {
+					choice(name: 'Environment', choices: ['prod', 'stage', 'qa1', 'qa2', 'qa3'], description: 'Pick something')
+				}
+			}
 			steps {
-				echo 'Deploying app'
+				echo "Deploying to ${Environment}."
 			}
 		}
 	}
