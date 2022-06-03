@@ -1,6 +1,6 @@
 import express from 'express'
-import { hot } from './middleware'
-import { router } from './router'
+import { hot } from 'server/middleware'
+import { router } from 'server/router'
 
 export const app = express()
 app.use(hot())

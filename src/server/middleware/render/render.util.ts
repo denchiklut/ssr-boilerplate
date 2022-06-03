@@ -4,8 +4,6 @@ import { ChunkExtractor } from '@loadable/server'
 import requireFromString from 'require-from-string'
 import type { Stats } from './render.types'
 
-const isDev = process.env.NODE_ENV === 'development'
-
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 	const scriptTags = chunkExtractor.getScriptTags()
 	const linkTags = chunkExtractor.getLinkTags()
@@ -28,14 +26,14 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 }
 
 export const getStats = (res: Response) => {
-	if (!isDev) return { statsFile: resolve('./dist/loadable-stats.json') }
+	if (!IS_DEV) return { statsFile: resolve('./dist/loadable-stats.json') }
 
 	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
 	return { stats: stats.children.find(child => child.name === 'client') }
 }
 
 export const getApp = (res: Response) => {
-	if (!isDev) return require('../../../../app.server.js')
+	if (!IS_DEV) return require('./app.server.js')
 
 	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
 	const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
