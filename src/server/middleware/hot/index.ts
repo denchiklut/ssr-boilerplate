@@ -6,13 +6,10 @@ import { render } from '../render'
 
 export const hot = () => {
 	const compiler = webpack(webpackConfigs)
+	const publicPath = webpackConfigs[0]?.output?.publicPath
 
 	return [
-		IS_DEV &&
-			devMiddleware(compiler, {
-				publicPath: webpackConfigs[0].output.publicPath,
-				serverSideRender: true
-			}),
+		IS_DEV && devMiddleware(compiler, { publicPath, serverSideRender: true }),
 		IS_DEV && hotMiddleware(compiler),
 		render
 	].filter(Boolean)

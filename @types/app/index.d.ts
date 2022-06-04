@@ -1,12 +1,32 @@
-type Collection<K extends string | number, V> = Record<K, V>
+import 'express'
+import { ServerResponse } from 'webpack-dev-middleware'
 
-interface Window {
-	IS_SERVER: boolean
-	IS_DEV: boolean
+
+declare global {
+	interface Window {
+		IS_SERVER: boolean
+		IS_DEV: boolean
+	}
 }
 
-declare namespace Express {
-	interface Response {
+declare module 'express' {
+	export interface Response {
+		locals: {
+			nonce: string
+			webpack: {
+				devMiddleware: import('webpack-dev-middleware').Context<
+					import('http').IncomingMessage,
+					ServerResponse
+					>
+			}
+		}
+
+		renderApp(): void
+	}
+}
+
+declare module 'express-serve-static-core' {
+	export interface Response {
 		renderApp(): void
 	}
 }

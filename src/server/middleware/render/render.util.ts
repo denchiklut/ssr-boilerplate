@@ -1,8 +1,7 @@
 import { join, resolve } from 'path'
 import type { Response } from 'express'
-import { ChunkExtractor } from '@loadable/server'
+import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
-import type { Stats } from './render.types'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 	const scriptTags = chunkExtractor.getScriptTags()
@@ -15,6 +14,7 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
     <head>
         <meta charset='UTF-8'>
         <title>SSR app</title>
+        <link rel='apple-touch-icon' href='/icons/favicon.png'/>
         ${linkTags}
         ${styleTags}
     </head>
@@ -25,20 +25,30 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 </html>`
 }
 
-export const getStats = (res: Response) => {
+export const getStats = (res: Response): ChunkExtractorOptions => {
 	if (!IS_DEV) return { statsFile: resolve('./dist/loadable-stats.json') }
 
-	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
-	return { stats: stats.children.find(child => child.name === 'client') }
+	const multiStats = res.locals.webpack.devMiddleware.stats?.toJson()
+	const stats = multiStats?.children?.find(child => child.name === 'client')
+	if (!stats) throw Error('Webpack config is unsuitable for SSR')
+
+	return { stats }
 }
 
 export const getApp = (res: Response) => {
 	if (!IS_DEV) return require('./app.server.js')
 
-	const stats: Stats = res.locals.webpack.devMiddleware.stats.toJson()
-	const { assetsByChunkName, outputPath } = stats.children.find(child => child.name === 'server')
+	const stats = res.locals.webpack.devMiddleware.stats?.toJson()
+	const statsCompilation = stats?.children?.find(child => child.name === 'server')
+	if (!statsCompilation) throw Error('Webpack config is unsuitable for SSR')
+
+	const { assetsByChunkName, outputPath } = statsCompilation
 	const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
-	const serverAppFileName = assetsByChunkName.main.find(asset => asset === 'app.server.js')
+	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'app.server.js')
+
+	if (!(serverAppFileName && outputPath && outputFileSystem.readFileSync)) {
+		throw Error('Render file not found')
+	}
 
 	return requireFromString(
 		outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8'),
