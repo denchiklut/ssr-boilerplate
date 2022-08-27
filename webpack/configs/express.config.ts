@@ -10,7 +10,6 @@ const config: Configuration = {
 	target: 'node',
 	devtool: IS_DEV ? false : 'source-map',
 	entry: './src/server',
-	watch: IS_DEV,
 	mode: IS_DEV ? 'development' : 'production',
 	context: ROOT_DIR,
 	output: {
