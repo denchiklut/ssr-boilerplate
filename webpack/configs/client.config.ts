@@ -36,6 +36,7 @@ const config = {
 		plugins.loadablePlugin,
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
+		plugins.copyPlugin,
 		plugins.hmr,
 		plugins.definePlugin()
 	].filter(Boolean)
