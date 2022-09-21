@@ -1,3 +1,4 @@
+import { Configuration } from 'webpack'
 import { devServerConfig } from '../utils/devServer'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
@@ -39,6 +40,6 @@ const config = {
 		plugins.htmlWebpackPlugin,
 		plugins.definePlugin({ spa: true })
 	].filter(Boolean)
-}
+} as Configuration
 
 export default config

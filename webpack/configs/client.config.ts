@@ -4,7 +4,7 @@ import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 import { devServerUrl } from '../utils/devServer'
 
-const config: Configuration = {
+const config = {
 	name: 'client',
 	target: 'web',
 	devtool: IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
@@ -39,6 +39,6 @@ const config: Configuration = {
 		plugins.hmr,
 		plugins.definePlugin()
 	].filter(Boolean)
-}
+} as Configuration
 
 export default config

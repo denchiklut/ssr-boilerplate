@@ -5,7 +5,7 @@ import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
 
-const config: Configuration = {
+const config = {
 	name: 'server',
 	target: 'node',
 	devtool: IS_DEV ? false : 'source-map',
@@ -40,6 +40,6 @@ const config: Configuration = {
 		plugins.definePlugin({ server: true })
 	],
 	externals: [nodeExternals()]
-}
+} as Configuration
 
 export default config
