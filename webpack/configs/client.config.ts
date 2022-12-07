@@ -36,6 +36,7 @@ const config: Configuration = {
 		plugins.loadablePlugin,
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
+		plugins.tsChecker,
 		plugins.copyPlugin,
 		plugins.hmr,
 		plugins.definePlugin()

@@ -36,6 +36,7 @@ const config = {
 		plugins.loadablePlugin,
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
+		plugins.tsChecker,
 		plugins.hmr,
 		plugins.htmlWebpackPlugin,
 		plugins.definePlugin({ spa: true })
