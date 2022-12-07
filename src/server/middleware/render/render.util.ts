@@ -1,3 +1,4 @@
+import type { FC } from 'react'
 import { join, resolve } from 'path'
 import type { Response } from 'express'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
@@ -34,7 +35,7 @@ export const getStats = (res: Response): ChunkExtractorOptions => {
 	return { stats }
 }
 
-export const getApp = (res: Response) => {
+export const getApp = (res: Response): { App: FC } => {
 	if (!IS_DEV) return require('./app.server.js')
 
 	const stats = res.locals.webpack.devMiddleware.stats?.toJson()
