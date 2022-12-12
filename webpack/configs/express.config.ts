@@ -9,6 +9,7 @@ const config: Configuration = {
 	name: 'express',
 	target: 'node',
 	devtool: IS_DEV ? false : 'source-map',
+	externalsPresets: { node: true },
 	entry: './src/server',
 	mode: IS_DEV ? 'development' : 'production',
 	context: ROOT_DIR,

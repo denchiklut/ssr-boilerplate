@@ -4,6 +4,7 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"noImplicitAny": true,
+		"allowSyntheticDefaultImports": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitThis": true,
 		"resolveJsonModule": true,

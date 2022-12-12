@@ -5,8 +5,8 @@ import webpackConfigs from '../../../../webpack.config'
 import { render } from '../render'
 
 export const hot = () => {
-	const compiler = webpack(webpackConfigs)
-	const publicPath = webpackConfigs[0]?.output?.publicPath
+	const compiler = webpack(webpackConfigs.slice(1))
+	const publicPath = webpackConfigs[1]?.output?.publicPath
 
 	return [
 		IS_DEV && devMiddleware(compiler, { publicPath, serverSideRender: true }),
