@@ -1,8 +1,8 @@
 import { Configuration } from 'webpack'
 import { devServerConfig } from '../utils/devServer'
+import { DIST_DIR, ROOT_DIR } from '../env'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
-import { DIST_DIR, ROOT_DIR } from '../env'
 
 const config = {
 	name: 'spa',
@@ -37,7 +37,6 @@ const config = {
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
 		plugins.tsChecker,
-		plugins.hmr,
 		plugins.htmlWebpackPlugin,
 		plugins.definePlugin({ spa: true })
 	].filter(Boolean)

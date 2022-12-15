@@ -8,7 +8,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 	const chunkExtractor = new ChunkExtractor(getStats(res))
 	const { App } = getApp(res)
 
-	res.renderApp = () => {
+	res.renderApp = async () => {
 		const location = req.url
 		const jsx = chunkExtractor.collectChunks(
 			<StaticRouter location={location}>

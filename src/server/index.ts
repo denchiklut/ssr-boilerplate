@@ -4,8 +4,8 @@ import { router } from 'server/router'
 import { bootstrap } from 'server/utils'
 
 export const app = express()
-app.use(logger)
 app.use(favicon())
+app.use(logger)
 app.use(hot())
 app.use(router)
 

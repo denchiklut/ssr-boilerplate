@@ -16,8 +16,7 @@ const config: Configuration = {
 	output: {
 		filename: 'express.js',
 		libraryTarget: 'commonjs2',
-		path: DIST_DIR,
-		publicPath: '/'
+		path: DIST_DIR
 	},
 	module: {
 		rules: [rules.javascriptRule, rules.typescriptRule]

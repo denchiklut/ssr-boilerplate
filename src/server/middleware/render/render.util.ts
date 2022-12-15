@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import { join, resolve } from 'path'
-import type { Response } from 'express'
+import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
 
@@ -25,28 +25,28 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 </html>`
 }
 
-export const getStats = (res: Response): ChunkExtractorOptions => {
+export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (!IS_DEV) return { statsFile: resolve('./dist/loadable-stats.json') }
 
-	const multiStats = res.locals.webpack.devMiddleware.stats?.toJson()
+	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const stats = multiStats?.children?.find(child => child.name === 'client')
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
 
 	return { stats }
 }
 
-export const getApp = (res: Response): { App: FC } => {
+export const getApp = (res: ServerResponse): { App: FC } => {
 	if (!IS_DEV) return require('./app.server.js')
 
-	const stats = res.locals.webpack.devMiddleware.stats?.toJson()
+	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const statsCompilation = stats?.children?.find(child => child.name === 'server')
 	if (!statsCompilation) throw Error('Webpack config is unsuitable for SSR')
 
 	const { assetsByChunkName, outputPath } = statsCompilation
-	const outputFileSystem = res.locals.webpack.devMiddleware.outputFileSystem
+	const outputFileSystem = res.locals?.webpack?.devMiddleware?.outputFileSystem
 	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'app.server.js')
 
-	if (!(serverAppFileName && outputPath && outputFileSystem.readFileSync)) {
+	if (!(serverAppFileName && outputPath && outputFileSystem?.readFileSync)) {
 		throw Error('Render file not found')
 	}
 
