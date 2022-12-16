@@ -15,6 +15,7 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
     <head>
         <meta charset='UTF-8'>
         <title>SSR app</title>
+  		<link rel="icon" href='favicon.ico' />
         ${linkTags}
         ${styleTags}
     </head>
