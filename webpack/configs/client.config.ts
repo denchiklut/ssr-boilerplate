@@ -2,7 +2,6 @@ import type { Configuration } from 'webpack'
 import * as rules from '../rules'
 import * as plugins from '../plugins'
 import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
-import { devServerUrl } from '../utils/devServer'
 
 const config: Configuration = {
 	name: 'client',
@@ -14,7 +13,7 @@ const config: Configuration = {
 	output: {
 		path: DIST_DIR,
 		filename: IS_DEV ? '[name].client.js' : '[name].[contenthash].client.js',
-		publicPath: IS_DEV ? devServerUrl : '/'
+		publicPath: '/'
 	},
 	module: {
 		rules: [
