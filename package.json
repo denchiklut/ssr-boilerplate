@@ -13,6 +13,7 @@
 		"predev": "webpack --node-env development --config webpack/configs/express.config.ts",
 		"dev:build": "webpack --node-env development --config webpack/configs/express.config.ts --watch",
 		"dev:serve": "cross-env NODE_ENV=development nodemon dist/express.js",
+		"start": "run-s prod:*",
 		"prod:build": "rimraf dist && webpack --node-env production",
 		"prod:start": "cross-env NODE_ENV=production node dist/express.js",
 		"spa": "webpack serve --node-env development --config webpack/configs/spa.config.ts",
