@@ -7,6 +7,7 @@
 interface Window {
 	IS_SERVER: boolean
 	IS_DEV: boolean
+	IS_PROD: boolean
 }
 
 namespace Express {
