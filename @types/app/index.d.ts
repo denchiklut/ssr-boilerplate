@@ -5,6 +5,7 @@
  */
 
 interface Window {
+	IS_SPA: boolean
 	IS_SERVER: boolean
 	IS_DEV: boolean
 	IS_PROD: boolean
