@@ -1,11 +1,12 @@
-import { BrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { App, routes } from '@shared/app'
+import { Loader } from '@shared/loader'
 import { bootstrap } from 'client/utils'
-import { App } from '@shared/app'
 
 const AppContainer = () => (
-	<BrowserRouter>
-		<App />
-	</BrowserRouter>
+	<App>
+		<RouterProvider router={createBrowserRouter(routes)} fallbackElement={<Loader />} />
+	</App>
 )
 
 bootstrap(<AppContainer />)

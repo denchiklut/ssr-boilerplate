@@ -1,5 +1,6 @@
-import type { FC } from 'react'
 import { join, resolve } from 'path'
+import type { FC, ReactNode } from 'react'
+import type { RouteObject } from 'react-router-dom'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
@@ -37,7 +38,9 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	return { stats }
 }
 
-export const getApp = (res: ServerResponse): { App: FC } => {
+export const getApp = (
+	res: ServerResponse
+): { App: FC<{ children: ReactNode }>; routes: RouteObject[] } => {
 	if (!IS_DEV) return require('./app.server.js')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
