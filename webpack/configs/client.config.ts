@@ -35,10 +35,12 @@ const config: Configuration = {
 		plugins.loadablePlugin,
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
+		plugins.workboxBoxPlugin,
 		plugins.tsChecker,
 		plugins.copyPlugin,
 		plugins.hmr,
-		plugins.definePlugin()
+		plugins.definePlugin(),
+		plugins.htmlWebpackPlugin()
 	].filter(Boolean)
 }
 

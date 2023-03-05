@@ -8,7 +8,7 @@ const sslCertPath = 'certs/cert.pem'
 const sslIsExist = existsSync(sslKeyPath) && existsSync(sslCertPath)
 
 export const bootstrap = (server: Express) => {
-	const port = 5000
+	const port = 3000
 	const host = 'localhost'
 
 	if (sslIsExist) {

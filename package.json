@@ -30,6 +30,7 @@
 		"@loadable/server": "^5.15.3",
 		"classnames": "^2.3.2",
 		"core-js": "^3.27.2",
+		"debug": "^4.3.4",
 		"dotenv": "^16.0.3",
 		"morgan": "^1.10.0",
 		"postcss": "^8.4.21",
@@ -37,7 +38,8 @@
 		"react-dom": "^18.2.0",
 		"react-router": "^6.8.1",
 		"react-router-dom": "^6.8.1",
-		"winston": "^3.8.2"
+		"winston": "^3.8.2",
+		"workbox-window": "^6.5.4"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.20.7",
@@ -56,6 +58,7 @@
 		"@testing-library/react": "^13.4.0",
 		"@testing-library/user-event": "^14.4.3",
 		"@types/classnames": "^2.3.0",
+		"@types/debug": "^4.1.7",
 		"@types/express": "^4.17.17",
 		"@types/jest": "^29.4.0",
 		"@types/loadable__component": "^5.13.4",
@@ -117,6 +120,11 @@
 		"webpack-dev-middleware": "^6.0.1",
 		"webpack-dev-server": "^4.11.1",
 		"webpack-hot-middleware": "2.25.3",
-		"webpack-node-externals": "^3.0.0"
+		"webpack-node-externals": "^3.0.0",
+		"workbox-precaching": "^6.5.4",
+		"workbox-recipes": "^6.5.4",
+		"workbox-routing": "^6.5.4",
+		"workbox-strategies": "^6.5.4",
+		"workbox-webpack-plugin": "^6.5.4"
 	}
 }

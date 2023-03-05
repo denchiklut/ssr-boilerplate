@@ -18,7 +18,10 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
         <meta charset='UTF-8'>
         <title>SSR app</title>
   	    <link rel='icon' href='/favicon.ico' />
+  	    <link rel="apple-touch-icon" href='/icons/maskable.png' />
   	    <meta content='width=device-width, initial-scale=1' name='viewport' />
+  	    <meta name='theme-color' content='#efefef'>
+        ${getManifest()}
         ${linkTags}
         ${styleTags}
         ${setEnvVars()}
@@ -38,6 +41,11 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
 
 	return { stats }
+}
+
+export const getManifest = (nonce?: string) => {
+	if (IS_DEV) return ''
+	return `<link nonce=${JSON.stringify(nonce)} rel='manifest' href='/manifest.json' />`
 }
 
 export const getApp = (

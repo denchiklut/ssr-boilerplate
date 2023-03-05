@@ -6,13 +6,12 @@ You can use this project as a boilerplate for your SSR applications. Feel free t
 
 ## Features
 
--   [x] Server side render
+-   [x] `SSR`
 -   [x] `HMR`
 -   [x] Code splitting
 -   [x] `SPA` mode
--   [x] `Webpack 5`
--   [x] `React 18`
 -   [x] `Polyfills`
+-   [x] `PWA`
 
 ## Startup project
 
@@ -41,10 +40,7 @@ Add `.env` file based on `.env.example`
 
 Note that additionally there will be few useful `global variables` available for you.
 
--   IS_DEV
--   IS_PROD
--   IS_SERVER
--   IS_SPA
+-   `IS_DEV`, `IS_PROD`, `IS_SERVER`, `IS_SPA`
 
 ### Step 3. Starting the project
 
@@ -66,4 +62,4 @@ To start the project in **Prod** mode, run the command
 yarn start
 ```
 
-Ready! The app will start on `http://localhost:5000`
+Ready! The app will start on `http://localhost:3000`
