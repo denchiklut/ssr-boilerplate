@@ -22,7 +22,7 @@
 			"src/*": ["src/*"],
 			"server/*": ["src/server/*"],
 			"client/*": ["src/client/*"],
-			"errors/*": ["src/client/errors/*"],
+			"common/*": ["src/common/*"],
 			"components/*": ["src/client/components/*"],
 			"@shared/*": ["src/client/components/@shared/*"],
 			"pages/*": ["src/client/pages/*"],

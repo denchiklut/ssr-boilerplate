@@ -12,6 +12,7 @@ You can use this project as a boilerplate for your SSR applications. Feel free t
 -   [x] `SPA` mode
 -   [x] `Webpack 5`
 -   [x] `React 18`
+-   [x] `Polyfills`
 
 ## Startup project
 
@@ -23,7 +24,29 @@ Before starting work with the project, run the command:
 yarn install
 ```
 
-### Step 2. Starting the project
+### Step 2. Environment variables
+
+Add `.env` file based on `.env.example`
+
+#### Adding new `env` variable
+
+1. Add it to `.env` file
+2. Add it\`s name to `@types/env/index.d.ts` (for TS)
+3. If this variable needs to be accessible from both `client` & `server` add it\`s name to
+   `setEnvVars` function in `common/env/env.util`
+4. You can access this variable via `getEnvVars` function.
+   This function will return a proper value based on environment & log a message if variable is not defined.
+
+#### Global variables
+
+Note that additionally there will be few useful `global variables` available for you.
+
+-   IS_DEV
+-   IS_PROD
+-   IS_SERVER
+-   IS_SPA
+
+### Step 3. Starting the project
 
 To start the project in **SSR** mode, run the command
 

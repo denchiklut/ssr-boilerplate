@@ -8,14 +8,12 @@ interface Props {
 }
 
 dotenv.config()
-const config = (isServer: boolean, spa: boolean) => ({
-	IS_SERVER: isServer,
+const config = (IS_SERVER: boolean, IS_SPA: boolean) => ({
+	IS_SERVER,
 	IS_DEV,
 	IS_PROD,
-	IS_SPA: spa,
-	'process.env': {
-		DEBUG: JSON.stringify(process.env.DEBUG)
-	}
+	IS_SPA,
+	'process.env': JSON.stringify(process.env)
 })
 
 export const definePlugin = ({ server = false, spa = false }: Props = {}) =>

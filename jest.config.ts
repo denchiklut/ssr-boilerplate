@@ -9,6 +9,7 @@ export default {
 		'^src/(.*)$': '<rootDir>/src/$1',
 		'^client/(.*)$': '<rootDir>/src/client/$1',
 		'^server/(.*)$': '<rootDir>/src/server/$1',
+		'^common/(.*)$': '<rootDir>/src/common/$1',
 		'^components/(.*)': '<rootDir>/src/client/components/$1',
 		'^@shared/(.*)': '<rootDir>/src/client/components/@shared/$1',
 		'^pages/(.*)$': '<rootDir>/src/client/pages/$1',

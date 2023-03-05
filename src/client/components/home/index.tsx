@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { getDebugger, getEnvVars } from 'src/common'
 import css from './styles.scss'
 
+const debug = getDebugger('component: Home')
 export const Home = () => {
 	const [count, setCount] = useState(0)
+	const exampleHost = getEnvVars('EXAMPLE_HOST')
+	debug('example host %s', exampleHost)
 
 	return (
 		<div className={css.wrapper}>

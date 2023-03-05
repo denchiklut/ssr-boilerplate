@@ -4,6 +4,7 @@ import type { RouteObject } from 'react-router-dom'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
+import { setEnvVars } from 'common/env'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 	const scriptTags = chunkExtractor.getScriptTags()
@@ -16,10 +17,11 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
     <head>
         <meta charset='UTF-8'>
         <title>SSR app</title>
-  		<link rel='icon' href='/favicon.ico' />
-  		<meta content='width=device-width, initial-scale=1' name='viewport' />
+  	    <link rel='icon' href='/favicon.ico' />
+  	    <meta content='width=device-width, initial-scale=1' name='viewport' />
         ${linkTags}
         ${styleTags}
+        ${setEnvVars()}
     </head>
     <body>
         <div id='root'>${reactHtml}</div>
