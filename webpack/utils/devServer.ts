@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { ROOT_DIR } from '../env'
+import { ROOT_DIR } from './env'
 
 /**
  * @see https://webpack.js.org/configuration/dev-server/

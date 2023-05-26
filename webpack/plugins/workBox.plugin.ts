@@ -1,9 +1,9 @@
 import { join } from 'path'
 import { InjectManifest } from 'workbox-webpack-plugin'
-import { IS_PROD, ROOT_DIR } from '../env'
+import { IS_PROD, ROOT_DIR } from '../utils'
 
 const wb = new InjectManifest({
-	swDest: 'service-worker.js',
+	swDest: 'pwa/service-worker.js',
 	swSrc: join(ROOT_DIR, 'pwa/sw.ts')
 })
 

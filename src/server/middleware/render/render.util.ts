@@ -34,7 +34,7 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 }
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
-	if (!IS_DEV) return { statsFile: resolve('./dist/loadable-stats.json') }
+	if (IS_PROD) return { statsFile: resolve(__dirname, '../client/loadable-stats.json') }
 
 	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const stats = multiStats?.children?.find(child => child.name === 'client')
@@ -45,13 +45,13 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 
 export const getManifest = (nonce?: string) => {
 	if (IS_DEV) return ''
-	return `<link nonce=${JSON.stringify(nonce)} rel='manifest' href='/manifest.json' />`
+	return `<link nonce=${JSON.stringify(nonce)} rel='manifest' href='/pwa/manifest.json' />`
 }
 
 export const getApp = (
 	res: ServerResponse
 ): { App: FC<{ children: ReactNode }>; routes: RouteObject[] } => {
-	if (!IS_DEV) return require('./app.server.js')
+	if (IS_PROD) return require('../client/js/app.server.js')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const statsCompilation = stats?.children?.find(child => child.name === 'server')
@@ -59,7 +59,7 @@ export const getApp = (
 
 	const { assetsByChunkName, outputPath } = statsCompilation
 	const outputFileSystem = res.locals?.webpack?.devMiddleware?.outputFileSystem
-	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'app.server.js')
+	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'js/app.server.js')
 
 	if (!(serverAppFileName && outputPath && outputFileSystem?.readFileSync)) {
 		throw Error('Render file not found')
