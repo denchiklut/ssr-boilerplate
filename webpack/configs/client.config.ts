@@ -1,9 +1,10 @@
+import { join } from 'path'
 import type { Configuration } from 'webpack'
-import * as rules from '../rules'
+import { DIST_DIR, IS_DEV, ROOT_DIR, optimization } from '../utils'
 import * as plugins from '../plugins'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
+import * as rules from '../rules'
 
-const config: Configuration = {
+const config = {
 	name: 'client',
 	target: 'web',
 	devtool: IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
@@ -11,8 +12,8 @@ const config: Configuration = {
 	mode: IS_DEV ? 'development' : 'production',
 	entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client'].filter(Boolean),
 	output: {
-		path: DIST_DIR,
-		filename: IS_DEV ? '[name].client.js' : '[name].[contenthash].client.js',
+		path: join(DIST_DIR, 'client'),
+		filename: IS_DEV ? 'js/[name].client.js' : 'js/[name].[contenthash].client.js',
 		publicPath: '/'
 	},
 	module: {
@@ -41,7 +42,8 @@ const config: Configuration = {
 		plugins.hmr,
 		plugins.definePlugin(),
 		plugins.htmlWebpackPlugin()
-	].filter(Boolean)
-}
+	].filter(Boolean),
+	optimization
+} as Configuration
 
 export default config

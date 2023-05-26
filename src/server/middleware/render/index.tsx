@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from 'express'
 import { ChunkExtractor } from '@loadable/server'
 import { renderToString } from 'react-dom/server'
-import { createStaticRouter, StaticRouterProvider } from 'react-router-dom/server'
 import { createStaticHandler } from '@remix-run/router'
-import { createFetchRequest } from 'server/utils'
+import type { NextFunction, Request, Response } from 'express'
+import { createStaticRouter, StaticRouterProvider } from 'react-router-dom/server'
 import { getApp, getHtml, getStats } from './render.util'
+import { createFetchRequest } from 'server/utils'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = async () => {

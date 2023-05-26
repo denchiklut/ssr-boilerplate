@@ -1,6 +1,6 @@
 import { join } from 'path'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
-import { ROOT_DIR, IS_PROD } from '../env'
+import { ROOT_DIR, IS_PROD } from '../utils'
 
 const offlineConfig = {
 	filename: 'offline.html',

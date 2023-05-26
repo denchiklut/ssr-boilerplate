@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import { DefinePlugin } from 'webpack'
-import { IS_DEV, IS_PROD } from '../env'
+import { IS_DEV, IS_PROD } from '../utils'
 
 interface Props {
 	server?: boolean

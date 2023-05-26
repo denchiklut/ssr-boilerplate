@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import { SRC_DIR, IS_DEV } from '../env'
+import { SRC_DIR, IS_DEV } from '../utils'
 
 export const cssLoader = {
 	loader: 'css-loader'

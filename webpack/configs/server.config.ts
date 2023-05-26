@@ -1,11 +1,11 @@
+import { join } from 'path'
 import type { Configuration } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
-
-import * as rules from '../rules'
+import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
 import * as plugins from '../plugins'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
+import * as rules from '../rules'
 
-const config: Configuration = {
+const config = {
 	name: 'server',
 	target: 'node',
 	context: ROOT_DIR,
@@ -14,9 +14,9 @@ const config: Configuration = {
 	entry: './src/client/components/@shared/app',
 	mode: IS_DEV ? 'development' : 'production',
 	output: {
-		filename: 'app.server.js',
+		filename: 'js/app.server.js',
 		libraryTarget: 'commonjs2',
-		path: DIST_DIR,
+		path: join(DIST_DIR, 'client'),
 		publicPath: '/'
 	},
 	module: {
@@ -41,6 +41,6 @@ const config: Configuration = {
 		plugins.definePlugin({ server: true })
 	],
 	externals: [nodeExternals()]
-}
+} as Configuration
 
 export default config

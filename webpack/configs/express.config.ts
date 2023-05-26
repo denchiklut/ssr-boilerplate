@@ -1,11 +1,11 @@
+import { join } from 'path'
 import type { Configuration } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
-
-import * as rules from '../rules'
+import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
 import * as plugins from '../plugins'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../env'
+import * as rules from '../rules'
 
-const config: Configuration = {
+const config = {
 	name: 'express',
 	target: 'node',
 	devtool: IS_DEV ? false : 'source-map',
@@ -14,9 +14,9 @@ const config: Configuration = {
 	mode: IS_DEV ? 'development' : 'production',
 	context: ROOT_DIR,
 	output: {
-		filename: 'express.js',
+		filename: 'index.js',
 		libraryTarget: 'commonjs2',
-		path: DIST_DIR
+		path: join(DIST_DIR, 'server')
 	},
 	module: {
 		rules: [rules.javascriptRule, rules.typescriptRule]
@@ -28,6 +28,6 @@ const config: Configuration = {
 	},
 	plugins: [plugins.limitPlugin, plugins.definePlugin({ server: true })],
 	externals: [nodeExternals(), /app.server.js/]
-}
+} as Configuration
 
 export default config

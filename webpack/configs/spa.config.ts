@@ -1,6 +1,6 @@
+import { join } from 'path'
 import { Configuration } from 'webpack'
-import { devServerConfig } from '../utils/devServer'
-import { DIST_DIR, ROOT_DIR } from '../env'
+import { DIST_DIR, ROOT_DIR, devServerConfig } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -12,7 +12,7 @@ const config = {
 	context: ROOT_DIR,
 	entry: './src/client',
 	output: {
-		path: DIST_DIR,
+		path: join(DIST_DIR, 'client'),
 		publicPath: '/',
 		filename: 'js/[name].[fullhash].js'
 	},
