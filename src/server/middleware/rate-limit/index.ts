@@ -1,6 +1,7 @@
 import rateLimitMiddleware from 'express-rate-limit'
 
 export const rateLimit = rateLimitMiddleware({
-	windowMs: 60 * 1000, // 1 minute
-	max: 5
+	skip: () => IS_DEV,
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100
 })
