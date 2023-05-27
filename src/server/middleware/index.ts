@@ -1,5 +1,4 @@
 export * from './hmr'
 export * from './render'
-export * from './rate-limit'
 export * from './favicon'
 export * from './logger'
