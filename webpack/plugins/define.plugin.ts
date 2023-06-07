@@ -13,7 +13,7 @@ const config = (IS_SERVER: boolean, IS_SPA: boolean) => ({
 	IS_DEV,
 	IS_PROD,
 	IS_SPA,
-	'process.env': JSON.stringify(process.env)
+	...(!IS_SERVER && { 'process.env': JSON.stringify(process.env) })
 })
 
 export const definePlugin = ({ server = false, spa = false }: Props = {}) =>

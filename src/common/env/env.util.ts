@@ -8,14 +8,10 @@ export const setEnvVars = (nonce?: string) => {
 	return `<script nonce='${nonce}'>window.env_vars = ${JSON.stringify(envVars)}</script>`
 }
 
+const debug = getDebugger('common:env.util')
 export const getEnvVars = (variable: ENV_KEYS, initial = '') => {
-	const debug = getDebugger('common:env.util')
-	const source =
-		IS_SERVER || IS_SPA
-			? process.env
-			: variable in window.env_vars // in case you want to override some variables
-			? window.env_vars
-			: process.env
+	const ON_SERVER = IS_SERVER || IS_SPA
+	const source = ON_SERVER ? process.env : window.env_vars
 
 	if (!(variable in source)) {
 		debug('%s is not defined', variable)
