@@ -1,7 +1,7 @@
 import { join } from 'path'
 import type { Configuration } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
+import { DIST_DIR, IS_DEV, PUBLIC_PATH, ROOT_DIR } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -17,7 +17,7 @@ const config = {
 		filename: 'js/app.server.js',
 		libraryTarget: 'commonjs2',
 		path: join(DIST_DIR, 'client'),
-		publicPath: '/'
+		publicPath: PUBLIC_PATH
 	},
 	module: {
 		rules: [

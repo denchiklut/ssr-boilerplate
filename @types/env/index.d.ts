@@ -1,22 +1,21 @@
-declare const IS_DEV: boolean
-declare const IS_PROD: boolean
-declare const IS_SERVER: boolean
-declare const IS_SPA: boolean
+import type { Env } from "src/common"
 
+declare global {
+	declare const IS_DEV: boolean
+	declare const IS_PROD: boolean
+	declare const IS_SERVER: boolean
+	declare const IS_SPA: boolean
 
-type ENV_KEYS =
-	| 'DEBUG'
-	| 'NODE_ENV'
-	| 'EXAMPLE_HOST'
+	namespace NodeJS {
+		interface ProcessEnv extends Partial<Collection<keyof Env, string>> {}
+	}
 
-type ENV_VARS = Partial<Collection<ENV_KEYS, string>>
+	interface Window {
+		IS_SPA: boolean
+		IS_SERVER: boolean
+		IS_DEV: boolean
+		IS_PROD: boolean
 
-namespace NodeJS {
-  interface Process {
-	env: ENV_VARS
-  }
-}
-
-interface Window {
-  env_vars: ENV_VARS
+		env_vars: Partial<Collection<keyof Env, string>>
+	}
 }

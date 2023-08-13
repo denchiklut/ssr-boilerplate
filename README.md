@@ -13,6 +13,7 @@ If you are looking for **renderToPipeableStream** setup switch to the [feat/pipa
 -   [x] `SPA` mode
 -   [x] `Polyfills`
 -   [x] `PWA`
+-   [x] local `https`
 
 ## Startup project
 
@@ -24,18 +25,26 @@ Before starting work with the project, run the command:
 yarn install
 ```
 
+### Step 2. Https setup
+
+If you need to use https, follow these steps:
+
+1. in `setup.sh` change the `domain` variable to your domain
+2. run the command `yarn setup`
+3. finally add your HOST variable to .env file as `https://<YOUR-domain>:PORT`
+
 ### Step 2. Environment variables
 
-Add `.env` file based on `.env.example`
+You can use .env file to specify environment variables. This file is ignored by git.
 
 #### Adding new `env` variable
 
 1. Add it to `.env` file
-2. Add it\`s name to `@types/env/index.d.ts` (for TS)
+2. For TS completion and validation add it to `envSchema` in `src/common/env/env.util.ts`
 3. If this variable needs to be accessible from both `client` & `server` add it\`s name to
    `setEnvVars` function in `common/env/env.util`
-4. You can access this variable via `getEnvVars` function.
-   This function will return a proper value based on environment & log a message if variable is not defined.
+4. You can access environment variable via `getENV` function.
+   This function will return a proper value based on environment (client/server) and cast it to a proper type based on `envSchema` from `step 2` (string/number/boolean)
 
 #### Global variables
 

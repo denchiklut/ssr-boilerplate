@@ -4,9 +4,11 @@ import type { RouteObject } from 'react-router-dom'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
-import { setEnvVars } from 'common/env'
+import { getENV, setEnvVars } from 'common/env'
+import { basePath, publicPath } from 'src/common'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
+	const appVersion = getENV('APP_VERSION')
 	const scriptTags = chunkExtractor.getScriptTags()
 	const linkTags = chunkExtractor.getLinkTags()
 	const styleTags = chunkExtractor.getStyleTags()
@@ -17,8 +19,9 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
     <head>
         <meta charset='UTF-8'>
         <title>SSR app</title>
-  	    <link rel='icon' href='/favicon.ico' />
-  	    <link rel="apple-touch-icon" href='/icons/maskable.png' />
+        <meta name='data-app-version' content='${appVersion}'>
+  	    <link rel='icon' type='image/x-icon' href='${publicPath('icons/favicon.ico')}'>
+  	    <link rel='apple-touch-icon' href='${publicPath('icons/maskable.png')}'>
   	    <meta content='width=device-width, initial-scale=1' name='viewport' />
   	    <meta name='theme-color' content='#efefef'>
         ${getManifest()}
@@ -45,7 +48,7 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 
 export const getManifest = (nonce?: string) => {
 	if (IS_DEV) return ''
-	return `<link nonce=${JSON.stringify(nonce)} rel='manifest' href='/pwa/manifest.json' />`
+	return `<link nonce='${nonce}' rel='manifest' href='${basePath('manifest.json')}' />`
 }
 
 export const getApp = (
