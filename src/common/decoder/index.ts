@@ -1,7 +1,5 @@
-import { getDebugger } from 'src/common'
 import type { ZodType, TypeOf } from 'zod'
 
-const debug = getDebugger('decoder.util')
 export const decoder = <S extends ZodType>(
 	schema: S,
 	dataSource: Record<string, string | undefined>
@@ -18,8 +16,6 @@ export const decoder = <S extends ZodType>(
 	): TypeOf<S>[T] {
 		const source = schema.parse(dataSource)
 		if (!variable) return source
-
-		if (!(variable in source)) debug('%s is missing. Using fallback', variable)
 
 		return source[variable] ?? initial
 	}
