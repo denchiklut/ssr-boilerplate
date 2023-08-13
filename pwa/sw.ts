@@ -5,14 +5,14 @@ import { NetworkOnly } from 'workbox-strategies'
 
 declare const self: ServiceWorkerGlobalScope
 
-const publicPath = process.env.PUBLIC_PATH ?? '/'
+const publicPath = (process.env.PUBLIC_PATH ?? '/').replace(/\/$/, '')
 
 precacheAndRoute(self.__WB_MANIFEST)
 staticResourceCache()
 googleFontsCache()
 imageCache({ maxEntries: 60 })
 offlineFallback({
-	pageFallback: `${publicPath.endsWith('/') ? '' : '/'}pwa/offline.html`
+	pageFallback: `${publicPath}/pwa/offline.html`
 })
 setDefaultHandler(new NetworkOnly())
 addEventListener('message', ({ data }) => {
