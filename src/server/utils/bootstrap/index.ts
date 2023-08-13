@@ -3,7 +3,7 @@ import https from 'https'
 import type { Express } from 'express'
 import { existsSync, readFileSync } from 'fs'
 
-import { basename, getENV, joinPath } from 'src/common'
+import { basename, joinPath } from 'src/common'
 import { logger } from 'server/utils'
 
 const sslKeyPath = 'certs/key.pem'
@@ -11,7 +11,8 @@ const sslCertPath = 'certs/cert.pem'
 const sslIsExist = existsSync(sslKeyPath) && existsSync(sslCertPath)
 
 export const bootstrap = (server: Express) => {
-	const { port, host } = new URL(getENV('HOST'))
+	const port = 3000
+	const host = 'localhost'
 	const protocol = sslIsExist ? 'https' : 'http'
 	const url = joinPath(`${protocol}://${host}`, basename)
 	const message = `Application is started on 🌎 ${url}`
