@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom/server'
 import { getApp, getHtml, getStats } from './render.util'
 import { createFetchRequest } from 'server/utils'
+import { basename } from 'src/common'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = async () => {
@@ -20,6 +21,8 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		if (context instanceof globalThis.Response) {
 			return res.status(context.status).redirect(context.url)
 		}
+
+		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
 			<App>

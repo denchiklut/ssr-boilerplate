@@ -1,6 +1,6 @@
 import { join } from 'path'
 import type { Configuration } from 'webpack'
-import { DIST_DIR, IS_DEV, ROOT_DIR, optimization } from '../utils'
+import { DIST_DIR, IS_DEV, ROOT_DIR, optimization, PUBLIC_PATH } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -14,7 +14,7 @@ const config = {
 	output: {
 		path: join(DIST_DIR, 'client'),
 		filename: IS_DEV ? 'js/[name].client.js' : 'js/[name].[contenthash].client.js',
-		publicPath: '/'
+		publicPath: PUBLIC_PATH
 	},
 	module: {
 		rules: [

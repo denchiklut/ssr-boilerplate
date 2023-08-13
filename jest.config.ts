@@ -1,6 +1,7 @@
 export default {
 	preset: 'ts-jest',
 	testEnvironment: 'jest-environment-jsdom',
+	globalSetup: '<rootDir>/config/spec/global.ts',
 	setupFilesAfterEnv: ['<rootDir>/config/spec/setup.ts'],
 	transform: { '\\.[jt]sx?$': 'babel-jest' },
 	moduleFileExtensions: ['ts', 'tsx', 'js'],

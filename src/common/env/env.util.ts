@@ -1,21 +1,26 @@
-import { getDebugger } from 'common/debugger'
+import { decoder } from '../decoder'
+import { z, type TypeOf } from 'zod'
 
-export const setEnvVars = (nonce?: string) => {
-	const envVars: ENV_VARS = {
-		DEBUG: process.env.DEBUG
-	}
+const envSchema = z.object({
+	HOST: z.string().url().default('http://localhost:3000'),
+	PUBLIC_PATH: z.string().default('/'),
+	DEBUG: z.string().optional(),
+	APP_VERSION: z.string().default('0.0.0'),
+	NODE_ENV: z.enum(['production', 'development']).default('development')
+})
 
-	return `<script nonce='${nonce}'>window.env_vars = ${JSON.stringify(envVars)}</script>`
-}
+export type Env = TypeOf<typeof envSchema>
 
-const debug = getDebugger('common:env.util')
-export const getEnvVars = (variable: ENV_KEYS, initial = '') => {
-	const ON_SERVER = IS_SERVER || IS_SPA
-	const source = ON_SERVER ? process.env : window.env_vars
+export const getENV = decoder(envSchema, IS_SERVER || IS_SPA ? process.env : window.env_vars)
 
-	if (!(variable in source)) {
-		debug('%s is not defined', variable)
-	}
+export const setEnvVars = (nonce = '') => {
+	const { PUBLIC_PATH, HOST, DEBUG, APP_VERSION, NODE_ENV } = getENV()
 
-	return source[variable] ?? initial
+	return `<script nonce='${nonce}'>window.env_vars = Object.freeze(${JSON.stringify({
+		HOST,
+		DEBUG,
+		PUBLIC_PATH,
+		APP_VERSION,
+		NODE_ENV
+	})})</script>`
 }

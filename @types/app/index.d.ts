@@ -4,13 +4,6 @@
  *  @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html
  */
 
-interface Window {
-	IS_SPA: boolean
-	IS_SERVER: boolean
-	IS_DEV: boolean
-	IS_PROD: boolean
-}
-
 namespace Express {
 	interface Response {
 		renderApp(): Promise<void>
