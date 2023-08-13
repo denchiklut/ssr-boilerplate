@@ -3,7 +3,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin'
 import { ROOT_DIR, IS_PROD } from '../utils'
 
 const offlineConfig = {
-	filename: 'offline.html',
+	filename: 'pwa/offline.html',
 	inject: true,
 	template: join(ROOT_DIR, 'assets/offline/index.html')
 }
@@ -18,4 +18,7 @@ interface Props {
 	spa?: boolean
 }
 export const htmlWebpackPlugin = ({ spa = false }: Props = {}) =>
-	spa ? new HtmlWebpackPlugin(spaConfig) : IS_PROD && new HtmlWebpackPlugin(offlineConfig)
+	[
+		IS_PROD && new HtmlWebpackPlugin(offlineConfig),
+		spa && new HtmlWebpackPlugin(spaConfig)
+	].filter(Boolean)

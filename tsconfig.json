@@ -18,6 +18,7 @@
 		"target": "esnext",
 		"jsx": "react-jsx",
 		"baseUrl": ".",
+		"lib": ["esnext", "dom", "webworker", "DOM.Iterable"],
 		"paths": {
 			"src/*": ["src/*"],
 			"server/*": ["src/server/*"],
