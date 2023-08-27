@@ -20,10 +20,10 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
         <meta charset='UTF-8'>
         <title>SSR app</title>
         <meta name='data-app-version' content='${appVersion}'>
-  	    <link rel='icon' type='image/x-icon' href='${publicPath('icons/favicon.ico')}'>
-  	    <link rel='apple-touch-icon' href='${publicPath('icons/maskable.png')}'>
-  	    <meta content='width=device-width, initial-scale=1' name='viewport' />
-  	    <meta name='theme-color' content='#efefef'>
+        <link rel='icon' type='image/x-icon' href='${publicPath('icons/favicon.ico')}'>
+        <link rel='apple-touch-icon' href='${publicPath('icons/maskable.png')}'>
+        <meta content='width=device-width, initial-scale=1' name='viewport' />
+        <meta name='theme-color' content='#efefef'>
         ${getManifest()}
         ${linkTags}
         ${styleTags}
@@ -69,7 +69,6 @@ export const getApp = (
 	}
 
 	return requireFromString(
-		outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8'),
-		serverAppFileName
+		outputFileSystem.readFileSync(join(outputPath, serverAppFileName), 'utf-8')
 	)
 }
