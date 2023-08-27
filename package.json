@@ -9,7 +9,7 @@
 		"dev": "run-p dev:*",
 		"predev": "webpack --node-env development --config-name express",
 		"dev:build": "webpack --node-env development --config-name express --watch",
-		"dev:serve": "cross-env NODE_ENV=development nodemon dist/server",
+		"dev:serve": "cross-env NODE_ENV=development nodemon --inspect dist/server",
 		"start": "run-s prod:*",
 		"prod:build": "rimraf dist && webpack --node-env production",
 		"prod:start": "cross-env NODE_ENV=production node dist/server",
