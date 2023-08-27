@@ -39,7 +39,7 @@ const config = {
 		plugins.tsChecker,
 		plugins.htmlWebpackPlugin,
 		plugins.definePlugin({ spa: true }),
-		plugins.htmlWebpackPlugin({ spa: true })
+		...plugins.htmlWebpackPlugin({ spa: true })
 	].filter(Boolean)
 } as Configuration
 

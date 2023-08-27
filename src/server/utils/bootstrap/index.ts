@@ -14,16 +14,14 @@ export const bootstrap = (server: Express) => {
 	const port = 3000
 	const host = 'localhost'
 	const protocol = sslIsExist ? 'https' : 'http'
-	const url = joinPath(`${protocol}://${host}`, basename)
+	const url = joinPath(`${protocol}://${host}:${port}`, basename)
 	const message = `Application is started on 🌎 ${url}`
 
 	if (sslIsExist) {
-		https
-			.createServer(
-				{ key: readFileSync(sslKeyPath), cert: readFileSync(sslCertPath) },
-				server
-			)
-			.listen(port, () => logger.info(message))
+		const key = readFileSync(sslKeyPath)
+		const cert = readFileSync(sslCertPath)
+
+		https.createServer({ key, cert }, server).listen(port, () => logger.info(message))
 	} else {
 		http.createServer(server).listen(port, () => logger.info(message))
 	}

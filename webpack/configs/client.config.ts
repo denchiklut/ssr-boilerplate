@@ -41,7 +41,7 @@ const config = {
 		plugins.copyPlugin,
 		plugins.hmr,
 		plugins.definePlugin(),
-		plugins.htmlWebpackPlugin()
+		...plugins.htmlWebpackPlugin()
 	].filter(Boolean),
 	optimization
 } as Configuration
