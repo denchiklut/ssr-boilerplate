@@ -5,7 +5,7 @@ import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-const config = {
+export default {
 	name: 'express',
 	target: 'node',
 	devtool: IS_DEV ? false : 'source-map',
@@ -28,6 +28,4 @@ const config = {
 	},
 	plugins: [plugins.limitPlugin, plugins.definePlugin({ server: true })],
 	externals: [nodeExternals(), /app.server.js/]
-} as Configuration
-
-export default config
+} satisfies Configuration

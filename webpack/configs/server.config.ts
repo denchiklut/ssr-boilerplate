@@ -5,7 +5,7 @@ import { DIST_DIR, IS_DEV, PUBLIC_PATH, ROOT_DIR } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-const config = {
+export default {
 	name: 'server',
 	target: 'node',
 	context: ROOT_DIR,
@@ -41,6 +41,4 @@ const config = {
 		plugins.definePlugin({ server: true })
 	],
 	externals: [nodeExternals()]
-} as Configuration
-
-export default config
+} satisfies Configuration

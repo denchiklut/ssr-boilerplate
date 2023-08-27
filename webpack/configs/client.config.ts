@@ -4,7 +4,7 @@ import { DIST_DIR, IS_DEV, ROOT_DIR, optimization, PUBLIC_PATH } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-const config = {
+export default {
 	name: 'client',
 	target: 'web',
 	devtool: IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
@@ -44,6 +44,4 @@ const config = {
 		...plugins.htmlWebpackPlugin()
 	].filter(Boolean),
 	optimization
-} as Configuration
-
-export default config
+} satisfies Configuration
