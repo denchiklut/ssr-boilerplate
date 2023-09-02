@@ -3,8 +3,7 @@ import https from 'https'
 import type { Express } from 'express'
 import { existsSync, readFileSync } from 'fs'
 
-import { basename, joinPath } from 'src/common'
-import { logger } from 'server/utils'
+import { basename, joinPath, logger } from 'src/common'
 
 const sslKeyPath = 'certs/key.pem'
 const sslCertPath = 'certs/cert.pem'

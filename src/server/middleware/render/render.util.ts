@@ -4,8 +4,7 @@ import type { RouteObject } from 'react-router-dom'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
-import { getENV, setEnvVars } from 'common/env'
-import { basePath, publicPath } from 'src/common'
+import { getENV, setEnvVars, basePath, publicPath } from 'src/common'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 	const appVersion = getENV('APP_VERSION')
