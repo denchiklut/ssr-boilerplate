@@ -1,13 +1,5 @@
 import winston from 'winston'
 
-const format = winston.format.combine(
-	winston.format.colorize({ all: true }),
-	winston.format.splat(),
-	winston.format.simple()
-)
-
-const transports = [new winston.transports.Console({})]
-
 winston.addColors({
 	lоg: 'green',
 	debug: 'magenta',
@@ -17,8 +9,12 @@ winston.addColors({
 })
 
 export const winstonLogger = winston.createLogger({
-	format,
-	transports,
+	transports: [new winston.transports.Console()],
+	format: winston.format.combine(
+		winston.format.colorize({ all: true }),
+		winston.format.splat(),
+		winston.format.simple()
+	),
 	levels: {
 		error: 0,
 		debug: 1,
