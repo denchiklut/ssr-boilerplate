@@ -1,13 +1,12 @@
 import { Suspense } from 'react'
-import { getDebugger, getENV } from 'src/common'
+import { logger, getENV } from 'src/common'
 import { Posts } from './posts'
 import { State } from './state'
 import css from './styles.scss'
 
-const debug = getDebugger('component:Home')
 export const Home = () => {
 	const host = getENV('HOST')
-	debug('app host: %s', host)
+	logger.info('Env host: %s', host)
 
 	return (
 		<div className={css.wrapper}>
