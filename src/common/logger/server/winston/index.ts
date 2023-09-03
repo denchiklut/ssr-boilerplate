@@ -11,9 +11,12 @@ winston.addColors({
 export const winstonLogger = winston.createLogger({
 	transports: [new winston.transports.Console()],
 	format: winston.format.combine(
-		winston.format.colorize({ all: true }),
-		winston.format.splat(),
-		winston.format.simple()
+		...[
+			winston.format.splat(),
+			IS_DEV && winston.format.colorize({ all: true }),
+			IS_DEV && winston.format.simple(),
+			IS_PROD && winston.format.json()
+		].filter(Boolean)
 	),
 	levels: {
 		error: 0,
