@@ -8,10 +8,13 @@ import {
 } from 'react-router-dom/server'
 import { getApp, getHtml, getStats } from './render.util'
 import { createFetchRequest } from 'server/utils'
-import { basename } from 'src/common'
+import { basename, logger } from 'src/common'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = async () => {
+		const start = performance.now()
+		logger.debug('render middleware start')
+
 		const chunkExtractor = new ChunkExtractor(getStats(res))
 		const { App, routes } = getApp(res)
 		const { query } = createStaticHandler(routes)
@@ -34,6 +37,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		)
 
 		const reactHtml = renderToString(jsx)
+		logger.debug('render middleware in %d ms', Math.round(performance.now() - start))
 
 		res.status(200).send(getHtml(reactHtml, chunkExtractor))
 	}
