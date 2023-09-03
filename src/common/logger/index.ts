@@ -7,9 +7,9 @@ class Logger implements ILogger {
 	constructor() {
 		if (IS_SERVER) {
 			const { ServerLogger } = require('./server')
-			this.logger = new ServerLogger() as ILogger
+			this.logger = new ServerLogger()
 		} else {
-			this.logger = new ClientLogger() as ILogger
+			this.logger = new ClientLogger()
 		}
 	}
 
