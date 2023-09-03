@@ -1,37 +1,13 @@
 import { ClientLogger } from './client'
 import type { ILogger } from './types'
 
-class Logger implements ILogger {
-	private logger: ILogger
-
-	constructor() {
-		if (IS_SERVER) {
-			const { ServerLogger } = require('./server')
-			this.logger = new ServerLogger()
-		} else {
-			this.logger = new ClientLogger()
-		}
-	}
-
-	log(...args: unknown[]) {
-		this.logger.log(...args)
-	}
-
-	debug(...args: unknown[]) {
-		this.logger.debug(...args)
-	}
-
-	info(...args: unknown[]) {
-		this.logger.info(...args)
-	}
-
-	warn(...args: unknown[]) {
-		this.logger.warn(...args)
-	}
-
-	error(...args: unknown[]) {
-		this.logger.error(...args)
+const getLogger = (): ILogger => {
+	if (IS_SERVER) {
+		const { ServerLogger } = require('./server')
+		return new ServerLogger()
+	} else {
+		return new ClientLogger('app')
 	}
 }
 
-export const logger = new Logger()
+export const logger = getLogger()

@@ -7,12 +7,13 @@ export function print() {
 
 		descriptor.value = function (...args: unknown[]) {
 			const method = propertyKey as Level
+			const { ns } = this as { ns: string }
 			const params = [...args]
 
 			if (typeof params[0] !== 'string') params.unshift('%o')
 
 			console[method](
-				`%capp%c ${params[0]}`,
+				`%c${ns}%c ${params[0]}`,
 				css(colors[method]).join(';'),
 				'color: inherit',
 				...params.slice(1)
