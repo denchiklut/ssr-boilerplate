@@ -36,13 +36,17 @@ export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 }
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
-	if (IS_PROD) return { statsFile: resolve(__dirname, '../client/loadable-stats.json') }
+	if (IS_PROD)
+		return {
+			statsFile: resolve(__dirname, '../client/loadable-stats.json'),
+			publicPath: publicPath('/')
+		}
 
 	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const stats = multiStats?.children?.find(child => child.name === 'client')
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
 
-	return { stats }
+	return { stats, publicPath: publicPath('/') }
 }
 
 export const getManifest = (nonce?: string) => {
