@@ -5,44 +5,5 @@
 		"stylelint-config-standard-scss",
 		"stylelint-config-prettier"
 	],
-	"rules": {
-		"no-descending-specificity": null,
-		"order/properties-order": [
-			"position",
-			"z-index",
-			"top",
-			"right",
-			"bottom",
-			"left"
-		],
-		"order/order": [
-			"declarations",
-			{ "type": "at-rule", "name": "media" },
-			{ "type": "rule", "selector": "^&::(before|after)" },
-			{ "type": "rule", "selector": "^&:\\w" },
-			{ "type": "rule", "selector": "^&_" },
-			{ "type": "rule", "selector": "^." }
-		],
-		"string-no-newline": null,
-		"property-no-unknown": [
-			true,
-			{ "ignoreProperties": ["composes"] }
-		],
-		"selector-pseudo-class-no-unknown": [
-			true,
-			{ "ignorePseudoClasses": ["global"] }
-		],
-		"at-rule-no-unknown": [
-			true,
-			{
-				"ignoreAtRules": [
-					"function",
-					"if",
-					"each",
-					"include",
-					"mixin"
-				]
-			}
-		]
-	}
+	"rules": {}
 }
