@@ -1,45 +1,40 @@
 import { ChunkExtractor } from '@loadable/server'
-import { renderToString } from 'react-dom/server'
+import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
-import {
-	createStaticRouter,
-	StaticRouterProvider,
-	createStaticHandler
-} from 'react-router-dom/server'
-import { getApp, getHtml, getStats } from './render.util'
-import { createFetchRequest } from 'server/utils'
-import { basename, logger } from 'src/common'
+import { StaticRouter } from 'react-router-dom/server'
+import { getApp, getStats } from './render.util'
+import { logger, setEnvVars } from 'src/common'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
-	res.renderApp = async () => {
-		const start = performance.now()
+	res.renderApp = () => {
 		logger.debug('render middleware start')
 
 		const chunkExtractor = new ChunkExtractor(getStats(res))
-		const { App, routes } = getApp(res)
-		const { query } = createStaticHandler(routes)
-		const webRequest = createFetchRequest(req)
-		const context = await query(webRequest)
+		const { App } = getApp(res)
+		const { url, nonce } = req
 
-		if (context instanceof globalThis.Response) {
-			return res.status(context.status).redirect(context.url)
-		}
-
-		context.basename = basename
-
-		const jsx = chunkExtractor.collectChunks(
-			<App>
-				<StaticRouterProvider
-					router={createStaticRouter(routes, context)}
-					context={context}
-				/>
-			</App>
+		const { pipe } = renderToPipeableStream(
+			<StaticRouter location={url}>
+				<App nonce={nonce} chunkExtractor={chunkExtractor} />
+			</StaticRouter>,
+			{
+				nonce,
+				bootstrapScriptContent: setEnvVars(),
+				onShellReady() {
+					res.statusCode = 200
+					res.setHeader('content-type', 'text/html')
+					pipe(res)
+				},
+				onShellError() {
+					res.statusCode = 500
+					res.setHeader('content-type', 'text/html')
+					res.send('<h1>Something went wrong</h1>')
+				},
+				onError(error) {
+					logger.error(error)
+				}
+			}
 		)
-
-		const reactHtml = renderToString(jsx)
-		logger.debug('render middleware in %d ms', Math.round(performance.now() - start))
-
-		res.status(200).send(getHtml(reactHtml, chunkExtractor))
 	}
 
 	next()

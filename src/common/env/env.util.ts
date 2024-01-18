@@ -11,16 +11,16 @@ const envSchema = z.object({
 
 export type Env = TypeOf<typeof envSchema>
 
-export const getENV = decoder(envSchema, IS_SERVER || IS_SPA ? process.env : window.env_vars)
+export const getENV = decoder(envSchema, IS_SERVER || IS_SPA ? process.env : window.env_vars ?? {})
 
-export const setEnvVars = (nonce = '') => {
+export const setEnvVars = () => {
 	const { PUBLIC_PATH, HOST, DEBUG, APP_VERSION, NODE_ENV } = getENV()
 
-	return `<script nonce='${nonce}'>window.env_vars = Object.freeze(${JSON.stringify({
+	return `window.env_vars = Object.freeze(${JSON.stringify({
 		HOST,
 		DEBUG,
 		PUBLIC_PATH,
 		APP_VERSION,
 		NODE_ENV
-	})})</script>`
+	})})`
 }

@@ -17,5 +17,6 @@ declare global {
 		IS_PROD: boolean
 
 		env_vars: Partial<Collection<keyof Env, string>>
+		nonce: string
 	}
 }

@@ -1,14 +1,14 @@
 import express from 'express'
-import { favicon, hmr, render, logger, error } from 'server/middleware'
+import { favicon, hmr, logger, nonce, error } from 'server/middleware'
 import { bootstrap } from 'server/utils'
 import { router } from 'server/router'
 
-export const app = express()
+export const expressApp = express()
 	.use(favicon())
 	.use(hmr())
 	.use(logger)
-	.use(render)
+	.use(nonce)
 	.use(router)
 	.use(error)
 
-bootstrap(app)
+bootstrap(expressApp)

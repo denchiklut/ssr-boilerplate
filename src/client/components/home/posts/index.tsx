@@ -1,8 +1,8 @@
-import { useLoaderData } from 'react-router'
-import { PostsResponse } from 'client/api'
+import { fetchSomeData } from './posts.api'
 
+const resource = fetchSomeData()
 export const Posts = () => {
-	const posts = useLoaderData() as PostsResponse
+	const posts = resource.read()
 
 	return (
 		<ul>

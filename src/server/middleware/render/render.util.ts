@@ -1,39 +1,9 @@
 import { join, resolve } from 'path'
-import type { FC, ReactNode } from 'react'
-import type { RouteObject } from 'react-router-dom'
+import type { FC } from 'react'
 import type { ServerResponse } from 'webpack-dev-middleware'
-import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
+import type { ChunkExtractorOptions } from '@loadable/server'
 import requireFromString from 'require-from-string'
-import { getENV, setEnvVars, basePath, publicPath } from 'src/common'
-
-export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
-	const appVersion = getENV('APP_VERSION')
-	const scriptTags = chunkExtractor.getScriptTags()
-	const linkTags = chunkExtractor.getLinkTags()
-	const styleTags = chunkExtractor.getStyleTags()
-
-	return `
-<!DOCTYPE html>
-<html lang='en'>
-    <head>
-        <meta charset='UTF-8'>
-        <title>SSR app</title>
-        <meta name='data-app-version' content='${appVersion}'>
-        <link rel='icon' type='image/x-icon' href='${publicPath('icons/favicon.ico')}'>
-        <link rel='apple-touch-icon' href='${publicPath('icons/maskable.png')}'>
-        <meta content='width=device-width, initial-scale=1' name='viewport' />
-        <meta name='theme-color' content='#efefef'>
-        ${getManifest()}
-        ${linkTags}
-        ${styleTags}
-        ${setEnvVars()}
-    </head>
-    <body>
-        <div id='root'>${reactHtml}</div>
-        ${scriptTags}
-    </body>
-</html>`
-}
+import { basePath, publicPath, AppProps } from 'src/common'
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (IS_PROD)
@@ -54,9 +24,7 @@ export const getManifest = (nonce?: string) => {
 	return `<link nonce='${nonce}' rel='manifest' href='${basePath('manifest.json')}' />`
 }
 
-export const getApp = (
-	res: ServerResponse
-): { App: FC<{ children: ReactNode }>; routes: RouteObject[] } => {
+export const getApp = (res: ServerResponse): { App: FC<AppProps> } => {
 	if (IS_PROD) return require('../client/js/app.server.js')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson()

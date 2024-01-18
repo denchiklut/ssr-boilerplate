@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express'
+import { render } from '../render'
 
 export const hmr = () => {
 	if (IS_DEV) {
@@ -9,8 +9,8 @@ export const hmr = () => {
 		const publicPath = configs[1]?.output?.publicPath
 		const compiler = webpack(configs.slice(1))
 
-		return [wdm(compiler, { publicPath, serverSideRender: true }), whm(compiler)]
+		return [wdm(compiler, { publicPath, serverSideRender: true }), whm(compiler), render]
 	}
 
-	return [(_: Request, __: Response, next: NextFunction) => next()]
+	return [render]
 }
