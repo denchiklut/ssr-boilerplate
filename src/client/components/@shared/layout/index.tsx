@@ -11,7 +11,7 @@ export const Layout = () => (
 	<>
 		<AppBar component='nav'>
 			<Toolbar>
-				<IconButton color='inherit' edge='start' sx={{ mr: 2, display: { sm: 'none' } }}>
+				<IconButton color='inherit' edge='start' sx={{ mr: 2 }}>
 					<Menu />
 				</IconButton>
 

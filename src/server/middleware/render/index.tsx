@@ -4,8 +4,6 @@ import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
 import { createEmotionCache, logger, setEnvVars } from 'src/common'
 import { getApp, getStats } from './render.util'
-import { PassThrough } from 'stream'
-import createEmotionServer from '@emotion/server/create-instance'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = () => {
@@ -24,15 +22,9 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 				nonce,
 				bootstrapScriptContent: setEnvVars(),
 				onShellReady() {
-					const reactBody = new PassThrough()
-					const emotionServer = createEmotionServer(cache)
-					const bodyWithStyles = emotionServer.renderStylesToNodeStream()
-
-					reactBody.pipe(bodyWithStyles).pipe(res)
-					res.set('Content-Type', 'text/html')
 					res.statusCode = 200
-
-					pipe(reactBody)
+					res.set('Content-Type', 'text/html')
+					pipe(res)
 				},
 				onShellError() {
 					res.statusCode = 500
