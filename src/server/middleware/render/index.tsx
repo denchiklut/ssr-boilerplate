@@ -1,9 +1,11 @@
 import { ChunkExtractor } from '@loadable/server'
+import { StaticRouter } from 'react-router-dom/server'
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
-import { StaticRouter } from 'react-router-dom/server'
+import { createEmotionCache, logger, setEnvVars } from 'src/common'
 import { getApp, getStats } from './render.util'
-import { logger, setEnvVars } from 'src/common'
+import { PassThrough } from 'stream'
+import createEmotionServer from '@emotion/server/create-instance'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = () => {
@@ -12,18 +14,25 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const chunkExtractor = new ChunkExtractor(getStats(res))
 		const { App } = getApp(res)
 		const { url, nonce } = req
+		const cache = createEmotionCache(nonce)
 
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url}>
-				<App nonce={nonce} chunkExtractor={chunkExtractor} />
+				<App nonce={nonce} chunkExtractor={chunkExtractor} emotionCache={cache} />
 			</StaticRouter>,
 			{
 				nonce,
 				bootstrapScriptContent: setEnvVars(),
 				onShellReady() {
+					const reactBody = new PassThrough()
+					const emotionServer = createEmotionServer(cache)
+					const bodyWithStyles = emotionServer.renderStylesToNodeStream()
+
+					reactBody.pipe(bodyWithStyles).pipe(res)
+					res.set('Content-Type', 'text/html')
 					res.statusCode = 200
-					res.setHeader('content-type', 'text/html')
-					pipe(res)
+
+					pipe(reactBody)
 				},
 				onShellError() {
 					res.statusCode = 500

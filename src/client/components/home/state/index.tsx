@@ -1,12 +1,12 @@
 import { useState } from 'react'
+import { Button } from '@mui/material'
 
 export const State = () => {
 	const [count, setCount] = useState(0)
 
 	return (
-		<>
-			<p>count {count}</p>
-			<button onClick={() => setCount(count + 1)}>Increase</button>
-		</>
+		<Button variant='outlined' onClick={() => setCount(count + 1)}>
+			Clicked {count}
+		</Button>
 	)
 }
