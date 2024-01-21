@@ -1,4 +1,4 @@
-import { StatsCompilation } from 'webpack'
+import type { StatsCompilation } from 'webpack'
 
 export interface ChunkExtractorOptions {
 	stats?: StatsCompilation
@@ -10,11 +10,13 @@ export interface ChunkExtractorOptions {
 
 export interface ChunkAsset {
 	filename: string
-	integrity: string
-	scriptType: string | null
+	scriptType: Nullable<string>
 	url: string
 	path: string
-	linkType: string
-	chunk: any
-	type: string
+	chunk: string
+}
+
+export type Asset = {
+	filename: string | { name: string }
+	chunk: string
 }

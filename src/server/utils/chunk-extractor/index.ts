@@ -1,2 +1,2 @@
 export * from './chunk-extractor'
-export * from './stats.types'
+export * from './types'
