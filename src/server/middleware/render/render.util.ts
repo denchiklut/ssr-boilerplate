@@ -1,7 +1,7 @@
 import { join, resolve } from 'path'
 import type { FC } from 'react'
 import type { ServerResponse } from 'webpack-dev-middleware'
-import type { ChunkExtractorOptions } from '@loadable/server'
+import type { ChunkExtractorOptions } from 'server/utils'
 import requireFromString from 'require-from-string'
 import { basePath, publicPath, AppProps } from 'src/common'
 

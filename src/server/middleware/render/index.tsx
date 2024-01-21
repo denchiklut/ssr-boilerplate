@@ -1,4 +1,4 @@
-import { ChunkExtractor } from '@loadable/server'
+import { ChunkExtractor } from 'server/utils'
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
 import { StaticRouter } from 'react-router-dom/server'
@@ -15,11 +15,12 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url}>
-				<App nonce={nonce} chunkExtractor={chunkExtractor} />
+				<App nonce={nonce} />
 			</StaticRouter>,
 			{
 				nonce,
 				bootstrapScriptContent: setEnvVars(),
+				bootstrapScripts: chunkExtractor.getMainAssets().map(asset => asset.url),
 				onShellReady() {
 					res.statusCode = 200
 					res.setHeader('content-type', 'text/html')
