@@ -33,7 +33,7 @@ const config = {
 		plugins: [plugins.tsPaths]
 	},
 	plugins: [
-		plugins.loadablePlugin,
+		plugins.statsPlugin,
 		plugins.miniCssExtractPlugin,
 		plugins.refreshPlugin,
 		plugins.tsChecker,

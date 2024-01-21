@@ -1,4 +1,4 @@
-import { ChunkExtractor } from '@loadable/server'
+import { ChunkExtractor } from 'server/utils'
 import { StaticRouter } from 'react-router-dom/server'
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
@@ -9,18 +9,19 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = () => {
 		logger.debug('render middleware start')
 
-		const chunkExtractor = new ChunkExtractor(getStats(res))
-		const { App } = getApp(res)
 		const { url, nonce } = req
+		const chunkExtractor = new ChunkExtractor(getStats(res))
 		const cache = createEmotionCache(nonce)
+		const { App } = getApp(res)
 
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url}>
-				<App nonce={nonce} chunkExtractor={chunkExtractor} emotionCache={cache} />
+				<App nonce={nonce} emotionCache={cache} />
 			</StaticRouter>,
 			{
 				nonce,
 				bootstrapScriptContent: setEnvVars(),
+				bootstrapScripts: chunkExtractor.getMainAssets().map(asset => asset.url),
 				onShellReady() {
 					res.statusCode = 200
 					res.set('Content-Type', 'text/html')

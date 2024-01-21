@@ -1,33 +1,38 @@
 import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Outlet } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import { Loader } from '@shared/loader'
-import { Fallback } from '@shared/error'
-import { AppBar, Box, IconButton, Toolbar } from '@mui/material'
+import { Outlet } from 'react-router-dom'
 import { Menu } from '@mui/icons-material'
+import { ErrorBoundary } from 'react-error-boundary'
+import { AppBar, Box, IconButton, Toolbar } from '@mui/material'
+import { Fallback } from '@shared/error'
+import { Loader } from '@shared/loader'
+import { usePWA } from 'utils/pwa'
 
-export const Layout = () => (
-	<>
-		<AppBar component='nav'>
-			<Toolbar>
-				<IconButton color='inherit' edge='start' sx={{ mr: 2 }}>
-					<Menu />
-				</IconButton>
+export const Layout = () => {
+	usePWA()
 
-				<Box>
-					<Link to='/'>Home</Link>
-					<Link to='/about'>About</Link>
-				</Box>
-			</Toolbar>
-		</AppBar>
+	return (
+		<>
+			<AppBar component='nav'>
+				<Toolbar>
+					<IconButton color='inherit' edge='start' sx={{ mr: 2 }}>
+						<Menu />
+					</IconButton>
 
-		<Box component='main' sx={{ mt: 7, p: 3 }}>
-			<ErrorBoundary fallback={<Fallback />}>
-				<Suspense fallback={<Loader />}>
-					<Outlet />
-				</Suspense>
-			</ErrorBoundary>
-		</Box>
-	</>
-)
+					<Box>
+						<Link to='/'>Home</Link>
+						<Link to='/about'>About</Link>
+					</Box>
+				</Toolbar>
+			</AppBar>
+
+			<Box component='main' sx={{ mt: 7, p: 3 }}>
+				<ErrorBoundary fallback={<Fallback />}>
+					<Suspense fallback={<Loader />}>
+						<Outlet />
+					</Suspense>
+				</ErrorBoundary>
+			</Box>
+		</>
+	)
+}
