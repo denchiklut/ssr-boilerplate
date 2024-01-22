@@ -21,6 +21,6 @@ function fetchPosts(): Promise<Array<{ id: number; text: string }>> {
 					text: 'You got that sand all over your feet'
 				}
 			])
-		}, 1100)
+		}, 3000)
 	})
 }
