@@ -1,4 +1,5 @@
 export * from './bootstrap.util'
 export * from './suspense.util'
+export * from './toggle'
 export * from './theme'
 export * from './pwa'

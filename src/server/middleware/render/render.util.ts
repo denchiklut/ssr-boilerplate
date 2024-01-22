@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractorOptions } from 'server/utils'
 import requireFromString from 'require-from-string'
-import { basePath, publicPath, AppProps } from 'src/common'
+import { publicPath, AppProps } from 'src/common'
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (IS_PROD)
@@ -17,11 +17,6 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
 
 	return { stats, publicPath: publicPath('/') }
-}
-
-export const getManifest = (nonce?: string) => {
-	if (IS_DEV) return ''
-	return `<link nonce='${nonce}' rel='manifest' href='${basePath('manifest.json')}' />`
 }
 
 export const getApp = (res: ServerResponse): { App: FC<AppProps> } => {

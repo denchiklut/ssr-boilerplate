@@ -1,32 +1,22 @@
 import { Suspense } from 'react'
-import { Link } from 'react-router-dom'
 import { Outlet } from 'react-router-dom'
-import { Menu } from '@mui/icons-material'
+import { Box, Toolbar } from '@mui/material'
 import { ErrorBoundary } from 'react-error-boundary'
-import { AppBar, Box, IconButton, Toolbar } from '@mui/material'
 import { Fallback } from '@shared/error'
 import { Loader } from '@shared/loader'
-import { usePWA } from 'utils/pwa'
+import { usePWA } from 'client/utils'
+import { AppDrawer } from './drawer'
 
 export const Layout = () => {
 	usePWA()
 
 	return (
 		<>
-			<AppBar component='nav'>
-				<Toolbar>
-					<IconButton color='inherit' edge='start' sx={{ mr: 2 }}>
-						<Menu />
-					</IconButton>
+			<AppDrawer />
 
-					<Box>
-						<Link to='/'>Home</Link>
-						<Link to='/about'>About</Link>
-					</Box>
-				</Toolbar>
-			</AppBar>
+			<Box component='main' sx={{ p: 3 }}>
+				<Toolbar />
 
-			<Box component='main' sx={{ mt: 7, p: 3 }}>
 				<ErrorBoundary fallback={<Fallback />}>
 					<Suspense fallback={<Loader />}>
 						<Outlet />

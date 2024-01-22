@@ -1,10 +1,11 @@
 import type { FC, ReactNode } from 'react'
+import { basePath } from 'src/common'
 
 interface Props {
 	nonce: string
 	children: ReactNode
 }
-export const Html: FC<Props> = ({ children }) => {
+export const Html: FC<Props> = ({ nonce, children }) => {
 	if (IS_SPA) return <>{children}</>
 
 	return (
@@ -25,6 +26,8 @@ export const Html: FC<Props> = ({ children }) => {
 					rel='stylesheet'
 					href='https://fonts.googleapis.com/icon?family=Material+Icons'
 				/>
+
+				{IS_PROD && <link nonce={nonce} rel='manifest' href={basePath('manifest.json')} />}
 
 				<title>SSR app</title>
 			</head>

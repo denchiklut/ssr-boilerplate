@@ -11,6 +11,7 @@ export function getFileScriptType(fileName: string) {
 
 	return script_types[extension] ?? null
 }
+
 export function isValidChunkAsset(chunkAsset: ChunkAsset) {
 	return chunkAsset.scriptType && !/\.hot-update\.js$/.test(chunkAsset.filename)
 }
