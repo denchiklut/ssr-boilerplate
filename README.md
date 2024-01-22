@@ -14,6 +14,13 @@ If you are looking for **renderToPipeableStream** setup switch to the [feat/pipa
 -   [x] `Polyfills`
 -   [x] `PWA`
 -   [x] local `https`
+-   [x] `PipeableStream` support
+
+### SSR Suspense
+
+-   If you want to try React 18's SSR Suspense api such as `renderToPipeableStream`, switch to the [feat/pipable-stream](https://github.com/denchiklut/ssr-boilerplate/tree/feat/pipable-stream) branch.
+-   Also, there is en example for setting up suspense api with CSS-in-JS library in our case [MUI](https://github.com/denchiklut/ssr-boilerplate/tree/feat/suspense-mui) just switch to the [feat/suspense-mui](https://github.com/denchiklut/ssr-boilerplate/tree/feat/suspense-mui) branch.
+-   I also wrote a small article about `SSR with React 18`. For those interested in further information, feel free to check my [post on medium](https://medium.com/@ollylut/ssr-with-react-18-c8961d764a94)
 
 ## Startup project
 
