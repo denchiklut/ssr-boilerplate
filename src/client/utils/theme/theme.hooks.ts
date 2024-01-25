@@ -1,17 +1,27 @@
-import type { Theme } from '@mui/material'
-import { enUS } from '@mui/material/locale'
+import invariant from 'tiny-invariant'
+import type { PaletteMode } from '@mui/material'
 import { createTheme } from '@mui/material/styles'
-import { useContext, useMemo, useState } from 'react'
-
+import { startTransition, useContext, useMemo, useState } from 'react'
 import { ThemeContext } from './theme.context'
-import type { ThemeName } from './theme.types'
 
-export const useThemeBuilder = (initial: ThemeName = 'light') => {
-	const [themeName, setTheme] = useState<ThemeName>(initial)
+export const useThemeBuilder = (initialMode: PaletteMode = 'light') => {
+	const [mode, setMode] = useState<PaletteMode>(initialMode)
 
-	const theme: Theme = useMemo(() => createTheme(enUS), [themeName])
-
-	return useMemo(() => ({ themeName, theme, setTheme }), [theme, themeName])
+	return {
+		mode,
+		theme: useMemo(() => createTheme({ palette: { mode } }), [mode]),
+		toggleMode(mode?: PaletteMode) {
+			startTransition(() => {
+				if (mode) return setMode(mode)
+				setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'))
+			})
+		}
+	}
 }
 
-export const useTheme = () => useContext(ThemeContext)
+export const useTheme = () => {
+	const ctx = useContext(ThemeContext)
+	invariant(ctx, 'useTheme must be used within a ThemeProvider')
+
+	return ctx
+}

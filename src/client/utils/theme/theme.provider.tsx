@@ -1,17 +1,15 @@
 import type { FC, ReactNode } from 'react'
-import { CssBaseline } from '@mui/material'
+import { CssBaseline, type PaletteMode } from '@mui/material'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { useThemeBuilder } from './theme.hooks'
 import { ThemeContext } from './theme.context'
-import type { ThemeName } from './theme.types'
 
 interface Props {
-	themeName?: ThemeName
+	mode?: PaletteMode
 	children: ReactNode
 }
-
-export const ThemeProvider: FC<Props> = ({ themeName = 'light', children }) => {
-	const themeCtx = useThemeBuilder(themeName)
+export const ThemeProvider: FC<Props> = ({ mode = 'dark', children }) => {
+	const themeCtx = useThemeBuilder(mode)
 
 	return (
 		<ThemeContext.Provider value={themeCtx}>

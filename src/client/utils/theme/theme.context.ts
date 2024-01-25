@@ -1,9 +1,9 @@
-import type { Theme } from '@mui/material'
-import type { ThemeCtx } from './theme.types'
 import { createContext } from 'react'
+import type { Theme, PaletteMode } from '@mui/material'
 
-export const ThemeContext = createContext<ThemeCtx>({
-	themeName: 'light',
-	theme: {} as Theme,
-	setTheme: () => ''
-})
+export interface ThemeCtx {
+	mode: PaletteMode
+	theme: Theme
+	toggleMode: (mode?: PaletteMode) => void
+}
+export const ThemeContext = createContext<Nullable<ThemeCtx>>(null)
