@@ -1,18 +1,15 @@
 import type { StatsCompilation } from 'webpack'
 
-export interface ChunkExtractorOptions {
-	stats?: StatsCompilation
-	statsFile?: string
-	publicPath?: string
-	outputPath?: string
+export type ChunkExtractorOptions = {
 	entrypoints?: string | string[]
-}
+	outputPath?: string
+	publicPath?: string
+} & ({ statsFile: string } | { stats: StatsCompilation })
 
 export interface ChunkAsset {
 	filename: string
 	scriptType: Nullable<string>
 	url: string
-	path: string
 	chunk: string
 }
 

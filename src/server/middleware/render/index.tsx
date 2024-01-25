@@ -20,11 +20,11 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 			</StaticRouter>,
 			{
 				nonce,
-				bootstrapScriptContent: setEnvVars(),
+				bootstrapScriptContent: setEnvVars(nonce),
 				bootstrapScripts: chunkExtractor.getMainAssets().map(asset => asset.url),
 				onShellReady() {
 					res.statusCode = 200
-					res.set('Content-Type', 'text/html')
+					res.set('content-type', 'text/html')
 					pipe(res)
 				},
 				onShellError() {

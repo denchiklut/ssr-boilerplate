@@ -1,27 +1,23 @@
-import { readFileSync } from 'fs'
 import invariant from 'tiny-invariant'
-import { joinPath } from 'src/common/path'
 import type { StatsCompilation } from 'webpack'
-import { getAssets, getFileScriptType, isValidChunkAsset } from './utils'
+import { joinPath } from 'src/common'
+import { getAssets, getFileScriptType, isValidChunkAsset, readJsonSync } from './utils'
 import { Asset, ChunkAsset, ChunkExtractorOptions } from './types'
 
 export class ChunkExtractor {
 	private stats: StatsCompilation
 	private readonly publicPath: string
-	private readonly outputPath: string
 	private readonly entrypoints: string[]
 
 	constructor({
-		stats,
-		publicPath,
-		statsFile,
-		outputPath,
-		entrypoints = ['main']
+		publicPath = '',
+		outputPath = '',
+		entrypoints = ['main'],
+		...options
 	}: ChunkExtractorOptions) {
-		this.stats = stats ?? JSON.parse(readFileSync(statsFile ?? '').toString())
+		this.stats = 'stats' in options ? options.stats : readJsonSync(options.statsFile)
 		this.entrypoints = Array.isArray(entrypoints) ? entrypoints : [entrypoints]
-		this.publicPath = publicPath ?? this.stats.publicPath ?? ''
-		this.outputPath = outputPath ?? this.stats.outputPath ?? ''
+		this.publicPath = publicPath ?? this.stats.publicPath
 	}
 
 	private getChunkGroup(chunk: string) {
@@ -38,7 +34,6 @@ export class ChunkExtractor {
 			filename: resolvedFilename,
 			scriptType: getFileScriptType(resolvedFilename),
 			url: joinPath(this.publicPath, resolvedFilename),
-			path: joinPath(this.outputPath, resolvedFilename),
 			chunk
 		}
 	}

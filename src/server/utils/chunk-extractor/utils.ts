@@ -1,5 +1,6 @@
 import { extname } from 'path'
 import type { ChunkAsset } from './types'
+import { readFileSync } from 'fs'
 
 export function getFileScriptType(fileName: string) {
 	const extension = extname(fileName).split('?')[0] ?? ''
@@ -30,4 +31,8 @@ export function getAssets(chunks: string[], getAsset: (chunk: string) => ChunkAs
 			return false
 		})
 		.filter(Boolean)
+}
+
+export function readJsonSync(file: string) {
+	return JSON.parse(readFileSync(file).toString())
 }
