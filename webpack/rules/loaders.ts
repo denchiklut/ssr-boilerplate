@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import { SRC_DIR, IS_DEV } from '../utils'
+import { SRC_DIR } from '../utils'
 
 export const cssLoader = {
 	loader: 'css-loader'
@@ -34,9 +34,20 @@ export const sassLoader = {
 	}
 }
 
-export const babelLoader = {
-	loader: 'babel-loader',
+export const swcLoader = {
+	loader: 'swc-loader',
 	options: {
-		cacheDirectory: IS_DEV
+		jsc: {
+			parser: {
+				syntax: 'typescript',
+				decorators: true
+			},
+			transform: {
+				react: {
+					runtime: 'automatic',
+					importSource: 'react'
+				}
+			}
+		}
 	}
 }

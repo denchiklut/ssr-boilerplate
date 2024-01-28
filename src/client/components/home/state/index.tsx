@@ -5,7 +5,7 @@ export const State = () => {
 	const [count, setCount] = useState(0)
 
 	return (
-		<Button variant='outlined' onClick={() => setCount(count + 1)}>
+		<Button data-testid='btn' variant='outlined' onClick={() => setCount(count + 1)}>
 			Clicked {count}
 		</Button>
 	)

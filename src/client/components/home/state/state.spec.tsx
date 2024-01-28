@@ -3,8 +3,8 @@ import { State } from './index'
 
 describe('<State />', () => {
 	it('should render correctly', () => {
-		const { getByText } = render(<State />)
+		const { getByTestId } = render(<State />)
 
-		expect(getByText('Increase')).toBeInTheDocument()
+		expect(getByTestId('btn')).toBeInTheDocument()
 	})
 })

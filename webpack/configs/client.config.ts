@@ -39,6 +39,7 @@ export default {
 		plugins.workboxBoxPlugin,
 		plugins.tsChecker,
 		plugins.copyPlugin,
+		plugins.analyzePlugin,
 		plugins.hmr,
 		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()
