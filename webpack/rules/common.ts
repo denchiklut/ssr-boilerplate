@@ -33,7 +33,10 @@ export const htmlRule = {
  */
 export const mediasRule = {
 	test: /\.(?:ico|gif|png|jpg|jpeg|ogg)$/i,
-	type: 'asset/resource'
+	type: 'asset/resource',
+	generator: {
+		filename: 'icons/[name][ext][query]'
+	}
 }
 
 /**
@@ -41,5 +44,16 @@ export const mediasRule = {
  */
 export const fontsRule = {
 	test: /\.(woff(2)?|eot|ttf|otf|)$/,
-	type: 'asset/inline'
+	type: 'asset/resource',
+	generator: {
+		filename: 'fonts/[name][ext][query]'
+	}
+}
+
+/** @see https://webpack.js.org/configuration/module/#resolvefullyspecified */
+export const mjsRule = {
+	test: /\.m?js$/,
+	resolve: {
+		fullySpecified: false
+	}
 }
