@@ -1,7 +1,7 @@
 import { join } from 'path'
 import type { Configuration } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
+import { DIST_DIR, IS_DEV, ROOT_DIR, optimization } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -27,5 +27,6 @@ export default {
 		plugins: [plugins.tsPaths]
 	},
 	plugins: [plugins.limitPlugin, plugins.definePlugin({ server: true })],
-	externals: [nodeExternals(), /app.server.js/]
+	externals: [nodeExternals(), /app.server.js/],
+	optimization: optimization()
 } satisfies Configuration

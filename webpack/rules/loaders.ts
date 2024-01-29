@@ -34,20 +34,6 @@ export const sassLoader = {
 	}
 }
 
-export const swcLoader = {
-	loader: 'swc-loader',
-	options: {
-		jsc: {
-			parser: {
-				syntax: 'typescript',
-				decorators: true
-			},
-			transform: {
-				react: {
-					runtime: 'automatic',
-					importSource: 'react'
-				}
-			}
-		}
-	}
+export const esbuildLoader = {
+	loader: 'esbuild-loader'
 }

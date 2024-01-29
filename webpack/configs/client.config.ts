@@ -1,6 +1,6 @@
 import { join } from 'path'
 import type { Configuration } from 'webpack'
-import { DIST_DIR, IS_DEV, ROOT_DIR, optimization, PUBLIC_PATH } from '../utils'
+import { DIST_DIR, IS_DEV, ROOT_DIR, PUBLIC_PATH, optimization } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -44,5 +44,5 @@ export default {
 		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()
 	].filter(Boolean),
-	optimization
+	optimization: optimization({ client: true })
 } satisfies Configuration
