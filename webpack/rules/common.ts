@@ -1,11 +1,11 @@
-import { babelLoader } from './loaders'
+import { esbuildLoader } from './loaders'
 
 /**
  * @see https://webpack.js.org/guides/typescript/#loader
  */
 export const typescriptRule = {
 	test: /\.tsx?$/,
-	use: [babelLoader],
+	use: [esbuildLoader],
 	exclude: /node_modules/
 }
 
@@ -14,7 +14,7 @@ export const typescriptRule = {
  */
 export const javascriptRule = {
 	test: /\.jsx?$/,
-	use: [babelLoader],
+	use: [esbuildLoader],
 	exclude: /node_modules/
 }
 

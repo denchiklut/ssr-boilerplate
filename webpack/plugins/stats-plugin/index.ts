@@ -1,3 +1,3 @@
 import { StatsPlugin } from './plugin'
 
-export const statsPlugin = new StatsPlugin({ filename: 'loadable-stats.json' })
+export const statsPlugin = new StatsPlugin({ filename: 'assets-stats.json' })

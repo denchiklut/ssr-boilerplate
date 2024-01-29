@@ -8,7 +8,7 @@ import { publicPath, AppProps } from 'src/common'
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (IS_PROD)
 		return {
-			statsFile: resolve(__dirname, '../client/loadable-stats.json'),
+			statsFile: resolve(__dirname, '../client/assets-stats.json'),
 			publicPath: publicPath('/')
 		}
 
