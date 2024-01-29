@@ -20,6 +20,7 @@ const config = {
 		rules: [
 			rules.javascriptRule,
 			rules.typescriptRule,
+			rules.mjsRule,
 			rules.htmlRule,
 			rules.mediasRule,
 			rules.fontsRule,
