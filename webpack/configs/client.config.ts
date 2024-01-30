@@ -1,6 +1,6 @@
 import { join } from 'path'
 import type { Configuration } from 'webpack'
-import { DIST_DIR, IS_DEV, ROOT_DIR, optimization, PUBLIC_PATH } from '../utils'
+import { DIST_DIR, IS_DEV, ROOT_DIR, PUBLIC_PATH, optimization } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -20,6 +20,7 @@ export default {
 		rules: [
 			rules.javascriptRule,
 			rules.typescriptRule,
+			rules.mjsRule,
 			rules.htmlRule,
 			rules.mediasRule,
 			rules.fontsRule,
@@ -39,6 +40,7 @@ export default {
 		plugins.workboxBoxPlugin,
 		plugins.tsChecker,
 		plugins.copyPlugin,
+		plugins.analyzePlugin,
 		plugins.hmr,
 		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()

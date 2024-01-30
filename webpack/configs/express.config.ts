@@ -19,7 +19,7 @@ export default {
 		path: join(DIST_DIR, 'server')
 	},
 	module: {
-		rules: [rules.javascriptRule, rules.typescriptRule]
+		rules: [rules.javascriptRule, rules.typescriptRule, rules.mjsRule]
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
