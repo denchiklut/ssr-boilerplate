@@ -1,22 +1,14 @@
-export type PostsResponse = Array<{ id: number; text: string }>
+interface Post {
+	userId: number
+	id: number
+	title: string
+	body: string
+}
 
-export function fetchPosts(): Promise<PostsResponse> {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			resolve([
-				{
-					id: 0,
-					text: 'I get by with a little help from my friends'
-				},
-				{
-					id: 1,
-					text: "I'd like to be under the sea in an octupus's garden"
-				},
-				{
-					id: 2,
-					text: 'You got that sand all over your feet'
-				}
-			])
-		}, 1100)
-	})
+export type PostsResponse = Array<Post>
+
+export async function fetchPosts(): Promise<PostsResponse> {
+	const res = await fetch('https://jsonplaceholder.typicode.com/posts')
+
+	return await res.json()
 }

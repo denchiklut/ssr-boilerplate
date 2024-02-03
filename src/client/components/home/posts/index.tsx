@@ -1,14 +1,15 @@
-import { useLoaderData } from 'react-router'
-import { PostsResponse } from 'client/api'
+import { fetchPosts } from 'client/api'
+import { useQuery } from '@tanstack/react-query'
 
 export const Posts = () => {
-	const posts = useLoaderData() as PostsResponse
+	const { isLoading, data, error } = useQuery({
+		queryKey: ['posts'],
+		queryFn: fetchPosts
+	})
 
-	return (
-		<ul>
-			{posts.map(post => (
-				<li key={post.id}>{post.text}</li>
-			))}
-		</ul>
-	)
+	if (isLoading) return <div>Loading posts...</div>
+
+	if (error) return <div>Error loading posts: {error.message}</div>
+
+	return <ul>{data?.map(post => <li key={post.id}>{post.title}</li>)}</ul>
 }

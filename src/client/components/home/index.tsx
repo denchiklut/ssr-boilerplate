@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { logger, getENV } from 'src/common'
 import { Posts } from './posts'
 import { State } from './state'
@@ -12,10 +11,7 @@ export const Home = () => {
 		<div className={css.wrapper}>
 			<h3>Home page!</h3>
 			<State />
-
-			<Suspense fallback={<p>fetching posts...</p>}>
-				<Posts />
-			</Suspense>
+			<Posts />
 		</div>
 	)
 }

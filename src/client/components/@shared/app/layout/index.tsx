@@ -2,17 +2,23 @@ import { Suspense } from 'react'
 import { Outlet, ScrollRestoration } from 'react-router-dom'
 import { Loader } from '@shared/loader'
 import { Link } from 'react-router-dom'
+import { HydrationBoundary } from '@tanstack/react-query'
+import { useDehydratedState } from 'use-dehydrated-state'
 
-export const Layout = () => (
-	<>
-		<nav>
-			<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
-		</nav>
+export const Layout = () => {
+	const dehydratedState = useDehydratedState()
 
-		<Suspense fallback={<Loader />}>
-			<Outlet />
-		</Suspense>
+	return (
+		<HydrationBoundary state={dehydratedState}>
+			<nav>
+				<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
+			</nav>
 
-		<ScrollRestoration />
-	</>
-)
+			<Suspense fallback={<Loader />}>
+				<Outlet />
+			</Suspense>
+
+			<ScrollRestoration />
+		</HydrationBoundary>
+	)
+}

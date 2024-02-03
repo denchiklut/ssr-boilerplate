@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom/server'
 import { getApp, getHtml, getStats } from './render.util'
 import { createFetchRequest } from 'server/utils'
-import { basename, logger } from 'src/common'
+import { basename, getQueryClient, logger } from 'src/common'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = async () => {
@@ -20,6 +20,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const { query } = createStaticHandler(routes)
 		const webRequest = createFetchRequest(req)
 		const context = await query(webRequest)
+		const client = getQueryClient()
 
 		if (context instanceof globalThis.Response) {
 			return res.status(context.status).redirect(context.url)
@@ -28,7 +29,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
-			<App>
+			<App client={client}>
 				<StaticRouterProvider
 					router={createStaticRouter(routes, context)}
 					context={context}

@@ -1,10 +1,10 @@
+import type { FC } from 'react'
 import { join, resolve } from 'path'
-import type { FC, ReactNode } from 'react'
 import type { RouteObject } from 'react-router-dom'
+import requireFromString from 'require-from-string'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractor, ChunkExtractorOptions } from '@loadable/server'
-import requireFromString from 'require-from-string'
-import { getENV, setEnvVars, basePath, publicPath } from 'src/common'
+import { getENV, setEnvVars, basePath, publicPath, type AppProps } from 'src/common'
 
 export const getHtml = (reactHtml: string, chunkExtractor: ChunkExtractor) => {
 	const appVersion = getENV('APP_VERSION')
@@ -54,9 +54,7 @@ export const getManifest = (nonce?: string) => {
 	return `<link nonce='${nonce}' rel='manifest' href='${basePath('manifest.json')}' />`
 }
 
-export const getApp = (
-	res: ServerResponse
-): { App: FC<{ children: ReactNode }>; routes: RouteObject[] } => {
+export const getApp = (res: ServerResponse): { App: FC<AppProps>; routes: RouteObject[] } => {
 	if (IS_PROD) return require('../client/js/app.server.js')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
