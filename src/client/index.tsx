@@ -5,7 +5,7 @@ import { bootstrap } from 'client/utils'
 import { basename } from 'src/common'
 
 const AppContainer = () => (
-	<App>
+	<App nonce={window.nonce}>
 		<RouterProvider
 			router={createBrowserRouter(routes, { basename })}
 			fallbackElement={<Loader />}

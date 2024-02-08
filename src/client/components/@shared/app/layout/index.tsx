@@ -1,18 +1,23 @@
 import { Suspense } from 'react'
 import { Outlet, ScrollRestoration } from 'react-router-dom'
-import { Loader } from '@shared/loader'
 import { Link } from 'react-router-dom'
+import { Loader } from '@shared/loader'
+import { useLayout } from './layout.hook'
 
-export const Layout = () => (
-	<>
-		<nav>
-			<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
-		</nav>
+export const Layout = () => {
+	useLayout()
 
-		<Suspense fallback={<Loader />}>
-			<Outlet />
-		</Suspense>
+	return (
+		<>
+			<nav>
+				<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
+			</nav>
 
-		<ScrollRestoration />
-	</>
-)
+			<Suspense fallback={<Loader />}>
+				<Outlet />
+			</Suspense>
+
+			<ScrollRestoration />
+		</>
+	)
+}

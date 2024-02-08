@@ -1,12 +1,8 @@
-import type { FC, ReactNode } from 'react'
-import { getENV } from 'src/common'
-import { usePWA } from 'client/utils'
+import type { FC } from 'react'
+import { getENV, type AppProps } from 'src/common'
 
-interface Props {
-	children: ReactNode
-}
-export const App: FC<Props> = ({ children }) => {
-	usePWA()
+export const App: FC<AppProps> = ({ children, nonce }) => {
+	__webpack_nonce__ = nonce
 	__webpack_public_path__ = getENV('PUBLIC_PATH')
 
 	return <>{children}</>

@@ -15,6 +15,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const start = performance.now()
 		logger.debug('render middleware start')
 
+		const { nonce } = req
 		const chunkExtractor = new ChunkExtractor(getStats(res))
 		const { App, routes } = getApp(res)
 		const { query } = createStaticHandler(routes)
@@ -28,7 +29,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
-			<App>
+			<App nonce={nonce}>
 				<StaticRouterProvider
 					router={createStaticRouter(routes, context)}
 					context={context}
@@ -39,7 +40,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const reactHtml = renderToString(jsx)
 		logger.debug('render middleware in %d ms', Math.round(performance.now() - start))
 
-		res.status(200).send(getHtml(reactHtml, chunkExtractor))
+		res.status(200).send(getHtml({ nonce, reactHtml, chunkExtractor }))
 	}
 
 	next()
