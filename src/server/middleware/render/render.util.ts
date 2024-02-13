@@ -7,7 +7,12 @@ import type { ChunkExtractorOptions } from '@loadable/server'
 import { getENV, setEnvVars, basePath, publicPath, type AppProps } from 'src/common'
 import type { Options } from './render.types'
 
-export const getHtml = ({ reactHtml, chunkExtractor, nonce }: Options) => {
+export const getHtml = ({
+	nonce,
+	reactHtml,
+	chunkExtractor,
+	helmet: { title, meta, link }
+}: Options) => {
 	const appVersion = getENV('APP_VERSION')
 	const scriptTags = chunkExtractor.getScriptTags({ nonce })
 	const linkTags = chunkExtractor.getLinkTags({ nonce })
@@ -18,16 +23,18 @@ export const getHtml = ({ reactHtml, chunkExtractor, nonce }: Options) => {
 <html lang='en'>
     <head>
         <meta charset='UTF-8'>
-        <title>SSR app</title>
         <meta name='data-app-version' content='${appVersion}'>
         <link rel='icon' type='image/x-icon' href='${publicPath('icons/favicon.ico')}'>
         <link rel='apple-touch-icon' href='${publicPath('icons/maskable.png')}'>
         <meta content='width=device-width, initial-scale=1' name='viewport' />
         <meta name='theme-color' content='#efefef'>
         ${getManifest(nonce)}
+        ${meta.toString()}
+        ${title.toString()}
+        ${setEnvVars(nonce)}
+        ${link.toString()}
         ${linkTags}
         ${styleTags}
-        ${setEnvVars(nonce)}
     </head>
     <body>
         <div id='root'>${reactHtml}</div>

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
+import type { HelmetServerState } from 'react-helmet-async'
 
 export interface AppProps {
-	children: ReactNode
 	nonce: string
+	children: ReactNode
+	helmetContext?: { helmet?: HelmetServerState }
 }

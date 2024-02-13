@@ -1,5 +1,6 @@
 import { ChunkExtractor } from '@loadable/server'
 import { renderToString } from 'react-dom/server'
+import type { HelmetServerState } from 'react-helmet-async'
 import type { NextFunction, Request, Response } from 'express'
 import {
 	createStaticRouter,
@@ -21,6 +22,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const { query } = createStaticHandler(routes)
 		const webRequest = createFetchRequest(req)
 		const context = await query(webRequest)
+		const helmetContext = { helmet: {} as HelmetServerState }
 
 		if (context instanceof globalThis.Response) {
 			return res.status(context.status).redirect(context.url)
@@ -29,7 +31,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
-			<App nonce={nonce}>
+			<App nonce={nonce} helmetContext={helmetContext}>
 				<StaticRouterProvider
 					router={createStaticRouter(routes, context)}
 					context={context}
@@ -38,9 +40,18 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		)
 
 		const reactHtml = renderToString(jsx)
+		const { helmet } = helmetContext
+
 		logger.debug('render middleware in %d ms', Math.round(performance.now() - start))
 
-		res.status(200).send(getHtml({ nonce, reactHtml, chunkExtractor }))
+		res.status(200).send(
+			getHtml({
+				nonce,
+				reactHtml,
+				chunkExtractor,
+				helmet
+			})
+		)
 	}
 
 	next()
