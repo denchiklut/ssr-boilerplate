@@ -1,17 +1,17 @@
-import type { ZodType, TypeOf } from 'zod'
+import type { AnySchema, InferType } from 'yup'
 
-export const decode = <S extends ZodType>(schema: S, data: Record<string, string | undefined>) => {
-	function getDecoder(variable?: never, initial?: never): TypeOf<S>
-	function getDecoder<T extends keyof TypeOf<S>>(variable: T, initial?: never): TypeOf<S>[T]
-	function getDecoder<T extends keyof TypeOf<S>>(
+export const decode = <S extends AnySchema>(schema: S, data: Collection<string, unknown>) => {
+	function getDecoder(variable?: never, initial?: never): InferType<S>
+	function getDecoder<T extends keyof InferType<S>>(variable: T, initial?: never): InferType<S>[T]
+	function getDecoder<T extends keyof InferType<S>>(
 		variable: T,
-		initial: NonNullable<TypeOf<S>[T]>
-	): NonNullable<TypeOf<S>[T]>
-	function getDecoder<T extends keyof TypeOf<S>>(
+		initial: NonNullable<InferType<S>[T]>
+	): NonNullable<InferType<S>[T]>
+	function getDecoder<T extends keyof InferType<S>>(
 		variable: T,
-		initial: TypeOf<S>[T]
-	): TypeOf<S>[T] {
-		const source = schema.parse(data)
+		initial: InferType<S>[T]
+	): InferType<S>[T] {
+		const source = schema.validateSync(data)
 		if (!variable) return source
 
 		return source[variable] ?? initial

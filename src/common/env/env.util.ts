@@ -1,14 +1,16 @@
 import { decode } from '../decoder'
-import { z, type TypeOf } from 'zod'
+import { string, mixed, object, type InferType } from 'yup'
 
-const envSchema = z.object({
-	HOST: z.string().url().default('http://localhost:3000'),
-	PUBLIC_PATH: z.string().default('/'),
-	APP_VERSION: z.string().default('0.0.0'),
-	NODE_ENV: z.enum(['production', 'development']).default('development')
+const envSchema = object({
+	HOST: string().default('http://localhost:3000'),
+	PUBLIC_PATH: string().default('/'),
+	APP_VERSION: string().default('0.0.0'),
+	NODE_ENV: mixed<'production' | 'development' | 'test'>()
+		.oneOf(['production', 'development', 'test'])
+		.default('development')
 })
 
-export type Env = TypeOf<typeof envSchema>
+export type Env = InferType<typeof envSchema>
 
 export const getENV = decode(envSchema, IS_SERVER || IS_SPA ? process.env : window.env_vars)
 
