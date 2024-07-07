@@ -1,8 +1,8 @@
-import { fetchSomeData } from './posts.api'
+import { use } from 'react'
+import { fetchPosts } from './posts.api'
 
-const resource = fetchSomeData()
 export const Posts = () => {
-	const posts = resource.read()
+	const posts = use(fetchPosts())
 
 	return (
 		<ul>

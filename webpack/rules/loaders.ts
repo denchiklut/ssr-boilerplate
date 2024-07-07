@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import { SRC_DIR } from '../utils'
+import { SRC_DIR, IS_DEV } from '../utils'
 
 export const cssLoader = {
 	loader: 'css-loader'
@@ -34,6 +34,9 @@ export const sassLoader = {
 	}
 }
 
-export const esbuildLoader = {
-	loader: 'esbuild-loader'
+export const babelLoader = {
+	loader: 'babel-loader',
+	options: {
+		cacheDirectory: IS_DEV
+	}
 }

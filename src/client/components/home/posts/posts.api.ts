@@ -1,10 +1,4 @@
-import { wrapPromise } from 'utils/suspense.util'
-
-export function fetchSomeData() {
-	return wrapPromise(fetchPosts())
-}
-
-function fetchPosts(): Promise<Array<{ id: number; text: string }>> {
+export function fetchPosts(): Promise<Array<{ id: number; text: string }>> {
 	return new Promise(resolve => {
 		setTimeout(() => {
 			resolve([

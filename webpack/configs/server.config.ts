@@ -42,5 +42,5 @@ export default {
 		plugins.definePlugin({ server: true })
 	],
 	externals: [nodeExternals()],
-	optimization: optimization()
+	optimization: optimization
 } satisfies Configuration

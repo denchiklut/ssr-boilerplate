@@ -1,4 +1,4 @@
-import { esbuildLoader } from './loaders'
+import { babelLoader } from './loaders'
 
 /**
  * Using @svgr/webpack for handling svg files in react components
@@ -8,7 +8,7 @@ export const svgReactComponentRule = {
 	test: /\.icon.svg$/,
 	issuer: /\.[jt]sx$/,
 	use: [
-		esbuildLoader,
+		babelLoader,
 		{
 			loader: '@svgr/webpack',
 			options: { babel: false }

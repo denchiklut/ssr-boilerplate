@@ -1,0 +1,31 @@
+name: Setup
+description: Install dependencies
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Download yarn cache
+      uses: actions/cache@v3
+      id: yarn-cache
+      with:
+        path: | 
+          node_modules
+          ~/.cache/Cypress
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-modules-
+
+    - name: Install Dependencies
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile
+      shell: bash

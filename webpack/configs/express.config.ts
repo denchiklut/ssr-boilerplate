@@ -28,5 +28,5 @@ export default {
 	},
 	plugins: [plugins.limitPlugin, plugins.definePlugin({ server: true })],
 	externals: [nodeExternals(), /app.server.js/],
-	optimization: optimization()
+	optimization: optimization
 } satisfies Configuration
