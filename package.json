@@ -113,7 +113,6 @@
 		"sass-loader": "^14.2.1",
 		"serve-favicon": "^2.5.0",
 		"stylelint": "^16.6.1",
-		"stylelint-config-prettier": "^9.0.5",
 		"stylelint-config-standard-scss": "^13.1.0",
 		"stylelint-order": "^6.0.4",
 		"ts-jest": "^29.1.5",
