@@ -10,6 +10,7 @@
 	"plugins": [
 		"@loadable/babel-plugin",
 		["@babel/plugin-proposal-decorators", { "version": "legacy"}],
+		["babel-plugin-react-compiler", { "compilationMode": "annotation" }],
 		"@babel/plugin-transform-runtime"
 	]
 }
