@@ -16,6 +16,7 @@ export default {
 		'^pages/(.*)$': '<rootDir>/src/client/pages/$1',
 		'^utils/(.*)$': '<rootDir>/src/client/utils/$1',
 		'^assets/(.*)$': '<rootDir>/src/client/assets/$1',
+		'/config/react-forget$': '<rootDir>/config/react-forget',
 		'\\.(icon|image).(svg)$': '<rootDir>/config/spec/svgr.ts',
 		'\\.(css|scss)$': 'identity-obj-proxy'
 	}

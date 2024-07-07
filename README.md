@@ -13,6 +13,7 @@ If you are looking for **renderToPipeableStream** setup switch to the [feat/pipa
 -   [x] `SPA` mode
 -   [x] `Polyfills`
 -   [x] `PWA`
+-   [x] React forget
 -   [x] local `https`
 -   [x] `PipeableStream` support
 
