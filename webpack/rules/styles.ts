@@ -9,6 +9,7 @@ export const cssRule = {
 			...cssLoader,
 			options: {
 				modules: {
+					namedExport: false,
 					exportLocalsConvention: 'camelCaseOnly',
 					localIdentName: '[local]__[contenthash:base64:5]'
 				}
