@@ -1,35 +1,48 @@
-import { z, type TypeOf } from 'zod'
-import { createEnv } from './create-env'
-import { getOrDefault } from './get.util'
+import type { TypeOf, ZodObject, ZodRawShape } from 'zod'
 
-if (IS_SERVER) require('dotenv/config')
+interface Props<T extends ZodRawShape> {
+	schema: ZodObject<T>
+	envs: Partial<Record<keyof TypeOf<ZodObject<T>>, unknown>>
+	clientPrefix?: string
+}
+export function createEnv<S extends ZodRawShape>({
+	schema,
+	envs,
+	clientPrefix = 'CLIENT_'
+}: Props<S>) {
+	const client = schema.pick(
+		Object.keys(schema.shape)
+			.filter(k => k.startsWith(clientPrefix))
+			.reduce((acc, key) => {
+				const res = acc as Collection<string, boolean>
+				res[key] = true
 
-const envSchema = z.object({
-	CLIENT_HOST: z.string().url().default('http://localhost:3000'),
-	CLIENT_PUBLIC_PATH: z.string().default('/'),
-	APP_VERSION: z.string().default('0.0.0'),
-	NODE_ENV: z.enum(['production', 'development', 'test']).default('development')
-})
+				return res
+			}, {})
+	)
 
-export type Env = TypeOf<typeof envSchema>
+	const { success, data, error } = (IS_SERVER ? schema : client).safeParse(envs)
 
-export const getENV = getOrDefault(
-	createEnv({
-		clientPrefix,
-		schema: envSchema,
-		envs: IS_SERVER ? process.env : window.env_vars
-	})
-)
+	if (!success) {
+		console.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
+		throw new Error('Invalid environment variables')
+	}
 
-export const setEnvVars = () => {
-	const env = getENV()
+	return new Proxy(data, {
+		get(target, prop, receiver) {
+			if (typeof prop !== 'string') return undefined
 
-	const clientEnv = Object.entries(env)
-		.filter(([k]) => k.startsWith(clientPrefix))
-		.reduce<Collection<string, unknown>>((res, [k, v]) => {
-			res[k] = v
-			return res
-		}, {})
+			if (
+				!IS_SERVER &&
+				(!clientPrefix || !prop.startsWith(clientPrefix)) &&
+				!['toJSON', 'toString'].includes(prop)
+			) {
+				throw new Error(
+					`❌ Attempted to access a server-side environment variable "${prop}" on the client`
+				)
+			}
 
-	return `window.env_vars = Object.freeze(${JSON.stringify(clientEnv)})`
+			return Reflect.get(target, prop, receiver)
+		}
+	}) as TypeOf<ZodObject<S>>
 }

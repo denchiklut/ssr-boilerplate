@@ -15,7 +15,7 @@
 		"prod:start": "cross-env NODE_ENV=production node dist/server",
 		"spa": "webpack serve --node-env development -c webpack/configs/spa.config.ts",
 		"test": "jest --coverage --coverage-reporters=lcov",
-		"postinstall": "husky install",
+		"postinstall": "husky",
 		"prettier": "prettier --write \"src/**/*.{ts,tsx,html,css,scss}\"",
 		"lint": "run-p lint:**",
 		"lint:script": "eslint --fix --cache --quiet ./",

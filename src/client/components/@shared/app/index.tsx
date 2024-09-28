@@ -10,7 +10,7 @@ const NotFound = lazy(() => import('pages/not-found'))
 
 export const App: FC<AppProps> = ({ nonce }) => {
 	__webpack_nonce__ = nonce
-	__webpack_public_path__ = getENV('PUBLIC_PATH')
+	__webpack_public_path__ = getENV('CLIENT_PUBLIC_PATH')
 
 	return (
 		<Html nonce={nonce}>

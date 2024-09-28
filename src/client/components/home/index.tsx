@@ -5,7 +5,7 @@ import { State } from './state'
 import css from './styles.scss'
 
 export const Home = () => {
-	const host = getENV('PUBLIC_HOST')
+	const host = getENV('CLIENT_HOST')
 	logger.info('Env host: %s', host)
 
 	return (
