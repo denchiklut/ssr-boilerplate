@@ -5,6 +5,7 @@ declare global {
 	declare const IS_PROD: boolean
 	declare const IS_SERVER: boolean
 	declare const IS_SPA: boolean
+	declare const clientPrefix: string
 
 	namespace NodeJS {
 		interface ProcessEnv extends Partial<Collection<keyof Env, string>> {}
@@ -17,5 +18,6 @@ declare global {
 		IS_PROD: boolean
 
 		env_vars: Partial<Collection<keyof Env, string>>
+		clientPrefix: string
 	}
 }
