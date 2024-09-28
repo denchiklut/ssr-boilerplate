@@ -12,7 +12,7 @@ runs:
     - name: Setup node
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: lts/*
 
     - name: Download yarn cache
       uses: actions/cache@v3
