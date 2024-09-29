@@ -1,21 +1,30 @@
-import type { ObjectSchema, InferType, AnyObject } from 'yup'
-import { parse } from './parse.util'
+import type { TypeOf, ZodObject, ZodRawShape } from 'zod'
 
-interface Props<T extends AnyObject> {
-	schema: ObjectSchema<T>
-	envs: Partial<Record<keyof InferType<ObjectSchema<T>>, unknown>>
+interface Props<T extends ZodRawShape> {
+	schema: ZodObject<T>
+	envs: Partial<Record<keyof TypeOf<ZodObject<T>>, unknown>>
 	clientPrefix?: string
 }
-export function createEnv<S extends AnyObject>({
+export function createEnv<S extends ZodRawShape>({
 	schema,
 	envs,
 	clientPrefix = 'CLIENT_'
 }: Props<S>) {
-	const client = schema.pick(Object.keys(schema.shape).filter(k => k.startsWith(clientPrefix)))
-	const { data, error } = parse((IS_SERVER || IS_SPA ? schema : client) as ObjectSchema<S>, envs)
+	const client = schema.pick(
+		Object.keys(schema.shape)
+			.filter(k => k.startsWith(clientPrefix))
+			.reduce((acc, key) => {
+				const res = acc as Collection<string, boolean>
+				res[key] = true
 
-	if (error) {
-		console.error('❌ Invalid environment variables:', error.errors)
+				return res
+			}, {})
+	)
+
+	const { success, data, error } = (IS_SERVER || IS_SPA ? schema : client).safeParse(envs)
+
+	if (!success) {
+		console.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
 		throw new Error('Invalid environment variables')
 	}
 
@@ -35,5 +44,5 @@ export function createEnv<S extends AnyObject>({
 
 			return Reflect.get(target, prop, receiver)
 		}
-	}) as InferType<ObjectSchema<S>>
+	}) as TypeOf<ZodObject<S>>
 }
