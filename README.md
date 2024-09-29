@@ -39,7 +39,7 @@ If you need to use https, follow these steps:
 
 1. in `setup.sh` change the `domain` variable to your domain
 2. run the command `yarn setup`
-3. finally add your HOST variable to .env file as `https://<YOUR-domain>:PORT`
+3. finally add your CLIENT_HOST variable to .env file as `https://<YOUR-domain>:PORT`
 
 ### Step 2. Environment variables
 

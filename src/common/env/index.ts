@@ -1,17 +1,21 @@
-import { z, type TypeOf } from 'zod'
+import { string, mixed, object, type InferType } from 'yup'
 import { getOrDefault } from './get.util'
 import { createEnv } from './env.util'
 
 if (IS_SERVER) require('dotenv/config')
 
-const envSchema = z.object({
-	CLIENT_HOST: z.string().url().default('http://localhost:3000'),
-	CLIENT_PUBLIC_PATH: z.string().default('/'),
-	APP_VERSION: z.string().default('0.0.0'),
-	NODE_ENV: z.enum(['production', 'development', 'test']).default('development')
+// you can find implementation for a `zod` library
+// in the `main` git branch
+const envSchema = object({
+	CLIENT_HOST: string().default('http://localhost:3000'),
+	CLIENT_PUBLIC_PATH: string().default('0.0.0'),
+	APP_VERSION: string().default('0.0.0'),
+	NODE_ENV: mixed<'production' | 'development' | 'test'>()
+		.oneOf(['production', 'development', 'test'])
+		.default('development')
 })
 
-export type Env = TypeOf<typeof envSchema>
+export type Env = InferType<typeof envSchema>
 
 export const getENV = getOrDefault(
 	createEnv({
