@@ -1,5 +1,6 @@
 import type { ObjectSchema, InferType, AnyObject } from 'yup'
 import { parse } from './parse.util'
+import { logger } from '../logger'
 
 interface Props<T extends AnyObject> {
 	schema: ObjectSchema<T>
@@ -12,10 +13,10 @@ export function createEnv<S extends AnyObject>({
 	clientPrefix = 'CLIENT_'
 }: Props<S>) {
 	const client = schema.pick(Object.keys(schema.shape).filter(k => k.startsWith(clientPrefix)))
-	const { data, error } = parse((IS_SERVER || IS_SPA ? schema : client) as ObjectSchema<S>, envs)
+	const { data, error } = parse((IS_SERVER ? schema : client) as ObjectSchema<S>, envs)
 
 	if (error) {
-		console.error('❌ Invalid environment variables:', error.errors)
+		logger.error('❌ Invalid environment variables:', error.errors)
 		throw new Error('Invalid environment variables')
 	}
 
