@@ -1,5 +1,5 @@
 import { useLoaderData } from 'react-router'
-import { PostsResponse } from 'client/api'
+import type { PostsResponse } from 'client/api'
 
 export const Posts = () => {
 	const posts = useLoaderData() as PostsResponse

@@ -5,8 +5,8 @@ window.IS_DEV = false
 window.IS_SPA = true
 window.clientPrefix = 'PUBLIC_'
 
-jest.mock('src/common/env/create-env', () => ({
-	...jest.requireActual('src/common/env/create-env'),
+jest.mock('src/common/env/env.util', () => ({
+	...jest.requireActual('src/common/env/env.util'),
 	createEnv: jest.fn(() => ({
 		CLIENT_HOST: 'http://localhost:3000',
 		CLIENT_PUBLIC_PATH: '/',

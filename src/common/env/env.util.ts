@@ -1,35 +1,39 @@
-import { string, mixed, object, type InferType } from 'yup'
-import { getOrDefault } from './get.util'
-import { createEnv } from './create-env'
+import type { ObjectSchema, InferType, AnyObject } from 'yup'
+import { parse } from './parse.util'
 
-if (IS_SERVER) require('dotenv/config')
+interface Props<T extends AnyObject> {
+	schema: ObjectSchema<T>
+	envs: Partial<Record<keyof InferType<ObjectSchema<T>>, unknown>>
+	clientPrefix?: string
+}
+export function createEnv<S extends AnyObject>({
+	schema,
+	envs,
+	clientPrefix = 'CLIENT_'
+}: Props<S>) {
+	const client = schema.pick(Object.keys(schema.shape).filter(k => k.startsWith(clientPrefix)))
+	const { data, error } = parse((IS_SERVER ? schema : client) as ObjectSchema<S>, envs)
 
-const envSchema = object({
-	CLIENT_HOST: string().default('http://localhost:3000'),
-	CLIENT_PUBLIC_PATH: string().default('0.0.0'),
-	APP_VERSION: string().default('0.0.0'),
-	NODE_ENV: mixed<'production' | 'development' | 'test'>()
-		.oneOf(['production', 'development', 'test'])
-		.default('development')
-})
+	if (error) {
+		console.error('❌ Invalid environment variables:', error.errors)
+		throw new Error('Invalid environment variables')
+	}
 
-export type Env = InferType<typeof envSchema>
+	return new Proxy(data, {
+		get(target, prop, receiver) {
+			if (typeof prop !== 'string') return undefined
 
-export const getENV = getOrDefault(
-	createEnv({
-		clientPrefix,
-		schema: envSchema,
-		envs: IS_SERVER ? process.env : window.env_vars
-	})
-)
+			if (
+				!IS_SERVER &&
+				(!clientPrefix || !prop.startsWith(clientPrefix)) &&
+				!['toJSON', 'toString'].includes(prop)
+			) {
+				throw new Error(
+					`❌ Attempted to access a server-side environment variable "${prop}" on the client`
+				)
+			}
 
-export const setEnvVars = (nonce: string) => {
-	const clientEnv = Object.entries(getENV())
-		.filter(([k]) => k.startsWith(clientPrefix))
-		.reduce<Collection<string, unknown>>((res, [k, v]) => {
-			res[k] = v
-			return res
-		}, {})
-
-	return `<script nonce='${nonce}'>window.env_vars = Object.freeze(${JSON.stringify(clientEnv)})</script>`
+			return Reflect.get(target, prop, receiver)
+		}
+	}) as InferType<ObjectSchema<S>>
 }
