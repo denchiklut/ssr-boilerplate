@@ -4,9 +4,11 @@ on:
     push:
         branches:
             - main
+            - feat/pipable-stream
     pull_request:
         branches:
             - main
+            - feat/pipable-stream
 
 jobs:
     yarn:
