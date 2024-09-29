@@ -1,4 +1,5 @@
 import type { TypeOf, ZodObject, ZodRawShape } from 'zod'
+import { logger } from '../logger'
 
 interface Props<T extends ZodRawShape> {
 	schema: ZodObject<T>
@@ -21,10 +22,10 @@ export function createEnv<S extends ZodRawShape>({
 			}, {})
 	)
 
-	const { success, data, error } = (IS_SERVER || IS_SPA ? schema : client).safeParse(envs)
+	const { success, data, error } = (IS_SERVER ? schema : client).safeParse(envs)
 
 	if (!success) {
-		console.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
+		logger.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
 		throw new Error('Invalid environment variables')
 	}
 
