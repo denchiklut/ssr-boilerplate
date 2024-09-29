@@ -1,26 +1,48 @@
-import { decoder } from '../decoder'
-import { z, type TypeOf } from 'zod'
+import type { TypeOf, ZodObject, ZodRawShape } from 'zod'
 
-const envSchema = z.object({
-	HOST: z.string().url().default('http://localhost:3000'),
-	PUBLIC_PATH: z.string().default('/'),
-	DEBUG: z.string().optional(),
-	APP_VERSION: z.string().default('0.0.0'),
-	NODE_ENV: z.enum(['production', 'development']).default('development')
-})
+interface Props<T extends ZodRawShape> {
+	schema: ZodObject<T>
+	envs: Partial<Record<keyof TypeOf<ZodObject<T>>, unknown>>
+	clientPrefix?: string
+}
+export function createEnv<S extends ZodRawShape>({
+	schema,
+	envs,
+	clientPrefix = 'CLIENT_'
+}: Props<S>) {
+	const client = schema.pick(
+		Object.keys(schema.shape)
+			.filter(k => k.startsWith(clientPrefix))
+			.reduce((acc, key) => {
+				const res = acc as Collection<string, boolean>
+				res[key] = true
 
-export type Env = TypeOf<typeof envSchema>
+				return res
+			}, {})
+	)
 
-export const getENV = decoder(envSchema, IS_SERVER || IS_SPA ? process.env : window.env_vars)
+	const { success, data, error } = (IS_SERVER || IS_SPA ? schema : client).safeParse(envs)
 
-export const setEnvVars = (nonce = '') => {
-	const { PUBLIC_PATH, HOST, DEBUG, APP_VERSION, NODE_ENV } = getENV()
+	if (!success) {
+		console.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
+		throw new Error('Invalid environment variables')
+	}
 
-	return `<script nonce='${nonce}'>window.env_vars = Object.freeze(${JSON.stringify({
-		HOST,
-		DEBUG,
-		PUBLIC_PATH,
-		APP_VERSION,
-		NODE_ENV
-	})})</script>`
+	return new Proxy(data, {
+		get(target, prop, receiver) {
+			if (typeof prop !== 'string') return undefined
+
+			if (
+				!IS_SERVER &&
+				(!clientPrefix || !prop.startsWith(clientPrefix)) &&
+				!['toJSON', 'toString'].includes(prop)
+			) {
+				throw new Error(
+					`❌ Attempted to access a server-side environment variable "${prop}" on the client`
+				)
+			}
+
+			return Reflect.get(target, prop, receiver)
+		}
+	}) as TypeOf<ZodObject<S>>
 }

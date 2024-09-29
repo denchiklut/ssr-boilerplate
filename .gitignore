@@ -4,8 +4,6 @@ dist
 certs
 coverage
 node_modules
-yarn.lock
-bun.lockb
 
 .env
 .DS_Store

@@ -11,7 +11,6 @@ export type PostsResponse = Array<Post>
 
 export async function fetchPosts(): Promise<PostsResponse> {
 	const res = await fetch('https://jsonplaceholder.typicode.com/posts')
-
 	return await res.json()
 }
 
@@ -21,9 +20,5 @@ export const usePosts = () => {
 		queryFn: fetchPosts
 	})
 
-	return {
-		isLoading,
-		data,
-		error
-	}
+	return { isLoading, data, error }
 }

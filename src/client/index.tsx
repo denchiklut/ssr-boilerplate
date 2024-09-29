@@ -8,7 +8,7 @@ const AppContainer = () => {
 	const client = getQueryClient()
 
 	return (
-		<App client={client}>
+		<App nonce={window.nonce} client={client}>
 			<RouterProvider
 				router={createBrowserRouter(routes, { basename })}
 				fallbackElement={<Loader />}

@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import { IS_DEV } from '../utils'
 
 /**
  * You can set `async` prop. If true, reports issues after webpack's compilation is done.
@@ -9,6 +10,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
  */
 export const tsChecker = new ForkTsCheckerWebpackPlugin({
 	devServer: false,
+	async: IS_DEV,
 	typescript: {
 		configFile: resolve('tsconfig.json'),
 		diagnosticOptions: {

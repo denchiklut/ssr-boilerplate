@@ -29,7 +29,7 @@ export const sassLoader = {
 	loader: 'sass-loader',
 	options: {
 		sassOptions: {
-			includePaths: [resolve(SRC_DIR, 'client/styles')]
+			loadPaths: [resolve(SRC_DIR, 'client/styles')]
 		}
 	}
 }
