@@ -31,7 +31,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
-			<App nonce={nonce} helmetContext={helmetContext}>
+			<App nonce={nonce} cookies={req.universalCookies} helmetContext={helmetContext}>
 				<StaticRouterProvider
 					router={createStaticRouter(routes, context)}
 					context={context}

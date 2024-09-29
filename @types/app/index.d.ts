@@ -1,19 +1,18 @@
-/**
- *  If you have `imports/exports` statements
- *  You need put `Window` & `Express` declarations into `declare global {}`
- *  @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html
- */
+import type Cookies from "universal-cookie"
 
-interface Window {
-	nonce: string
-}
-
-namespace Express {
-	interface Response {
-		renderApp(): Promise<void>
+declare global {
+	interface Window {
+		nonce: string
 	}
 
-	interface Request {
-		nonce: string
+	namespace Express {
+		interface Response {
+			renderApp(): Promise<void>
+		}
+
+		interface Request {
+			nonce: string
+			universalCookies: Cookies
+		}
 	}
 }
