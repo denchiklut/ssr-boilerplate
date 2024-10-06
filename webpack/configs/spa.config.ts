@@ -4,7 +4,7 @@ import { DIST_DIR, ROOT_DIR, devServerConfig } from '../utils'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-const config = {
+export default {
 	name: 'spa',
 	target: 'web',
 	devtool: 'eval-cheap-module-source-map',
@@ -43,5 +43,3 @@ const config = {
 		...plugins.htmlWebpackPlugin({ spa: true })
 	].filter(Boolean)
 } as Configuration
-
-export default config
