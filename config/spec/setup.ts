@@ -1,11 +1,9 @@
 import '@testing-library/jest-dom'
 
-declare const global: Window
-
-global.IS_SERVER = false
-global.IS_DEV = false
-global.IS_SPA = true
-global.clientPrefix = 'PUBLIC_'
+globalThis.IS_SERVER = false
+globalThis.IS_DEV = false
+globalThis.IS_SPA = true
+globalThis.clientPrefix = 'CLIENT_'
 
 jest.mock('src/common/env/env.util', () => ({
 	...jest.requireActual('src/common/env/env.util'),

@@ -25,7 +25,7 @@ export function createEnv<S extends ZodRawShape>({
 	const { success, data, error } = (IS_SERVER ? schema : client).safeParse(envs)
 
 	if (!success) {
-		logger.error('❌ Invalid environment variables:', error.flatten().fieldErrors)
+		logger.error('❌ Invalid environment variables: %o', error.flatten().fieldErrors)
 		throw new Error('Invalid environment variables')
 	}
 
