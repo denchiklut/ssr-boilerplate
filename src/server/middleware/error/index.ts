@@ -1,5 +1,4 @@
 import type { ErrorRequestHandler } from 'express'
-
 import { logger } from 'src/common'
 
 export const error: ErrorRequestHandler = (error, _, res, __) => {
