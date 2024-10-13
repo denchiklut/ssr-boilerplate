@@ -1,6 +1,6 @@
 import { join } from 'path'
 import { existsSync, readFileSync } from 'fs'
-import { ROOT_DIR } from './env'
+import { ROOT_DIR } from '../env'
 import { safeUrl } from './url'
 
 const sslKeyPath = join(ROOT_DIR, 'certs/key.pem')
