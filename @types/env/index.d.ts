@@ -12,7 +12,6 @@ declare global {
 	}
 
 	interface Window {
-		nonce: string
 		env_vars: Partial<Collection<keyof Env, string>>
 	}
 }

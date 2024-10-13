@@ -15,7 +15,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url} basename={basename}>
-				<App nonce={nonce} />
+				<App nonce={nonce} cookies={req.universalCookies} />
 			</StaticRouter>,
 			{
 				nonce,

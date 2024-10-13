@@ -1,14 +1,18 @@
-import { use } from 'react'
+import { use, useState } from 'react'
 import { fetchPosts } from './posts.api'
 
 export const Posts = () => {
-	const posts = use(fetchPosts())
+	const [promise] = useState(() => fetchPosts())
+	const posts = use(promise)
 
 	return (
-		<ul>
-			{posts.map(post => (
-				<li key={post.id}>{post.text}</li>
-			))}
-		</ul>
+		<div>
+			<b>Data fetching demo</b>
+			<ul>
+				{posts.map(post => (
+					<li key={post.id}>{post.text}</li>
+				))}
+			</ul>
+		</div>
 	)
 }
