@@ -1,3 +1,3 @@
 export * from './env'
-export * from './devServer'
+export * from './dev-server'
 export * from './optimization'

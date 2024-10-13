@@ -45,5 +45,5 @@ export default {
 		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()
 	].filter(Boolean),
-	optimization: optimization
+	optimization
 } satisfies Configuration

@@ -16,7 +16,7 @@ export function createEnv<S extends AnyObject>({
 	const { data, error } = parse((IS_SERVER ? schema : client) as ObjectSchema<S>, envs)
 
 	if (error) {
-		logger.error('❌ Invalid environment variables:', error.errors)
+		logger.error('❌ Invalid environment variables: %o', error.errors)
 		throw new Error('Invalid environment variables')
 	}
 

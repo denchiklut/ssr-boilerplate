@@ -1,24 +1,18 @@
 import type { Env } from "src/common"
 
 declare global {
-	declare const IS_DEV: boolean
-	declare const IS_PROD: boolean
-	declare const IS_SERVER: boolean
-	declare const IS_SPA: boolean
-	declare const clientPrefix: string
+	declare var IS_DEV: boolean
+	declare var IS_PROD: boolean
+	declare var IS_SERVER: boolean
+	declare var IS_SPA: boolean
+	declare var clientPrefix: string
 
 	namespace NodeJS {
 		interface ProcessEnv extends Partial<Collection<keyof Env, string>> {}
 	}
 
 	interface Window {
-		IS_SPA: boolean
-		IS_SERVER: boolean
-		IS_DEV: boolean
-		IS_PROD: boolean
-
-		env_vars: Partial<Collection<keyof Env, string>>
-		clientPrefix: string
 		nonce: string
+		env_vars: Partial<Collection<keyof Env, string>>
 	}
 }

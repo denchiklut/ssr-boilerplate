@@ -1,7 +1,7 @@
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
 import { StaticRouter } from 'react-router-dom/server'
-import { logger, setEnvVars } from 'src/common'
+import { logger, setEnvVars, basename } from 'src/common'
 import { ChunkExtractor } from 'server/utils'
 import { getApp, getStats } from './render.util'
 
@@ -14,7 +14,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const { url, nonce } = req
 
 		const { pipe } = renderToPipeableStream(
-			<StaticRouter location={url}>
+			<StaticRouter location={url} basename={basename}>
 				<App nonce={nonce} />
 			</StaticRouter>,
 			{
