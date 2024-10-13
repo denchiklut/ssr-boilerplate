@@ -25,5 +25,5 @@ export const devServerConfig = {
 	port,
 	host: hostname,
 	historyApiFallback: true,
-	static: { directory: join(ROOT_DIR, 'assets') }
+	static: { directory: join(ROOT_DIR, 'public') }
 }
