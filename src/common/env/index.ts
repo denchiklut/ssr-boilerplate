@@ -8,7 +8,7 @@ if (IS_SERVER) require('dotenv/config')
 // in the `main` git branch
 const envSchema = object({
 	CLIENT_HOST: string().default('http://localhost:3000'),
-	CLIENT_PUBLIC_PATH: string().default('0.0.0'),
+	CLIENT_PUBLIC_PATH: string().default('/'),
 	APP_VERSION: string().default('0.0.0'),
 	NODE_ENV: mixed<'production' | 'development' | 'test'>()
 		.oneOf(['production', 'development', 'test'])
@@ -33,5 +33,5 @@ export const setEnvVars = () => {
 			return res
 		}, {})
 
-	return `window.env_vars = Object.freeze(${JSON.stringify(clientEnv)})`
+	return `window.env_vars=Object.freeze(${JSON.stringify(clientEnv)})`
 }
