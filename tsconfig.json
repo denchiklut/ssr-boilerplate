@@ -29,7 +29,6 @@
 			"@shared/*": ["src/client/components/@shared/*"],
 			"pages/*": ["src/client/pages/*"],
 			"utils/*": ["src/client/utils/*"],
-			"assets/*": ["src/client/assets/*"],
 			"config/*": ["config/*"]
 		},
 		"typeRoots": ["@types", "node_modules/@types"]
