@@ -3,13 +3,13 @@
 		"@babel/preset-typescript",
 		[
 			"@babel/preset-env",
-			{ "useBuiltIns": "usage", "corejs": 3}
+			{ "useBuiltIns": "usage", "corejs": 3 }
 		],
 		["@babel/preset-react", { "runtime": "automatic" }]
 	],
 	"plugins": [
-		["@babel/plugin-proposal-decorators", { "version": "legacy"}],
-		["babel-plugin-react-compiler"],
+		["@babel/plugin-proposal-decorators", { "version": "legacy" }],
+		["babel-plugin-react-compiler", {  "target": "19" }],
 		"@babel/plugin-transform-runtime"
 	]
 }

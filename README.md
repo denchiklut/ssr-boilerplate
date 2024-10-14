@@ -50,9 +50,10 @@ You can use .env file to specify environment variables. This file is ignored by 
 1. Add it to `.env` file
 2. For TS completion and validation add it to `envSchema` in `src/common/env/index.ts`
 3. If this variable needs to be accessible from both `client` & `server` make sure it's name starts with prefix `CLIENT_`
-4. You can access environment variable via `getENV` function.
+4. You can change client (`CLIENT_`) prefix in `webpack/plugins/define.plugin.ts`
+5. You can access environment variable via `getENV` function.
    This function will return a proper value based on environment (client/server) and cast it to a proper type based on `envSchema` from `step 2` (string/number/boolean)
-5. Important note! Unlike with Next.js apps, environment variables in this setup are `not baked` into the `bundle` at build time. This allows you to `build` the app `once` (e.g., for staging) and `reuse` the same build in other environments, such as production, without needing to rebuild for each environment.
+6. Important note! Unlike with Next.js apps, environment variables in this setup are `not baked` into the `bundle` at build time. This allows you to `build` the app `once` (e.g., for staging) and `reuse` the same build in other environments, such as production, without needing to rebuild for each environment.
 
 #### Global variables
 
