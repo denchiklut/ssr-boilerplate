@@ -40,4 +40,5 @@ export default [
 				version: 'detect'
 			}
 		}
-	}]
+	}
+]
