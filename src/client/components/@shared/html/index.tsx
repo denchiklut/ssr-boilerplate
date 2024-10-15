@@ -14,7 +14,6 @@ export const Html: FC<Props> = ({ nonce, children }) => {
 				<meta charSet='utf-8' />
 				<meta name='viewport' content='width=device-width, initial-scale=1' />
 				{IS_PROD && <link nonce={nonce} rel='manifest' href={basePath('manifest.json')} />}
-				<title>SSR app</title>
 			</head>
 
 			<body>{children}</body>

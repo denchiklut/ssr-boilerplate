@@ -1,5 +1,10 @@
 import { About } from 'components/about'
+import { Page } from '@shared/page'
 
 export default () => {
-	return <About />
+	return (
+		<Page title='SSR: About'>
+			<About />
+		</Page>
+	)
 }
