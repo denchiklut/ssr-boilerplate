@@ -19,7 +19,7 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const { nonce } = req
 		const chunkExtractor = new ChunkExtractor(getStats(res))
 		const { App, routes } = getApp(res)
-		const { query } = createStaticHandler(routes)
+		const { query } = createStaticHandler(routes, { basename })
 		const webRequest = createFetchRequest(req)
 		const context = await query(webRequest)
 		const helmetContext = { helmet: {} as HelmetServerState }
@@ -27,8 +27,6 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		if (context instanceof globalThis.Response) {
 			return res.status(context.status).redirect(context.url)
 		}
-
-		context.basename = basename
 
 		const jsx = chunkExtractor.collectChunks(
 			<App nonce={nonce} cookies={req.universalCookies} helmetContext={helmetContext}>
