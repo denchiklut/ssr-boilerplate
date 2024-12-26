@@ -1,6 +1,6 @@
+import { StaticRouter } from 'react-router-dom'
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
-import { StaticRouter } from 'react-router-dom/server'
 import { logger, setEnvVars, basename } from 'src/common'
 import { ChunkExtractor } from 'server/utils'
 import { getApp, getStats } from './render.util'
