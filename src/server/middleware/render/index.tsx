@@ -2,11 +2,7 @@ import { ChunkExtractor } from '@loadable/server'
 import { renderToString } from 'react-dom/server'
 import type { HelmetServerState } from 'react-helmet-async'
 import type { NextFunction, Request, Response } from 'express'
-import {
-	createStaticRouter,
-	StaticRouterProvider,
-	createStaticHandler
-} from 'react-router-dom/server'
+import { createStaticRouter, StaticRouterProvider, createStaticHandler } from 'react-router-dom'
 import { getApp, getHtml, getStats } from './render.util'
 import { createFetchRequest } from 'server/utils'
 import { basename, logger } from 'src/common'

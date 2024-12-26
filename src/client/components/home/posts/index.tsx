@@ -9,7 +9,7 @@ export const Posts = () => {
 			<b>Data fetching demo</b>
 			<ul>
 				{posts.map(post => (
-					<li key={post.id}>{post.text}</li>
+					<li key={post.id}>{post.title}</li>
 				))}
 			</ul>
 		</div>

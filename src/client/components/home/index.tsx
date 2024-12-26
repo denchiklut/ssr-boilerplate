@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { logger, getENV } from 'src/common'
 import { CookieDemo } from './cookie-demo'
 import { Posts } from './posts'
@@ -16,9 +15,7 @@ export const Home = () => {
 			<hr />
 			<CookieDemo />
 			<hr />
-			<Suspense fallback={<p>fetching posts...</p>}>
-				<Posts />
-			</Suspense>
+			<Posts />
 		</div>
 	)
 }
