@@ -1,4 +1,4 @@
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import { bootstrap } from 'client/utils'
 import { basename } from 'src/common'
 import { App } from '@shared/app'

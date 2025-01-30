@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
-import { Link } from 'react-router-dom'
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Fallback } from '@shared/error'
 import { Loader } from '@shared/loader'

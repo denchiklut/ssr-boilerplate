@@ -1,5 +1,5 @@
 import { type FC, lazy, StrictMode } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router'
 import { CookiesProvider } from 'react-cookie'
 import { type AppProps, getENV } from 'src/common'
 import { Layout } from '@shared/layout'

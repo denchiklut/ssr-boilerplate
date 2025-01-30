@@ -1,4 +1,4 @@
-import { StaticRouter } from 'react-router-dom'
+import { StaticRouter } from 'react-router'
 import { renderToPipeableStream } from 'react-dom/server'
 import type { NextFunction, Request, Response } from 'express'
 import { logger, setEnvVars, basename } from 'src/common'
