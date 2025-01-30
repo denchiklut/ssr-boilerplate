@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import { join, resolve } from 'path'
-import type { RouteObject } from 'react-router-dom'
+import type { RouteObject } from 'react-router'
 import requireFromString from 'require-from-string'
 import type { ServerResponse } from 'webpack-dev-middleware'
 import type { ChunkExtractorOptions } from '@loadable/server'

@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
-import { Outlet, ScrollRestoration } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { Outlet, Link, ScrollRestoration } from 'react-router'
 import { Loader } from '@shared/loader'
 import { useLayout } from './layout.hook'
 
