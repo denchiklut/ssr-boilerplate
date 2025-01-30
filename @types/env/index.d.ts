@@ -1,5 +1,9 @@
 import type { Env } from "src/common"
 
+type PickClientVars<T> = {
+	[K in keyof T as K extends `CLIENT_${string}` ? K : never]: T[K]
+}
+
 declare global {
 	declare var IS_DEV: boolean
 	declare var IS_PROD: boolean
@@ -12,6 +16,6 @@ declare global {
 	}
 
 	interface Window {
-		env_vars: Partial<Collection<keyof Env, string>>
+		env_vars: PickClientVars<Env>
 	}
 }
