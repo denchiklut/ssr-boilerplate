@@ -12,7 +12,9 @@ export function createEnv<S extends AnyObject>({
 	envs,
 	clientPrefix = 'CLIENT_'
 }: Props<S>) {
-	const client = schema.pick(Object.keys(schema.shape).filter(k => k.startsWith(clientPrefix)))
+	const client = schema.pick(
+		Object.keys(schema.shape).filter(k => k.startsWith(clientPrefix) || k === 'NODE_ENV')
+	)
 	const { data, error } = parse((IS_SERVER ? schema : client) as ObjectSchema<S>, envs)
 
 	if (error) {
@@ -27,7 +29,7 @@ export function createEnv<S extends AnyObject>({
 			if (
 				!IS_SERVER &&
 				(!clientPrefix || !prop.startsWith(clientPrefix)) &&
-				!['toJSON', 'toString'].includes(prop)
+				!['toJSON', 'toString', 'NODE_ENV'].includes(prop)
 			) {
 				throw new Error(
 					`❌ Attempted to access a server-side environment variable "${prop}" on the client`

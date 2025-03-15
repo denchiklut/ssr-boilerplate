@@ -1,7 +1,7 @@
 import type { Env } from "src/common"
 
 type PickClientVars<T> = {
-	[K in keyof T as K extends `CLIENT_${string}` ? K : never]: T[K]
+	[K in keyof T as K extends `CLIENT_${string}` |'NODE_ENV' ? K : never]: T[K]
 }
 
 declare global {
