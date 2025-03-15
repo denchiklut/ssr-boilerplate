@@ -27,7 +27,7 @@ export const getENV = getOrDefault(
 
 export const setEnvVars = (nonce: string) => {
 	const clientEnv = Object.entries(getENV())
-		.filter(([k]) => k.startsWith(clientPrefix))
+		.filter(([k]) => k.startsWith(clientPrefix) || k === 'NODE_ENV')
 		.reduce<Collection<string, unknown>>((res, [k, v]) => {
 			res[k] = v
 			return res

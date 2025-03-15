@@ -13,7 +13,7 @@ export function createEnv<S extends ZodRawShape>({
 }: Props<S>) {
 	const client = schema.pick(
 		Object.keys(schema.shape)
-			.filter(k => k.startsWith(clientPrefix))
+			.filter(k => k.startsWith(clientPrefix) || k === 'NODE_ENV')
 			.reduce((acc, key) => {
 				const res = acc as Collection<string, boolean>
 				res[key] = true
@@ -35,8 +35,8 @@ export function createEnv<S extends ZodRawShape>({
 
 			if (
 				!IS_SERVER &&
-				(!clientPrefix || !prop.startsWith(clientPrefix)) &&
-				!['toJSON', 'toString'].includes(prop)
+				!prop.startsWith(clientPrefix) &&
+				!['toJSON', 'toString', 'NODE_ENV'].includes(prop)
 			) {
 				throw new Error(
 					`❌ Attempted to access a server-side environment variable "${prop}" on the client`
