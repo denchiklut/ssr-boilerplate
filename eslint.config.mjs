@@ -39,6 +39,7 @@ export default defineConfig([
 	{
 		rules: {
 			'no-var': 'off',
+			'prettier/prettier': 'error',
 			'react/display-name': 'off',
 			'react-compiler/react-compiler': 'warn',
 			'react/react-in-jsx-scope': 'off',
