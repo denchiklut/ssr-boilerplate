@@ -5,4 +5,4 @@ interface LoadFn<T> {
 	(props: T): Promise<DefaultComponent<T>>
 }
 
-export const loadable = <T extends unknown>(fn: LoadFn<T>) => lazy(fn, { fallback: <Loader /> })
+export const loadable = <T,>(fn: LoadFn<T>) => lazy(fn, { fallback: <Loader /> })
