@@ -1,6 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 import prettier from 'eslint-plugin-prettier'
 import ts from 'typescript-eslint'
 
@@ -9,8 +9,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import react from 'eslint-plugin-react'
 
 export default defineConfig([
+	globalIgnores(['node_modules', 'dist']),
 	{
-		ignores: ['node_modules', 'dist', '@types'],
 		files: ['**/*.{cjs,mjs,js,jsx,ts,tsx}'],
 		plugins: { prettier, js },
 		languageOptions: {
