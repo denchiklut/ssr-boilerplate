@@ -6,11 +6,12 @@ import requireFromString from 'require-from-string'
 import { publicPath, AppProps } from 'src/common'
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
-	if (IS_PROD)
+	if (IS_PROD) {
 		return {
 			statsFile: resolve(__dirname, '../client/assets-stats.json'),
 			publicPath: publicPath('/')
 		}
+	}
 
 	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const stats = multiStats?.children?.find(child => child.name === 'client')
