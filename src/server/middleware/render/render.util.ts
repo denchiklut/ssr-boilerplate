@@ -47,11 +47,12 @@ export const getHtml = ({
 }
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
-	if (IS_PROD)
+	if (IS_PROD) {
 		return {
 			statsFile: resolve(__dirname, '../client/loadable-stats.json'),
 			publicPath: publicPath('/')
 		}
+	}
 
 	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
 	const stats = multiStats?.children?.find(child => child.name === 'client')

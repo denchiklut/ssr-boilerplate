@@ -31,7 +31,7 @@ export function createEnv<S extends ZodRawShape>({
 
 	return new Proxy(data, {
 		get(target, prop, receiver) {
-			if (typeof prop !== 'string') return undefined
+			if (typeof prop !== 'string') return
 
 			if (
 				!IS_SERVER &&
