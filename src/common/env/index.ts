@@ -9,7 +9,11 @@ if (IS_SERVER) require('dotenv/config')
  * in the `feat/pipable-stream` git branch
  */
 const envSchema = z.object({
-	CLIENT_HOST: z.string().url().default('http://localhost:3000'),
+	CLIENT_HOST: z
+		.string()
+		.url()
+		.default('http://localhost:3000')
+		.transform(h => new URL(h)),
 	CLIENT_PUBLIC_PATH: z.string().default('/'),
 	APP_VERSION: z.string().default('0.0.0'),
 	NODE_ENV: z.enum(['production', 'development', 'test']).default('development')

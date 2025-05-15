@@ -9,7 +9,7 @@ const sslCertPath = 'certs/cert.pem'
 const sslIsExist = existsSync(sslKeyPath) && existsSync(sslCertPath)
 
 export const bootstrap = (server: Express) => {
-	const { port, host, pathname } = new URL(getENV('CLIENT_HOST'))
+	const { port, host, pathname } = getENV('CLIENT_HOST')
 	const protocol = sslIsExist ? 'https' : 'http'
 	const url = joinPath(`${protocol}://${host}`, pathname)
 	const message = `Application is started on 🌎 ${url}`
