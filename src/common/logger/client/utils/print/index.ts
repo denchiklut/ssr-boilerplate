@@ -1,6 +1,6 @@
-import { getENV } from 'src/common/env'
 import type { Level } from '../../../types'
 import { css, colors } from './print.util'
+import { getENV } from '../../../../env'
 
 export function print() {
 	return function (_: object, propertyKey: string, descriptor: PropertyDescriptor) {

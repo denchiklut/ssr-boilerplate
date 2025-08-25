@@ -1,6 +1,0 @@
-{
-	"syntax": "postcss-scss",
-	"plugins": ["stylelint-order"],
-	"extends": ["stylelint-config-standard-scss"],
-	"rules": {}
-}

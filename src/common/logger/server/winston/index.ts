@@ -15,7 +15,7 @@ export const winstonLogger = winston.createLogger({
 			winston.format.splat(),
 			IS_DEV && winston.format.colorize({ all: true }),
 			IS_DEV && winston.format.simple(),
-			IS_PROD && winston.format.json()
+			!IS_DEV && winston.format.json()
 		].filter(Boolean)
 	),
 	levels: {

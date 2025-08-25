@@ -1,16 +1,8 @@
 import express from 'express'
-import { favicon, hmr, render, logger, cookieParser, uuid, error } from 'server/middleware'
-import { bootstrap } from 'server/utils'
-import { router } from 'server/router'
+import { logger } from '../common/logger'
 
-export const app = express()
-	.use(cookieParser)
-	.use(favicon())
-	.use(uuid)
-	.use(logger)
-	.use(hmr())
-	.use(render)
-	.use(router)
-	.use(error)
-
-bootstrap(app)
+export const app = express().get('/', (_, res) => {
+	res.send('Hello World!!!!')
+}).listen(3000, () => {
+	logger.log('Server is running on http://localhost:3000')
+})
