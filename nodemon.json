@@ -1,3 +1,3 @@
 {
-	"watch": ["dist/server", ".env"]
+	"watch": ["dist/express", ".env"]
 }
