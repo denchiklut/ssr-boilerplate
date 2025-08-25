@@ -1,12 +1,12 @@
-import { join } from 'path'
-import { defineConfig } from '@rspack/cli'
+import { join } from "path";
+import { defineConfig } from "@rspack/cli";
+
+import { DIST_DIR, ROOT_DIR } from "../utils";
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-import { DIST_DIR, ROOT_DIR } from "../utils";
-
 export default defineConfig({
-	name: 'spa',
+	name: 'client',
 	target: 'web',
 	context: ROOT_DIR,
 	entry: './src/client/index.tsx',
@@ -24,13 +24,13 @@ export default defineConfig({
 			rules.typescript
 		]
 	},
+	stats: { chunks: true, modules: true, entrypoints: true, assets: true, publicPath: true, },
 	plugins: [
+		plugins.copy,
 		plugins.hmr,
 		plugins.refresh,
-		plugins.definePlugin({ spa: true }),
-		...plugins.htmlWebpackPlugin({ spa: true })
+		plugins.definePlugin(),
+		plugins.statsPlugin,
+		...plugins.htmlWebpackPlugin()
 	],
-	devServer: {
-		static: { directory: join(ROOT_DIR, 'public') }
-	}
 })

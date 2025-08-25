@@ -10,18 +10,26 @@
 		"predev": "rspack build --configName express",
 		"dev:build": "rspack --nodeEnv development --configName express --watch",
 		"dev:serve": "cross-env NODE_ENV=development nodemon --inspect dist/express",
+		"start": "run-s prod:*",
+		"prod:build": "rimraf dist && rspack --nodeEnv production",
+		"prod:start": "cross-env NODE_ENV=production node dist/server",
 		"spa": "rspack serve --nodeEnv development -c rspack/configs/spa.config.ts"
 	},
 	"dependencies": {
 		"dotenv": "^17.2.1",
 		"express": "^5.1.0",
+		"morgan": "^1.10.1",
 		"react": "^19.1.1",
 		"react-cookie": "^8.0.1",
 		"react-dom": "^19.1.1",
 		"react-error-boundary": "^6.0.0",
 		"react-router": "^7.8.2",
 		"reflect-metadata": "^0.2.2",
+		"serve-favicon": "^2.5.1",
+		"tiny-invariant": "^1.3.3",
 		"universal-cookie": "^8.0.1",
+		"universal-cookie-express": "^8.0.1",
+		"uuid": "^11.1.0",
 		"winston": "^3.17.0",
 		"zod": "^4.1.1"
 	},
@@ -31,12 +39,17 @@
 		"@rspack/plugin-react-refresh": "^1.4.3",
 		"@swc/register": "^0.1.10",
 		"@types/express": "^5.0.3",
+		"@types/morgan": "^1.9.10",
 		"@types/react": "^19.1.11",
 		"@types/react-dom": "^19.1.7",
+		"@types/serve-favicon": "^2.5.7",
+		"@types/webpack-node-externals": "^3.0.4",
 		"cross-env": "^10.0.0",
 		"esbuild": "^0.25.9",
 		"nodemon": "^3.1.10",
 		"npm-run-all": "^4.1.5",
-		"typescript": "^5.9.2"
+		"rimraf": "^6.0.1",
+		"typescript": "^5.9.2",
+		"webpack-node-externals": "^3.0.0"
 	}
 }

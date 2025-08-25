@@ -7,7 +7,7 @@ declare global {
 
 	namespace Express {
 		interface Response {
-			renderApp(): Promise<void>
+			renderApp(): void
 		}
 
 		interface Request {

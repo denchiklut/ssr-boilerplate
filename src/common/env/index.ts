@@ -29,7 +29,7 @@ export const getENV = getOrDefault(
 	})
 )
 
-export const setEnvVars = (nonce: string) => {
+export const setEnvVars = () => {
 	const clientEnv = Object.entries(getENV())
 		.filter(([k]) => k.startsWith(clientPrefix) || k === 'NODE_ENV')
 		.reduce<Collection<string, unknown>>((res, [k, v]) => {
@@ -37,5 +37,5 @@ export const setEnvVars = (nonce: string) => {
 			return res
 		}, {})
 
-	return `<script nonce='${nonce}'>window.env_vars=Object.freeze(${JSON.stringify(clientEnv)})</script>`
+	return `window.env_vars=Object.freeze(${JSON.stringify(clientEnv)})`
 }

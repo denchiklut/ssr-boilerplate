@@ -1,8 +1,15 @@
 import express from 'express'
-import { logger } from '../common/logger'
+import { favicon, hmr, logger, cookieParser, nonce, error } from './middleware'
+import { bootstrap } from './utils'
+import { router } from './router'
 
-export const app = express().get('/', (_, res) => {
-	res.send('Hello World!!!!')
-}).listen(3000, () => {
-	logger.log('Server is running on http://localhost:3000')
-})
+export const expressApp = express()
+	.use(cookieParser)
+	.use(favicon())
+	.use(hmr())
+	.use(logger)
+	.use(nonce)
+	.use(router)
+	.use(error)
+
+bootstrap(expressApp)

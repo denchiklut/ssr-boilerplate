@@ -7,3 +7,4 @@ export const PUBLIC_PATH = IS_DEV ? '/' : (process.env.CLIENT_PUBLIC_PATH ?? '/'
 export const ROOT_DIR = workspaceRoot
 export const SRC_DIR = join(ROOT_DIR, 'src')
 export const DIST_DIR = join(ROOT_DIR, 'dist')
+console.log('*****', ROOT_DIR);
