@@ -1,7 +1,7 @@
 import { join } from "path";
 import { defineConfig } from "@rspack/cli";
 
-import { DIST_DIR, ROOT_DIR } from "../utils";
+import { DIST_DIR, ROOT_DIR, IS_DEV } from "../utils";
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -9,7 +9,8 @@ export default defineConfig({
 	name: 'client',
 	target: 'web',
 	context: ROOT_DIR,
-	entry: './src/client/index.tsx',
+	mode: IS_DEV ? 'development': 'production',
+	entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client/index.tsx'].filter(Boolean),
 	output: {
 		path: join(DIST_DIR, 'client'),
 		filename: 'js/[name].[fullhash].js',
@@ -24,7 +25,6 @@ export default defineConfig({
 			rules.typescript
 		]
 	},
-	stats: { chunks: true, modules: true, entrypoints: true, assets: true, publicPath: true, },
 	plugins: [
 		plugins.copy,
 		plugins.hmr,

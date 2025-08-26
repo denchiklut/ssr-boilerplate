@@ -1,8 +1,8 @@
 import { join } from "path";
 import { defineConfig } from "@rspack/cli";
-import type { ExternalItem } from "@rspack/core";
+import type { ExternalItem } from '@rspack/core';
 import nodeExternals from 'webpack-node-externals';
-import { DIST_DIR, ROOT_DIR } from "../utils";
+import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils';
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
@@ -11,6 +11,7 @@ export default defineConfig({
 	name: 'express',
 	target: 'node',
 	context: ROOT_DIR,
+	mode: IS_DEV ? 'development': 'production',
 	entry: './src/server/index.ts',
 	output: {
 		filename: 'index.js',
@@ -25,8 +26,8 @@ export default defineConfig({
 	},
 	plugins: [
 		plugins.definePlugin({ server: true }),
+		plugins.limitPlugin,
 	],
-	stats: false,
 	module: {
 		rules: [
 			rules.typescript

@@ -9,8 +9,8 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 	res.renderApp = () => {
 		logger.debug('render middleware start')
 
-		const chunkExtractor = new ChunkExtractor(getStats())
-		const { App } = getApp()
+		const chunkExtractor = new ChunkExtractor(getStats(res))
+		const { App } = getApp(res)
 		const { url, nonce } = req
 
 		const { pipe } = renderToPipeableStream(
@@ -18,7 +18,6 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 				<App nonce={nonce} cookies={req.universalCookies} />
 			</StaticRouter>,
 			{
-				nonce,
 				bootstrapScriptContent: setEnvVars(),
 				bootstrapScripts: chunkExtractor.getMainAssets().map(asset => asset.url),
 				onShellReady() {

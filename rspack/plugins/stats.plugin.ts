@@ -57,4 +57,4 @@ class StatsPlugin {
 	}
 }
 
-export const statsPlugin =  new StatsPlugin()
+export const statsPlugin = new StatsPlugin()

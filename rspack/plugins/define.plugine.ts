@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { DefinePlugin } from '@rspack/core'
-import { IS_DEV, IS_PROD } from '../utils'
+import { IS_DEV } from '../utils'
 
 interface Props {
 	server?: boolean
@@ -8,7 +8,6 @@ interface Props {
 }
 export const definePlugin = ({ server = false, spa = false }: Props = {}) =>
 	new DefinePlugin({
-		IS_PROD,
 		IS_DEV,
 		IS_SPA: spa,
 		IS_SERVER: server,

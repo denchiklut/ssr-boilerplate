@@ -13,7 +13,6 @@ const About = lazy(() => import('../../../pages/about'))
 const NotFound = lazy(() => import('../../../pages/not-found'))
 
 export const App: FC<AppProps> = ({ nonce, cookies }) => {
-
 	return (
 		<StrictMode>
 			<CookiesProvider cookies={cookies}>
