@@ -8,34 +8,40 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Check out code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup node
               uses: actions/setup-node@v4
               with:
-                  node-version: lts/*
+                    node-version: lts/*
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+                  run_install: false
 
             - name: Check yarn cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               id: yarn-cache-check
               with:
                   path: |
                       node_modules
                       ~/.cache/Cypress
-                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
                   lookup-only: true
 
             - name: Prepare yarn cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               if: steps.yarn-cache-check.outputs.cache-hit != 'true'
               with:
                   path: |
                       node_modules
                       ~/.cache/Cypress
-                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
                   restore-keys: |
-                      ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+                      ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
             - name: Install Dependencies
               if: steps.yarn-cache-check.outputs.cache-hit != 'true'
-              run: yarn install --frozen-lockfile
+              run: pnpm i --frozen-lockfile

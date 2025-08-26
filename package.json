@@ -15,7 +15,7 @@
 		"prod:start": "cross-env NODE_ENV=production node dist/server",
 		"spa": "rspack serve --nodeEnv=development -c=rspack/configs/spa.config.ts",
 		"test": "jest --coverage --coverage-reporters=lcov",
-		"biome": "biome check --write ."
+		"lint": "biome check --write ."
 	},
 	"dependencies": {
 		"dotenv": "^17.2.1",

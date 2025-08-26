@@ -11,32 +11,29 @@ on:
             - feat/pipable-stream
 
 jobs:
-    yarn:
-        uses: ./.github/workflows/yarn-cache.yml
+    pnpm:
+        uses: ./.github/workflows/pnpm-cache.yml
 
     test:
-        needs: yarn
+        needs: pnpm
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - uses: ./.github/actions/setup
-
-            - run: yarn test
+            - run: pnpm test
 
     lint:
-        needs: yarn
+        needs: pnpm
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - uses: ./.github/actions/setup
-
-            - run: yarn lint
+            - run: pnpm lint
 
     build:
-        needs: yarn
+        needs: pnpm
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - uses: ./.github/actions/setup
-
-            - run: yarn prod:build
+            - run: pnpm prod:build
