@@ -1,0 +1,8 @@
+{
+	"*.{ts,tsx}": [
+		"jest --passWithNoTests --findRelatedTests"
+	],
+	"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+		"biome check --no-errors-on-unmatched --write"
+	]
+}
