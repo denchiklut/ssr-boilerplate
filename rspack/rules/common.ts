@@ -2,21 +2,21 @@ export const typescript = {
 	test: /\.[jt]sx?$/,
 	exclude: /node_modules/,
 	use: {
-	loader: "builtin:swc-loader",
+		loader: 'builtin:swc-loader',
 		options: {
 			jsc: {
 				parser: {
-					syntax: "typescript",
+					syntax: 'typescript',
 					tsx: true,
-					decorators: true,
+					decorators: true
 				},
 				transform: {
 					react: {
-						runtime: "automatic"
+						runtime: 'automatic'
 					}
 				}
-			},
-		},
+			}
+		}
 	},
-		type: 'javascript/auto',
+	type: 'javascript/auto'
 }

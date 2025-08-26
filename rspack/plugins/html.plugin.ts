@@ -1,6 +1,6 @@
-import { join } from 'path'
+import { join } from 'node:path'
 import { HtmlRspackPlugin } from '@rspack/core'
-import { ROOT_DIR, IS_PROD, PUBLIC_PATH } from '../utils'
+import { IS_PROD, PUBLIC_PATH, ROOT_DIR } from '../utils'
 
 const offlineConfig = {
 	filename: 'pwa/offline.html',
@@ -19,7 +19,7 @@ const spaConfig = {
 interface Props {
 	spa?: boolean
 }
-export const htmlWebpackPlugin = ({ spa = false }: Props = {}) => [
-		IS_PROD && new HtmlRspackPlugin(offlineConfig),
-		spa && new HtmlRspackPlugin(spaConfig)
-].filter(Boolean)
+export const htmlWebpackPlugin = ({ spa = false }: Props = {}) =>
+	[IS_PROD && new HtmlRspackPlugin(offlineConfig), spa && new HtmlRspackPlugin(spaConfig)].filter(
+		Boolean
+	)

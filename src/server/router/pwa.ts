@@ -1,5 +1,5 @@
+import { resolve } from 'node:path'
 import { type Router, static as staticRoute } from 'express'
-import { resolve } from 'path'
 
 import { basename, basePath } from '../../common'
 import { getManifest } from '../controller'

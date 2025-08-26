@@ -1,6 +1,6 @@
-import { z, type TypeOf } from 'zod'
-import { getOrDefault } from './get.util'
+import { type TypeOf, z } from 'zod'
 import { createEnv } from './env.util'
+import { getOrDefault } from './get.util'
 
 if (IS_SERVER) require('dotenv/config')
 

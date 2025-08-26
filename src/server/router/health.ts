@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import type { Router } from 'express'
 import { healthcheck } from '../controller'
 
 export const healthRoutes = (router: Router) => {

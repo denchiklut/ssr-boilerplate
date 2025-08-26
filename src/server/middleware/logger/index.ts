@@ -5,5 +5,5 @@ export const logger = morgan(':method :url :status - :response-time ms', {
 	skip: () => IS_DEV,
 	stream: {
 		write: message => winstonLogger.info(message)
-	},
+	}
 })

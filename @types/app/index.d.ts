@@ -1,4 +1,4 @@
-import type Cookies from "universal-cookie"
+import type Cookies from 'universal-cookie'
 
 declare global {
 	interface Window {

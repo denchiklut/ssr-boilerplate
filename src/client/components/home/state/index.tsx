@@ -11,7 +11,9 @@ export const State = () => {
 				HMR update.
 			</p>
 			<p>count {count}</p>
-			<button onClick={() => setCount(count + 1)}>Increase</button>
+			<button type='button' onClick={() => setCount(count + 1)}>
+				Increase
+			</button>
 		</div>
 	)
 }

@@ -1,4 +1,4 @@
-import type { Compilation, Compiler, sources, StatsChunk } from "@rspack/core";
+import type { Compilation, Compiler, StatsChunk, sources } from '@rspack/core'
 
 const name = 'stats-webpack-plugin'
 

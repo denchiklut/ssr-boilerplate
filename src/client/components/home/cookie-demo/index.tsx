@@ -7,7 +7,9 @@ export const CookieDemo = () => {
 		<div>
 			<b>Cookie demo</b>
 
-			<button onClick={() => setCookie('hide', !cookies.hide)}>Toggle</button>
+			<button type='button' onClick={() => setCookie('hide', !cookies.hide)}>
+				Toggle
+			</button>
 			{!cookies.hide && (
 				<p>
 					Reload the page!

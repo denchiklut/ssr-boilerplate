@@ -9,7 +9,7 @@ export const Html: FC<Props> = ({ nonce, children }) => {
 	if (IS_SPA) return <>{children}</>
 
 	return (
-		<html>
+		<html lang='en'>
 			<head>
 				<meta charSet='utf-8' />
 				<meta name='viewport' content='width=device-width, initial-scale=1' />

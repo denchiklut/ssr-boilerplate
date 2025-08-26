@@ -1,9 +1,9 @@
-import { join, resolve } from 'path'
+import { join, resolve } from 'node:path'
 import type { FC } from 'react'
 import requireFromString from 'require-from-string'
 import type { ServerResponse } from 'webpack-dev-middleware'
+import { type AppProps, publicPath } from '../../../common'
 import type { ChunkExtractorOptions } from '../../utils'
-import { publicPath, AppProps } from '../../../common'
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (!IS_DEV) {

@@ -1,4 +1,4 @@
-import { join } from 'path'
+import { join } from 'node:path'
 import { workspaceRoot } from './utils'
 
 export const IS_DEV = process.env.NODE_ENV === 'development'

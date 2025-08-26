@@ -1,4 +1,4 @@
-import { extname } from 'path'
+import { extname } from 'node:path'
 import type { ChunkAsset } from './types'
 
 export function getFileScriptType(fileName: string) {
@@ -20,8 +20,7 @@ export function getAssets(chunks: string[], getAsset: (chunk: string) => ChunkAs
 	const seenUrls = new Set()
 
 	return chunks
-		.map(getAsset)
-		.flat()
+		.flatMap(getAsset)
 		.filter(asset => {
 			if (asset && !seenUrls.has(asset.url)) {
 				seenUrls.add(asset.url)

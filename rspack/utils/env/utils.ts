@@ -1,5 +1,5 @@
-import path from 'path'
-import { type PathLike, statSync } from 'fs'
+import { type PathLike, statSync } from 'node:fs'
+import path from 'node:path'
 
 function workspaceRootInner(dir: string, candidateRoot: string): string {
 	if (path.dirname(dir) === dir) return candidateRoot

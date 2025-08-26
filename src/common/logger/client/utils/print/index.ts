@@ -1,11 +1,9 @@
 import type { Level } from '../../../types'
-import { css, colors } from './print.util'
-import { getENV } from '../../../../env'
+import { colors, css } from './print.util'
 
 export function print() {
-	return function (_: object, propertyKey: string, descriptor: PropertyDescriptor) {
+	return (_: object, propertyKey: string, descriptor: PropertyDescriptor) => {
 		const originalMethod = descriptor.value
-		const isProd = getENV('NODE_ENV') === 'production'
 
 		descriptor.value = function (...args: unknown[]) {
 			const method = propertyKey as Level
@@ -14,7 +12,7 @@ export function print() {
 
 			if (typeof params[0] !== 'string') params.unshift('%o')
 
-			if (isProd) {
+			if (!IS_DEV) {
 				console[method](...args)
 			} else {
 				console[method](

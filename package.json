@@ -13,7 +13,8 @@
 		"start": "run-s prod:*",
 		"prod:build": "rimraf dist && rspack --nodeEnv=production",
 		"prod:start": "cross-env NODE_ENV=production node dist/server",
-		"spa": "rspack serve --nodeEnv=development -c=rspack/configs/spa.config.ts"
+		"spa": "rspack serve --nodeEnv=development -c=rspack/configs/spa.config.ts",
+		"biome": "biome check --write ."
 	},
 	"dependencies": {
 		"dotenv": "^17.2.1",
@@ -34,6 +35,7 @@
 		"zod": "^4.1.1"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.2.2",
 		"@rspack/cli": "^1.5.0-rc.0",
 		"@rspack/core": "^1.5.0-rc.0",
 		"@rspack/plugin-react-refresh": "^1.4.3",

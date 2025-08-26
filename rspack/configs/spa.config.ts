@@ -1,9 +1,9 @@
-import { join } from 'path'
+import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-import { DIST_DIR, ROOT_DIR } from "../utils";
+import { DIST_DIR, ROOT_DIR } from '../utils'
 
 export default defineConfig({
 	name: 'spa',
@@ -17,12 +17,10 @@ export default defineConfig({
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx'],
+		extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx']
 	},
 	module: {
-		rules: [
-			rules.typescript
-		]
+		rules: [rules.typescript]
 	},
 	plugins: [
 		plugins.hmr,
@@ -31,6 +29,8 @@ export default defineConfig({
 		...plugins.htmlWebpackPlugin({ spa: true })
 	],
 	devServer: {
-		static: { directory: join(ROOT_DIR, 'public') }
+		static: {
+			directory: join(ROOT_DIR, 'public')
+		}
 	}
 })

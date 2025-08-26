@@ -1,5 +1,9 @@
-import { join } from "node:path";
-import { CopyRspackPlugin } from "@rspack/core";
+import { join } from 'node:path'
+import { CopyRspackPlugin } from '@rspack/core'
 import { IS_PROD, ROOT_DIR } from '../utils'
 
-export const copy = IS_PROD && new CopyRspackPlugin({ patterns: [{ from: join(ROOT_DIR, 'public'), }] })
+export const copy =
+	IS_PROD &&
+	new CopyRspackPlugin({
+		patterns: [{ from: join(ROOT_DIR, 'public') }]
+	})

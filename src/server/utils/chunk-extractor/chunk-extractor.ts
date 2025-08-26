@@ -1,9 +1,9 @@
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
+import type { StatsCompilation } from '@rspack/core'
 import invariant from 'tiny-invariant'
 import { joinPath } from '../../../common/path'
+import type { Asset, ChunkAsset, ChunkExtractorOptions } from './types'
 import { getAssets, getFileScriptType, isValidChunkAsset } from './utils'
-import { Asset, ChunkAsset, ChunkExtractorOptions } from './types'
-import type { StatsCompilation } from "@rspack/core";
 
 export class ChunkExtractor {
 	private stats: StatsCompilation
@@ -50,7 +50,12 @@ export class ChunkExtractor {
 			if (!chunkGroup.assets) return []
 
 			return chunkGroup.assets
-				.map(filename => this.createChunkAsset({ filename, chunk }))
+				.map(filename =>
+					this.createChunkAsset({
+						filename,
+						chunk
+					})
+				)
 				.filter(isValidChunkAsset)
 		}
 
