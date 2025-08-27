@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react'
 import { basePath } from '../../../../common'
+import './global.scss'
 
 interface Props {
 	nonce: string

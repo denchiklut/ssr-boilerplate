@@ -31,6 +31,7 @@ export default defineConfig({
 		...plugins.htmlWebpackPlugin({ spa: true })
 	],
 	devServer: {
+		port: 3000,
 		static: {
 			directory: join(env.ROOT_DIR, 'public')
 		}

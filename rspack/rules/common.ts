@@ -1,4 +1,6 @@
+import { resolve } from 'node:path'
 import { rspack } from '@rspack/core'
+import { SRC_DIR } from '../env'
 
 export const typescript = {
 	test: /\.[jt]sx?$/,
@@ -24,7 +26,7 @@ export const typescript = {
 }
 
 export const css = {
-	test: /\.css$/,
+	test: /\.(sa|sc|c)ss$/,
 	type: 'javascript/auto',
 	use: [
 		rspack.CssExtractRspackPlugin.loader,
@@ -43,6 +45,14 @@ export const css = {
 			options: {
 				postcssOptions: {
 					config: './config/postcss/postcss.js'
+				}
+			}
+		},
+		{
+			loader: 'sass-loader',
+			options: {
+				sassOptions: {
+					loadPaths: [resolve(SRC_DIR, 'client/styles')]
 				}
 			}
 		}

@@ -65,6 +65,8 @@
 		"postcss-loader": "^8.1.1",
 		"require-from-string": "^2.0.2",
 		"rimraf": "^6.0.1",
+		"sass": "^1.91.0",
+		"sass-loader": "^16.0.5",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.2",
 		"webpack-dev-middleware": "^7.4.2",
