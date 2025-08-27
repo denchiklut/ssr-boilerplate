@@ -11,6 +11,7 @@ export default defineConfig({
 	name: 'express',
 	target: 'node',
 	context: env.ROOT_DIR,
+	devtool: env.IS_DEV ? false : 'source-map',
 	mode: env.IS_DEV ? 'development' : 'production',
 	entry: './src/server/index.ts',
 	output: {

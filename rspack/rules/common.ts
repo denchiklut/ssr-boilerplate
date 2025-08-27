@@ -2,7 +2,8 @@ import { rspack } from '@rspack/core'
 
 export const typescript = {
 	test: /\.[jt]sx?$/,
-	exclude: /node_modules/,
+	type: 'javascript/auto',
+	exclude: [/[\\/]node_modules[\\/]/],
 	use: {
 		loader: 'builtin:swc-loader',
 		options: {
@@ -19,8 +20,7 @@ export const typescript = {
 				}
 			}
 		}
-	},
-	type: 'javascript/auto'
+	}
 }
 
 export const css = {

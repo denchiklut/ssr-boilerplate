@@ -10,6 +10,7 @@ export default defineConfig({
 	target: 'web',
 	context: env.ROOT_DIR,
 	mode: env.IS_DEV ? 'development' : 'production',
+	devtool: env.IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
 	entry: [
 		env.IS_DEV && 'webpack-hot-middleware/client?name=client',
 		'./src/client/index.tsx'

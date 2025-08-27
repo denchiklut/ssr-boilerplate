@@ -9,6 +9,7 @@ export default defineConfig({
 	name: 'spa',
 	target: 'web',
 	context: env.ROOT_DIR,
+	devtool: 'eval-cheap-module-source-map',
 	entry: './src/client/index.tsx',
 	output: {
 		path: join(env.DIST_DIR, 'client'),
