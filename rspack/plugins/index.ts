@@ -1,4 +1,5 @@
 export * from './copy.plugin'
+export * from './css.plugin'
 export * from './define.plugine'
 export * from './hmr.plugin'
 export * from './html.plugin'

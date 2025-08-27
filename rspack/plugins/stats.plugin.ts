@@ -1,4 +1,5 @@
 import type { Compilation, Compiler, StatsChunk, sources } from '@rspack/core'
+import { IS_PROD } from '../env'
 
 const name = 'stats-webpack-plugin'
 
@@ -57,4 +58,4 @@ class StatsPlugin {
 	}
 }
 
-export const statsPlugin = new StatsPlugin()
+export const statsPlugin = IS_PROD && new StatsPlugin()

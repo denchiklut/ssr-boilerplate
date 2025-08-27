@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { DefinePlugin } from '@rspack/core'
-import { IS_DEV } from '../utils'
+import { IS_DEV } from '../env'
 
 interface Props {
 	server?: boolean

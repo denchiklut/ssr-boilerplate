@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { CopyRspackPlugin } from '@rspack/core'
-import { IS_PROD, ROOT_DIR } from '../utils'
+import { IS_PROD, ROOT_DIR } from '../env'
 
 export const copy =
 	IS_PROD &&

@@ -3,6 +3,7 @@ import { getENV, logger } from '../../../common'
 import { CookieDemo } from './cookie-demo'
 import { Posts } from './posts'
 import { State } from './state'
+import css from './styles.css'
 
 export const Home = () => {
 	const host = getENV('CLIENT_HOST')
@@ -10,7 +11,7 @@ export const Home = () => {
 
 	return (
 		<div>
-			<h3>Home page!</h3>
+			<h3 className={css.wrapper}>Home page!</h3>
 			<State />
 			<hr />
 			<CookieDemo />

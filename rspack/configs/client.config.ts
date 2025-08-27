@@ -1,35 +1,38 @@
 import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
+
+import * as env from '../env'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
-import { DIST_DIR, IS_DEV, ROOT_DIR } from '../utils'
 
 export default defineConfig({
 	name: 'client',
 	target: 'web',
-	context: ROOT_DIR,
-	mode: IS_DEV ? 'development' : 'production',
-	entry: [IS_DEV && 'webpack-hot-middleware/client?name=client', './src/client/index.tsx'].filter(
-		Boolean
-	),
+	context: env.ROOT_DIR,
+	mode: env.IS_DEV ? 'development' : 'production',
+	entry: [
+		env.IS_DEV && 'webpack-hot-middleware/client?name=client',
+		'./src/client/index.tsx'
+	].filter(Boolean),
 	output: {
-		path: join(DIST_DIR, 'client'),
+		path: join(env.DIST_DIR, 'client'),
 		filename: 'js/[name].[fullhash].js',
-		publicPath: '/'
+		publicPath: env.PUBLIC_PATH
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx']
+		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx', '.css']
 	},
 	module: {
-		rules: [rules.typescript]
+		rules: [rules.typescript, rules.css, rules.fontsRule, rules.mediasRule]
 	},
 	plugins: [
-		plugins.copy,
+		plugins.css,
 		plugins.hmr,
+		plugins.copy,
 		plugins.refresh,
-		plugins.definePlugin(),
 		plugins.statsPlugin,
+		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()
 	]
 })

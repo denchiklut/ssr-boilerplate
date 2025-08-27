@@ -1,28 +1,29 @@
 import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
+
+import * as env from '../env'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
-
-import { DIST_DIR, ROOT_DIR } from '../utils'
 
 export default defineConfig({
 	name: 'spa',
 	target: 'web',
-	context: ROOT_DIR,
+	context: env.ROOT_DIR,
 	entry: './src/client/index.tsx',
 	output: {
-		path: join(DIST_DIR, 'client'),
+		path: join(env.DIST_DIR, 'client'),
 		filename: 'js/[name].[fullhash].js',
-		publicPath: '/'
+		publicPath: env.PUBLIC_PATH
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx', '.json', '.ts', '.tsx']
+		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx', '.css']
 	},
 	module: {
-		rules: [rules.typescript]
+		rules: [rules.typescript, rules.css, rules.fontsRule, rules.mediasRule]
 	},
 	plugins: [
+		plugins.css,
 		plugins.hmr,
 		plugins.refresh,
 		plugins.definePlugin({ spa: true }),
@@ -30,7 +31,7 @@ export default defineConfig({
 	],
 	devServer: {
 		static: {
-			directory: join(ROOT_DIR, 'public')
+			directory: join(env.ROOT_DIR, 'public')
 		}
 	}
 })
