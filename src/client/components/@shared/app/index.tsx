@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router'
 import type { AppProps } from '../../../../common/types'
 import { Html } from '../html'
 import { Layout } from '../layout'
+import './global.css'
 
 // @ts-expect-error
 const Home = lazy(() => import('../../../pages/home'))
@@ -12,11 +13,11 @@ const About = lazy(() => import('../../../pages/about'))
 // @ts-expect-error
 const NotFound = lazy(() => import('../../../pages/not-found'))
 
-export const App: FC<AppProps> = ({ nonce, cookies }) => {
+export const App: FC<AppProps> = ({ nonce, cookies, css = [] }) => {
 	return (
 		<StrictMode>
 			<CookiesProvider cookies={cookies}>
-				<Html nonce={nonce}>
+				<Html nonce={nonce} css={css}>
 					<Routes>
 						<Route path='/' element={<Layout />}>
 							<Route index element={<Home />} />

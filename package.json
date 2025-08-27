@@ -15,7 +15,9 @@
 		"prod:start": "cross-env NODE_ENV=production node dist/server",
 		"spa": "rspack serve --nodeEnv=development -c=rspack/configs/spa.config.ts",
 		"test": "jest --coverage --coverage-reporters=lcov",
-		"lint": "biome check --write ."
+		"lint:style": "stylelint --fix src/**/*.{css,scss}",
+		"lint:script": "biome check --write .",
+		"lint": "run-p lint:*"
 	},
 	"dependencies": {
 		"dotenv": "^17.2.1",
@@ -67,6 +69,9 @@
 		"rimraf": "^6.0.1",
 		"sass": "^1.91.0",
 		"sass-loader": "^16.0.5",
+		"stylelint": "^16.23.1",
+		"stylelint-config-standard": "^39.0.0",
+		"stylelint-scss": "^6.12.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.2",
 		"webpack-dev-middleware": "^7.4.2",

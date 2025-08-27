@@ -2,6 +2,9 @@
 	"*.{ts,tsx}": [
 		"jest --passWithNoTests --findRelatedTests"
 	],
+	"*.{css,scss}": [
+    	"stylelint --fix"
+    ],
 	"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
 		"biome check --no-errors-on-unmatched --write"
 	]
