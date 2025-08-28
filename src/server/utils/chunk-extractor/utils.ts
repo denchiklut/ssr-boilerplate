@@ -3,7 +3,7 @@ import type { ChunkAsset } from './types'
 
 export function getFileScriptType(fileName: string) {
 	const extension = extname(fileName).split('?')[0] ?? ''
-	const script_types: Collection<string, string> = {
+	const script_types: Collection<string, 'script' | 'style'> = {
 		'.js': 'script',
 		'.mjs': 'script',
 		'.css': 'style'

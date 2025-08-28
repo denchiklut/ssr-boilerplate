@@ -10,20 +10,23 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		logger.debug('render middleware start')
 
 		const chunkExtractor = new ChunkExtractor(getStats(res))
-		const assets = chunkExtractor.getMainAssets()
-		const js = assets.filter(a => a.url.endsWith('.js')).map(a => a.url)
-		const css = assets.filter(a => a.url.endsWith('.css')).map(a => a.url)
-
 		const { App } = getApp(res)
 		const { url, nonce } = req
 
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url} basename={basename}>
-				<App nonce={nonce} cookies={req.universalCookies} css={css} />
+				<App
+					nonce={nonce}
+					cookies={req.universalCookies}
+					linkTags={chunkExtractor.getLinkTags({ nonce })}
+				/>
 			</StaticRouter>,
 			{
+				nonce,
 				bootstrapScriptContent: setEnvVars(),
-				bootstrapScripts: js,
+				bootstrapScripts: chunkExtractor.assets
+					.filter(a => a.url.endsWith('.js'))
+					.map(a => a.url),
 				onShellReady() {
 					res.statusCode = 200
 					res.setHeader('content-type', 'text/html')

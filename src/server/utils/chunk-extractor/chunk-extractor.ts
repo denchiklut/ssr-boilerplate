@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import type { StatsCompilation } from '@rspack/core'
+import type { LinkHTMLAttributes } from 'react'
 import invariant from 'tiny-invariant'
 import { joinPath } from '../../../common/path'
 import type { Asset, ChunkAsset, ChunkExtractorOptions } from './types'
@@ -10,6 +11,7 @@ export class ChunkExtractor {
 	private readonly publicPath: string
 	private readonly outputPath: string
 	private readonly entrypoints: string[]
+	public assets: ChunkAsset[]
 
 	constructor({
 		stats,
@@ -22,6 +24,7 @@ export class ChunkExtractor {
 		this.entrypoints = Array.isArray(entrypoints) ? entrypoints : [entrypoints]
 		this.publicPath = publicPath ?? this.stats.publicPath ?? ''
 		this.outputPath = outputPath ?? this.stats.outputPath ?? ''
+		this.assets = this.getMainAssets()
 	}
 
 	private getChunkGroup(chunk: string) {
@@ -63,7 +66,29 @@ export class ChunkExtractor {
 		return one(chunks)
 	}
 
-	public getMainAssets() {
+	private getMainAssets() {
 		return this.getChunkAssets(this.entrypoints)
+	}
+
+	public getLinkTags({ nonce }: { nonce?: string } = {}) {
+		return this.assets
+			.filter(a => a.scriptType === 'style')
+			.reduceRight((res, asset) => {
+				res.push(
+					{
+						href: asset.url,
+						rel: 'preload',
+						as: asset.scriptType as string,
+						...(nonce && { nonce })
+					},
+					{
+						href: asset.url,
+						rel: 'stylesheet',
+						...(nonce && { nonce })
+					}
+				)
+
+				return res
+			}, [] as LinkHTMLAttributes<HTMLLinkElement>[])
 	}
 }

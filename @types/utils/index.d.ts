@@ -1,3 +1,4 @@
+type Nullable<T> = T | null
 type Collection<K extends string | number, V> = Record<K, V>
 type Falsy = false | 0 | '' | null | undefined
 

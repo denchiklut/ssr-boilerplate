@@ -1,4 +1,4 @@
-import type { StatsCompilation } from 'webpack'
+import type { StatsCompilation } from '@rspack/core'
 
 export interface ChunkExtractorOptions {
 	stats?: StatsCompilation
@@ -10,7 +10,7 @@ export interface ChunkExtractorOptions {
 
 export interface ChunkAsset {
 	filename: string
-	scriptType: Nullable<string>
+	scriptType: Nullable<'script' | 'style'>
 	url: string
 	path: string
 	chunk: string

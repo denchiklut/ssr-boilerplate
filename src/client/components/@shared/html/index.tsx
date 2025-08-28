@@ -1,12 +1,7 @@
-import type { FC, ReactNode } from 'react'
-import { basePath } from '../../../../common'
+import type { FC } from 'react'
+import { type AppProps, basePath, publicPath } from '../../../../common'
 
-interface Props {
-	nonce: string
-	css: string[]
-	children: ReactNode
-}
-export const Html: FC<Props> = ({ nonce, css, children }) => {
+export const Html: FC<AppProps> = ({ nonce, linkTags, children }) => {
 	if (IS_SPA) return <>{children}</>
 
 	return (
@@ -14,8 +9,10 @@ export const Html: FC<Props> = ({ nonce, css, children }) => {
 			<head>
 				<meta charSet='utf-8' />
 				<meta name='viewport' content='width=device-width, initial-scale=1' />
-				{css.map(href => (
-					<link key={href} rel='stylesheet' href={href} />
+				<link rel='icon' type='image/x-icon' href={publicPath('/icons/favicon.ico')} />
+				<link rel='apple-touch-icon' href={publicPath('/icons/maskable.png')} />
+				{linkTags?.map((link, index) => (
+					<link key={index} {...link} />
 				))}
 				{!IS_DEV && <link nonce={nonce} rel='manifest' href={basePath('manifest.json')} />}
 			</head>
