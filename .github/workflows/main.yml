@@ -5,10 +5,11 @@ on:
         branches:
             - main
             - feat/pipable-stream
+            - feat/rspack
     pull_request:
         branches:
             - main
-            - feat/pipable-stream
+            - feat/rspack
 
 jobs:
     pnpm:

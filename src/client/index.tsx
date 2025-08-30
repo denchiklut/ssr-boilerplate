@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router'
-import { basename } from '../common/path'
-import { App } from './components/@shared/app'
+import { basename } from '@/common/path'
+import { App } from '@/shared/app'
 import { bootstrap } from './utils'
 
 const AppContainer = () => (

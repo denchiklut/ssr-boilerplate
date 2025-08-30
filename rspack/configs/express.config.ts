@@ -21,7 +21,8 @@ export default defineConfig({
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
-		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
+		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	plugins: [plugins.definePlugin({ server: true }), plugins.limitPlugin],
 	module: {

@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { type Router, static as staticRoute } from 'express'
 
-import { basename, basePath } from '../../common'
+import { basename, basePath } from '@/common/path'
 import { getManifest } from '../controller'
 import { pwa } from '../middleware'
 

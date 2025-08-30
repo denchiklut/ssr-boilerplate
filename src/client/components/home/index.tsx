@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { getENV, logger } from '../../../common'
+import { getENV, logger } from '@/common'
 import { CookieDemo } from './cookie-demo'
 import { Posts } from './posts'
 import { State } from './state'

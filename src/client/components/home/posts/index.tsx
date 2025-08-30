@@ -1,5 +1,5 @@
 import { use } from 'react'
-import { fetchPosts } from '../../../api'
+import { fetchPosts } from '@/api'
 
 const data = fetchPosts()
 

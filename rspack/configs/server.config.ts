@@ -22,7 +22,8 @@ export default defineConfig({
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
-		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx', '.css']
+		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx', '.css'],
+		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	module: {
 		rules: [rules.typescript, rules.css, rules.fontsRule, rules.mediasRule]

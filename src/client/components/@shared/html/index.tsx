@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { type AppProps, basePath, publicPath } from '../../../../common'
+import { type AppProps, basePath, publicPath } from '@/common'
 
 export const Html: FC<AppProps> = ({ nonce, linkTags, children }) => {
 	if (IS_SPA) return <>{children}</>

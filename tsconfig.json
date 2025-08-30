@@ -23,9 +23,17 @@
 		"lib": ["esnext", "dom", "webworker", "DOM.Iterable"],
 		"paths": {
 			"@/src/*": ["src/*"],
+			"@/common": ["src/common/index.ts"],
 			"@/common/*": ["src/common/*"],
 			"@/server/*": ["src/server/*"],
 			"@/client/*": ["src/client/*"],
+			"@/pages/*": ["src/client/pages/*"],
+			"@/components/*": ["src/client/components/*"],
+			"@/shared/*": ["src/client/components/@shared/*"],
+			"@/api": ["src/client/api/index.ts"],
+			"@/api/*": ["src/client/api/*"],
+			"@/utils": ["src/client/utils/index.ts"],
+			"@/utils/*": ["src/client/utils/*"],
 			"@/config/*": ["config/*"]
 		},
 		"typeRoots": ["@types", "node_modules/@types"]

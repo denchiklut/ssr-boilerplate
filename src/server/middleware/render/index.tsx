@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express'
 import { renderToPipeableStream } from 'react-dom/server'
 import { StaticRouter } from 'react-router'
-import { basename, logger, setEnvVars } from '../../../common'
-import { ChunkExtractor } from '../../utils'
+import { basename, logger, setEnvVars } from '@/common'
+import { ChunkExtractor } from './chunk-extractor'
 import { getApp, getStats } from './render.util'
 
 export const render = (req: Request, res: Response, next: NextFunction) => {

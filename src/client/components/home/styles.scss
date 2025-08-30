@@ -1,5 +1,5 @@
-@use "colors";
+@use "vars";
 
 .wrapper {
-	background: colors.$bg;
+	background: vars.$bg;
 }

@@ -1,9 +1,11 @@
 import { join, resolve } from 'node:path'
+import type { StatsCompilation } from '@rspack/core'
 import type { FC } from 'react'
+
 import requireFromString from 'require-from-string'
 import type { ServerResponse } from 'webpack-dev-middleware'
-import { type AppProps, publicPath } from '../../../common'
-import type { ChunkExtractorOptions } from '../../utils'
+import { type AppProps, publicPath } from '@/common'
+import type { ChunkExtractorOptions } from './chunk-extractor'
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (!IS_DEV) {
@@ -14,7 +16,7 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	}
 
 	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson()
-	const stats = multiStats?.children?.find(child => child.name === 'client')
+	const stats = multiStats?.children?.find(child => child.name === 'client') as StatsCompilation
 
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
 

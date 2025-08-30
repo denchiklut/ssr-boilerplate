@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import https from 'node:https'
 import type { Express } from 'express'
-import { getENV, joinPath, logger } from '../../../common'
+import { getENV, joinPath, logger } from '@/common'
 
 const sslKeyPath = 'certs/key.pem'
 const sslCertPath = 'certs/cert.pem'
