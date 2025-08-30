@@ -1,14 +1,15 @@
 import { useCookies } from 'react-cookie'
-import css from './styles.scss'
 
 export const CookieDemo = () => {
 	const [cookies, setCookie] = useCookies()
 
 	return (
-		<div className={css.wrapper}>
+		<div>
 			<b>Cookie demo</b>
 
-			<button onClick={() => setCookie('hide', !cookies.hide)}>Toggle</button>
+			<button type='button' onClick={() => setCookie('hide', !cookies.hide)}>
+				Toggle
+			</button>
 			{!cookies.hide && (
 				<p>
 					Reload the page!

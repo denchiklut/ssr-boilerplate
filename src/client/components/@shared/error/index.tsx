@@ -1,5 +1,6 @@
 import { useRouteError } from 'react-router'
-import { logger } from 'src/common'
+
+import { logger } from '@/common/logger'
 
 export const Fallback = () => {
 	const error = useRouteError()

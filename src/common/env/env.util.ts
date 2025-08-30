@@ -1,6 +1,8 @@
-import type { ObjectSchema, InferType, AnyObject } from 'yup'
+import type { AnyObject, InferType, ObjectSchema } from 'yup'
+
+import { logger } from '@/common//logger'
+
 import { parse } from './parse.util'
-import { logger } from '../logger'
 
 interface Props<T extends AnyObject> {
 	schema: ObjectSchema<T>

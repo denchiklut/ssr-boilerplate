@@ -1,6 +1,7 @@
-import { string, mixed, object, type InferType } from 'yup'
-import { getOrDefault } from './get.util'
+import { type InferType, mixed, object, string } from 'yup'
+
 import { createEnv } from './env.util'
+import { getOrDefault } from './get.util'
 
 if (IS_SERVER) require('dotenv/config')
 

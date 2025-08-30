@@ -30,7 +30,7 @@ If you are looking for **renderToPipeableStream** setup switch to the [feat/pipa
 Before starting work with the project, run the command:
 
 ```
-yarn install
+pnpm i
 ```
 
 ### Step 2. Https setup
@@ -38,7 +38,7 @@ yarn install
 If you need to use https, follow these steps:
 
 1. in `setup.sh` change the `domain` variable to your domain
-2. run the command `yarn setup`
+2. run the command `pnpm setup`
 3. finally add your CLIENT_HOST variable to .env file as `https://<YOUR-domain>:PORT`
 
 ### Step 2. Environment variables
@@ -50,7 +50,7 @@ You can use .env file to specify environment variables. This file is ignored by 
 1. Add it to `.env` file
 2. For TS completion and validation add it to `envSchema` in `src/common/env/index.ts`
 3. If this variable needs to be accessible from both `client` & `server` make sure it's name starts with prefix `CLIENT_`
-4. You can change client (`CLIENT_`) prefix in `webpack/plugins/define.plugin.ts`
+4. You can change client (`CLIENT_`) prefix in `rspack/plugins/define.plugin.ts`
 5. You can access environment variable via `getENV` function.
    This function will return a proper value based on environment (client/server) and cast it to a proper type based on `envSchema` from `step 2` (string/number/boolean)
 6. Important note! Unlike with Next.js apps, environment variables in this setup are `not baked` into the `bundle` at build time. This allows you to `build` the app `once` (e.g., for staging) and `reuse` the same build in other environments, such as production, without needing to rebuild for each environment.
@@ -66,19 +66,19 @@ Note that additionally there will be few useful `global variables` available for
 To start the project in **SSR** mode, run the command
 
 ```
-yarn dev
+pnpm dev
 ```
 
 To start the project in **SPA** mode, run the command
 
 ```
-yarn spa
+pnpm spa
 ```
 
 To start the project in **Prod** mode, run the command
 
 ```
-yarn start
+pnpm start
 ```
 
 Ready! The app will start on `http://localhost:3000`

@@ -1,4 +1,4 @@
-export * from './render'
 export * from './health'
-export * from './version'
 export * from './pwa'
+export * from './render'
+export * from './version'

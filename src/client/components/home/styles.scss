@@ -1,5 +1,5 @@
-@use 'mixins';
+@use "vars";
 
 .wrapper {
-	background: mixins.$background;
+	background: vars.$bg;
 }

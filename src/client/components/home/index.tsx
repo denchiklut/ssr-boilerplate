@@ -1,5 +1,7 @@
 import { Suspense } from 'react'
-import { logger, getENV } from 'src/common'
+
+import { getENV, logger } from '@/common'
+
 import { CookieDemo } from './cookie-demo'
 import { Posts } from './posts'
 import { State } from './state'
@@ -10,8 +12,8 @@ export const Home = () => {
 	logger.info('Env host: %s', host)
 
 	return (
-		<div className={css.wrapper}>
-			<h3>Home page!</h3>
+		<div>
+			<h3 className={css.wrapper}>Home page!</h3>
 			<State />
 			<hr />
 			<CookieDemo />

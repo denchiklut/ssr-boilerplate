@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react'
+
 import { State } from './index'
 
 describe('<State />', () => {

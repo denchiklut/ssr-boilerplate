@@ -1,11 +1,10 @@
-import morgan, { type StreamOptions } from 'morgan'
-import { logger as winstonLogger } from 'src/common'
+import morgan from 'morgan'
 
-const stream: StreamOptions = {
-	write: message => winstonLogger.info(message)
-}
+import { logger as winstonLogger } from '@/common/logger'
 
 export const logger = morgan(':method :url :status - :response-time ms', {
-	stream,
-	skip: () => IS_DEV
+	skip: () => IS_DEV,
+	stream: {
+		write: message => winstonLogger.info(message)
+	}
 })

@@ -1,6 +1,7 @@
 import type { Router } from 'express'
 
-import { basePath } from 'src/common'
+import { basePath } from '@/common/path'
+
 import { version } from '../controller'
 
 export const versionRoutes = (router: Router) => {

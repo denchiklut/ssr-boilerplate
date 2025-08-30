@@ -1,22 +1,25 @@
 import { type FC, lazy, StrictMode } from 'react'
-import { Route, Routes } from 'react-router'
 import { CookiesProvider } from 'react-cookie'
-import { type AppProps, getENV } from 'src/common'
-import { Layout } from '@shared/layout'
-import { Html } from '@shared/html'
+import { Route, Routes } from 'react-router'
 
-const Home = lazy(() => import('pages/home'))
-const About = lazy(() => import('pages/about'))
-const NotFound = lazy(() => import('pages/not-found'))
+import { type AppProps, getENV } from '@/common'
 
-export const App: FC<AppProps> = ({ nonce, cookies }) => {
+import { Html } from '../html'
+import { Layout } from '../layout'
+import './global.scss'
+
+const Home = lazy(() => import('@/pages/home' as string))
+const About = lazy(() => import('@/pages/about' as string))
+const NotFound = lazy(() => import('@/pages/not-found' as string))
+
+export const App: FC<AppProps> = ({ nonce, cookies, linkTags }) => {
 	__webpack_nonce__ = nonce
 	__webpack_public_path__ = getENV('CLIENT_PUBLIC_PATH')
 
 	return (
 		<StrictMode>
 			<CookiesProvider cookies={cookies}>
-				<Html nonce={nonce}>
+				<Html nonce={nonce} linkTags={linkTags}>
 					<Routes>
 						<Route path='/' element={<Layout />}>
 							<Route index element={<Home />} />

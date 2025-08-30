@@ -1,4 +1,4 @@
-import { Page } from '@shared/page'
+import { Page } from '@/shared/page'
 
 export default () => {
 	return (

@@ -2,30 +2,35 @@ name: Setup
 description: Install dependencies
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    using: 'composite'
+    steps:
+        - name: Check out code
+          uses: actions/checkout@v5
+          with:
+              fetch-depth: 0
 
-    - name: Setup node
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+        - name: Setup node
+          uses: actions/setup-node@v4
+          with:
+              node-version: lts/*
 
-    - name: Download yarn cache
-      uses: actions/cache@v3
-      id: yarn-cache
-      with:
-        path: | 
-          node_modules
-          ~/.cache/Cypress
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-modules-
+        - name: Setup pnpm
+          uses: pnpm/action-setup@v4
+          with:
+              run_install: false
 
-    - name: Install Dependencies
-      if: steps.yarn-cache.outputs.cache-hit != 'true'
-      run: yarn install --frozen-lockfile
-      shell: bash
+        - name: Restore cache
+          uses: actions/cache@v4
+          id: pnpm-cache
+          with:
+              path: |
+                  node_modules
+                  ~/.cache/Cypress
+              key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+              restore-keys: |
+                  ${{ runner.os }}-modules-
+
+        - name: Install dependencies
+          if: steps.pnpm-cache.outputs.cache-hit != 'true'
+          run: pnpm i --frozen-lockfile
+          shell: bash

@@ -1,6 +1,8 @@
 {
-	"syntax": "postcss-scss",
-	"plugins": ["stylelint-order"],
-	"extends": ["stylelint-config-standard-scss"],
-	"rules": {}
+	"plugins": ["stylelint-scss"],
+	"extends": ["stylelint-config-standard"],
+	"rules": {
+		"at-rule-no-unknown": null,
+		"scss/at-rule-no-unknown": true
+	}
 }

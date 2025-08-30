@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
-import { basename, publicPath } from 'src/common'
+
+import { basename, publicPath } from '@/common/path'
 
 export const getManifest = (_: Request, res: Response) => {
 	res.json({

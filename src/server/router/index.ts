@@ -1,9 +1,10 @@
 import { Router } from 'express'
+
 import { appRoutes } from './app'
-import { staticRoutes } from './static'
-import { versionRoutes } from './version'
 import { healthRoutes } from './health'
 import { pwaRoutes } from './pwa'
+import { staticRoutes } from './static'
+import { versionRoutes } from './version'
 
 export const router = Router()
 staticRoutes(router)

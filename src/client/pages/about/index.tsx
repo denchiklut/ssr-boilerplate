@@ -1,5 +1,5 @@
-import { About } from 'components/about'
-import { Page } from '@shared/page'
+import { About } from '@/components/about'
+import { Page } from '@/shared/page'
 
 export default () => {
 	return (

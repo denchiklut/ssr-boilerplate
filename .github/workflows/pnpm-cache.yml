@@ -1,0 +1,46 @@
+name: Cache Dependencies
+
+on:
+    workflow_call:
+
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v5
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                    node-version: lts/*
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+
+            - name: Check pnpm cache
+              uses: actions/cache@v4
+              id: pnpm-cache-check
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  lookup-only: true
+
+            - name: Prepare pnpm cache
+              uses: actions/cache@v4
+              if: steps.pnpm-cache-check.outputs.cache-hit != 'true'
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+            - name: Install Dependencies
+              if: steps.pnpm-cache-check.outputs.cache-hit != 'true'
+              run: pnpm i --frozen-lockfile

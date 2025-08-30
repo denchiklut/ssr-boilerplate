@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { registerSW } from './pwa.util'
 
 export const usePWA = () => {

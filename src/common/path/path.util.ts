@@ -2,7 +2,7 @@ import { getENV } from '../index'
 
 export const basename = new URL(getENV('CLIENT_HOST')).pathname
 
-export const publicPath = (p: string) => joinPath(getENV('CLIENT_PUBLIC_PATH'), p)
+export const publicPath = (path: string) => joinPath(getENV('CLIENT_PUBLIC_PATH'), path)
 
 export const basePath = (path: string) => joinPath(basename, path)
 

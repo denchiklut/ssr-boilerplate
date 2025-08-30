@@ -1,14 +1,11 @@
 {
 	"*.{ts,tsx}": [
-		"jest --passWithNoTests --findRelatedTests",
-		"eslint --cache --fix",
-		"prettier --write"
+		"jest --passWithNoTests --findRelatedTests"
 	],
 	"*.{css,scss}": [
-		"stylelint --fix",
-		"prettier --write"
-	],
-	"*.{html,md,json}": [
-		"prettier --write"
+    	"stylelint --fix"
+    ],
+	"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+		"biome check --no-errors-on-unmatched --write --unsafe"
 	]
 }

@@ -1,7 +1,8 @@
 import express from 'express'
-import { favicon, hmr, logger, cookieParser, nonce, error } from 'server/middleware'
-import { bootstrap } from 'server/utils'
-import { router } from 'server/router'
+
+import { cookieParser, error, favicon, hmr, logger, nonce } from './middleware'
+import { router } from './router'
+import { bootstrap } from './utils'
 
 export const expressApp = express()
 	.use(cookieParser)
