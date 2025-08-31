@@ -108,6 +108,9 @@ importers:
       '@types/serve-favicon':
         specifier: ^2.5.7
         version: 2.5.7
+      '@types/url-join':
+        specifier: 4.0.3
+        version: 4.0.3
       '@types/webpack-env':
         specifier: ^1.18.8
         version: 1.18.8
@@ -1809,6 +1812,9 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/url-join@4.0.3':
+    resolution: {integrity: sha512-3l1qMm3wqO0iyC5gkADzT95UVW7C/XXcdvUcShOideKF0ddgVRErEQQJXBd2kvQm+aSgqhBGHGB38TgMeT57Ww==}
 
   '@types/webpack-env@1.18.8':
     resolution: {integrity: sha512-G9eAoJRMLjcvN4I08wB5I7YofOb/kaJNd5uoCMX+LbKXTPCF+ZIHuqTnFaK9Jz1rgs035f9JUPUhNFtqgucy/A==}
@@ -7311,6 +7317,8 @@ snapshots:
   '@types/triple-beam@1.3.5': {}
 
   '@types/trusted-types@2.0.7': {}
+
+  '@types/url-join@4.0.3': {}
 
   '@types/webpack-env@1.18.8': {}
 

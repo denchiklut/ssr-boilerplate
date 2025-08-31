@@ -1,31 +1,30 @@
 import type { Level } from '../../../types'
 import { colors, css } from './print.util'
 
-export function print() {
-	return (_: object, propertyKey: string, descriptor: PropertyDescriptor) => {
-		const originalMethod = descriptor.value
+export function print<This extends { ns: string }, Args extends unknown[], Return>(
+	target: (this: This, ...args: Args) => Return,
+	context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+) {
+	const method = String(context.name) as Level
 
-		descriptor.value = function (...args: unknown[]) {
-			const method = propertyKey as Level
-			const { ns } = this as { ns: string }
-			const params = [...args]
+	function decorate(this: This, ...args: Args): Return {
+		const params = [...args]
 
-			if (typeof params[0] !== 'string') params.unshift('%o')
+		if (typeof params[0] !== 'string') params.unshift('%o')
 
-			if (!IS_DEV) {
-				console[method](...args)
-			} else {
-				console[method](
-					`%c${ns}%c ${params[0]}`,
-					css(colors[method]).join(';'),
-					'color: inherit',
-					...params.slice(1)
-				)
-			}
-
-			originalMethod.apply(this, args)
+		if (IS_PROD) {
+			console[method](...args)
+		} else {
+			console[method](
+				`%c${this.ns}%c ${params[0]}`,
+				css(colors[method]).join(';'),
+				'color: inherit',
+				...params.slice(1)
+			)
 		}
 
-		return descriptor
+		return target.call(this, ...args)
 	}
+
+	return decorate
 }

@@ -14,8 +14,6 @@
 		"noUnusedLocals": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
 		"module": "nodenext",
 		"target": "esnext",
 		"jsx": "react-jsx",

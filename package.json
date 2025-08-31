@@ -57,6 +57,7 @@
 		"@types/react-dom": "^19.1.7",
 		"@types/require-from-string": "^1.2.3",
 		"@types/serve-favicon": "^2.5.7",
+		"@types/url-join": "4.0.3",
 		"@types/webpack-env": "^1.18.8",
 		"@types/webpack-node-externals": "^3.0.4",
 		"autoprefixer": "^10.4.21",

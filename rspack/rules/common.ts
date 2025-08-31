@@ -17,6 +17,7 @@ export const typescript = {
 					decorators: true
 				},
 				transform: {
+					decoratorVersion: '2022-03',
 					react: {
 						runtime: 'automatic'
 					}

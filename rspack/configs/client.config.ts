@@ -7,7 +7,7 @@ import * as rules from '../rules'
 
 export default defineConfig({
 	name: 'client',
-	target: 'web',
+	target: 'browserslist',
 	context: env.ROOT_DIR,
 	mode: env.IS_DEV ? 'development' : 'production',
 	devtool: env.IS_DEV ? 'eval-cheap-module-source-map' : 'source-map',
