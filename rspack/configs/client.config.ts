@@ -26,7 +26,7 @@ export default defineConfig({
 		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	module: {
-		rules: [rules.typescript, rules.css, rules.fontsRule, rules.mediasRule]
+		rules: [rules.typescript, rules.css, rules.fonts, rules.mediasRule, ...rules.svg]
 	},
 	plugins: [
 		plugins.css,

@@ -69,7 +69,20 @@ export const mediasRule = {
 	}
 }
 
-export const fontsRule = {
+export const svg = [
+	{
+		test: /\.icon.svg$/i,
+		issuer: /\.[jt]sx?$/,
+		use: ['@svgr/webpack']
+	},
+	{
+		test: /\.svg$/,
+		exclude: /\.icon.svg$/,
+		type: 'asset/inline'
+	}
+]
+
+export const fonts = {
 	test: /\.(woff(2)?|eot|ttf|otf|)$/,
 	type: 'asset/resource',
 	generator: {
