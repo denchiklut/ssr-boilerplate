@@ -10,6 +10,7 @@ import './global.scss'
 
 const Home = lazy(() => import('@/pages/home' as string))
 const About = lazy(() => import('@/pages/about' as string))
+const ServerComponents = lazy(() => import('@/pages/server-components' as string))
 const NotFound = lazy(() => import('@/pages/not-found' as string))
 
 export const App: FC<AppProps> = ({ nonce, cookies, linkTags }) => {
@@ -24,6 +25,7 @@ export const App: FC<AppProps> = ({ nonce, cookies, linkTags }) => {
 						<Route path='/' element={<Layout />}>
 							<Route index element={<Home />} />
 							<Route path='about' element={<About />} />
+							<Route path='server-components' element={<ServerComponents />} />
 							<Route path='*' element={<NotFound />} />
 						</Route>
 					</Routes>

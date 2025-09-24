@@ -13,7 +13,7 @@ export const Layout = () => {
 	return (
 		<>
 			<nav>
-				<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
+				<Link to='/'>Home</Link> / <Link to='/about'>About</Link> / <Link to='/server-components'>Server Components</Link>
 			</nav>
 
 			<ErrorBoundary fallback={<Fallback />}>
