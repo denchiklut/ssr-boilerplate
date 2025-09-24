@@ -5,6 +5,7 @@ import { router } from './router'
 import { bootstrap } from './utils'
 
 export const expressApp = express()
+	.use(express.json()) // Add JSON parsing middleware for API endpoints
 	.use(cookieParser)
 	.use(favicon())
 	.use(hmr())

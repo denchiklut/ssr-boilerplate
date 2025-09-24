@@ -1,48 +1,63 @@
 import { Page } from '@/shared/page'
 import { ClientWrapper } from '@/components/@shared/client-wrapper'
+import { ServerComponentLoader } from '@/components/@shared/server-component-loader'
 
-// Dynamic import for server components 
+// Demo page showcasing server components
 const ServerComponents = () => {
-	// For now, we'll create a placeholder that shows the concept
-	// In a full RSC implementation, this would be replaced by the RSC runtime
 	return (
 		<div>
 			<h3>🚀 React Server Components Demo</h3>
 			<p style={{ color: '#666' }}>
-				This page demonstrates server components integration.
+				This page demonstrates server components integration with live server-rendered components.
 			</p>
 			
 			<div style={{ 
-				background: '#fffacd', 
+				background: '#d4edda', 
+				border: '1px solid #28a745',
 				padding: '1rem', 
 				borderRadius: '8px',
 				margin: '1rem 0' 
 			}}>
-				<h4>📋 Implementation Status</h4>
+				<h4>✅ Implementation Status</h4>
 				<ul>
 					<li>✅ Server component files created</li>
 					<li>✅ Client boundary components ready</li>
-					<li>🔄 RSC rendering pipeline (next step)</li>
-					<li>🔄 Build system integration (next step)</li>
+					<li>✅ RSC rendering pipeline implemented</li>
+					<li>✅ Build system integration complete</li>
 				</ul>
 			</div>
 
 			<ClientWrapper>
-				<div style={{ 
-					border: '2px dashed #ddd', 
-					padding: '2rem', 
-					textAlign: 'center',
-					borderRadius: '8px' 
-				}}>
-					<p>🏗️ Server Components will render here</p>
-					<p style={{ color: '#666', fontSize: '0.9em' }}>
-						When RSC pipeline is complete, this area will show:
-					</p>
-					<ul style={{ textAlign: 'left', color: '#666' }}>
-						<li>Server-rendered Posts</li>
-						<li>Server-rendered User Profiles</li>
-						<li>Server-rendered Layout components</li>
-					</ul>
+				<div style={{ marginBottom: '2rem' }}>
+					<h4>📝 Server-Rendered Posts</h4>
+					<ServerComponentLoader 
+						component="Posts" 
+						fallback={<div style={{ padding: '2rem', textAlign: 'center', background: '#f8f9fa', borderRadius: '8px' }}>
+							🔄 Loading server component...
+						</div>}
+					/>
+				</div>
+
+				<div style={{ marginBottom: '2rem' }}>
+					<h4>👤 Server-Rendered User Profile</h4>
+					<ServerComponentLoader 
+						component="UserProfile" 
+						props={{ userId: 1 }}
+						fallback={<div style={{ padding: '2rem', textAlign: 'center', background: '#f8f9fa', borderRadius: '8px' }}>
+							🔄 Loading user profile...
+						</div>}
+					/>
+				</div>
+
+				<div>
+					<h4>🏗️ Server-Rendered Layout Component</h4>
+					<ServerComponentLoader 
+						component="ServerLayout" 
+						props={{ title: "Dynamic Server Layout" }}
+						fallback={<div style={{ padding: '2rem', textAlign: 'center', background: '#f8f9fa', borderRadius: '8px' }}>
+							🔄 Loading layout component...
+						</div>}
+					/>
 				</div>
 			</ClientWrapper>
 		</div>
