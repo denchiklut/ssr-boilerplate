@@ -1,1 +1,2 @@
 pnpm exec lint-staged --relative --verbose
+pnpm ts-check

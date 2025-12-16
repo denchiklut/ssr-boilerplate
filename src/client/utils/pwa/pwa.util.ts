@@ -1,4 +1,4 @@
-import { basename, basePath } from 'src/common'
+import { basename, basePath } from '@/src/common'
 import { Workbox } from 'workbox-window'
 
 export function registerSW(promptForUpdate: () => Promise<boolean>) {
