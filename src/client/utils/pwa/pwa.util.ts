@@ -1,5 +1,6 @@
-import { basename, basePath } from '@/src/common'
 import { Workbox } from 'workbox-window'
+
+import { basename, basePath } from '@/src/common'
 
 export function registerSW(promptForUpdate: () => Promise<boolean>) {
 	if (!('serviceWorker' in navigator)) return
