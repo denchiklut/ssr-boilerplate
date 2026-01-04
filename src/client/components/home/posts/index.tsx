@@ -1,11 +1,12 @@
 import { use } from 'react'
 
-import { fetchPosts } from '@/api'
+import type { PostsResponse } from '@/src/client/api'
 
-const data = fetchPosts()
-
-export const Posts = () => {
-	const posts = use(data)
+interface Props {
+	promise: Promise<PostsResponse>
+}
+export const Posts = ({ promise }: Props) => {
+	const posts = use(promise)
 
 	return (
 		<div>
