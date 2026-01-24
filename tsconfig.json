@@ -17,6 +17,7 @@
 		"module": "nodenext",
 		"target": "esnext",
 		"jsx": "react-jsx",
+		"moduleResolution": "bundler",
 		"lib": ["esnext", "dom", "webworker", "DOM.Iterable"],
 		"paths": {
 			"@/src/*": ["./src/*"],

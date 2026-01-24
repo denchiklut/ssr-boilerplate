@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import { getENV, logger } from '@/common'
 
@@ -21,9 +22,11 @@ export const Home = () => {
 			<hr />
 			<Demo />
 			<hr />
-			<Suspense fallback={<p>fetching posts...</p>}>
-				<Posts />
-			</Suspense>
+			<ErrorBoundary fallback={<p>failed to fetch posts</p>}>
+				<Suspense fallback={<p>fetching posts...</p>}>
+					<Posts />
+				</Suspense>
+			</ErrorBoundary>
 		</div>
 	)
 }

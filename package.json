@@ -51,6 +51,7 @@
 		"@svgr/webpack": "^8.1.0",
 		"@swc/jest": "^0.2.39",
 		"@swc/register": "^0.1.10",
+		"@tanstack/react-query-devtools": "^5.91.2",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.1",
 		"@types/express": "^5.0.6",

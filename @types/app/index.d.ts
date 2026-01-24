@@ -1,3 +1,4 @@
+import type { DehydratedState } from '@tanstack/react-query'
 import type Cookies from 'universal-cookie'
 
 declare global {
@@ -14,5 +15,6 @@ declare global {
 
 	interface Window {
 		nonce: string
+		__REACT_QUERY_STATE__?: DehydratedState
 	}
 }

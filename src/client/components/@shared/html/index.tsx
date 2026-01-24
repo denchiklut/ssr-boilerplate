@@ -2,7 +2,7 @@ import type { FC } from 'react'
 
 import { type AppProps, basePath, publicPath } from '@/common'
 
-export const Html: FC<AppProps> = ({ nonce, linkTags, children }) => {
+export const Html: FC<Omit<AppProps, 'client'>> = ({ nonce, linkTags, children }) => {
 	if (IS_SPA) return <>{children}</>
 
 	return (

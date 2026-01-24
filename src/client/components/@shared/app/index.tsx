@@ -13,13 +13,13 @@ const Home = lazy(() => import('@/pages/home' as string))
 const About = lazy(() => import('@/pages/about' as string))
 const NotFound = lazy(() => import('@/pages/not-found' as string))
 
-export const App: FC<AppProps> = ({ nonce, cookies, linkTags, queryClient }) => {
+export const App: FC<AppProps> = ({ nonce, cookies, linkTags, client }) => {
 	__webpack_nonce__ = nonce
 	__webpack_public_path__ = getENV('CLIENT_PUBLIC_PATH')
 
 	return (
 		<StrictMode>
-			<QueryProvider queryClient={queryClient}>
+			<QueryProvider client={client}>
 				<CookiesProvider cookies={cookies}>
 					<Html nonce={nonce} linkTags={linkTags}>
 						<Routes>

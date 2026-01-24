@@ -3,12 +3,10 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { fetchPosts, postsQueryKey } from '@/api'
 
 export const Posts = () => {
-	// useSuspenseQuery will:
-	// - On server: suspend and fetch data, React streams HTML once resolved
-	// - On client: hydrate from dehydrated state or fetch if not available
 	const { data: posts } = useSuspenseQuery({
 		queryKey: postsQueryKey,
-		queryFn: fetchPosts
+		queryFn: fetchPosts,
+		staleTime: 5 * 60 * 1000
 	})
 
 	return (
