@@ -1,3 +1,4 @@
+import { dehydrate, QueryClient } from '@tanstack/react-query'
 import type { NextFunction, Request, Response } from 'express'
 import { renderToPipeableStream } from 'react-dom/server'
 import { StaticRouter } from 'react-router'
@@ -15,12 +16,15 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 		const { App } = getApp(res)
 		const { url, nonce } = req
 
+		const queryClient = new QueryClient()
+
 		const { pipe } = renderToPipeableStream(
 			<StaticRouter location={url} basename={basename}>
 				<App
 					nonce={nonce}
 					cookies={req.universalCookies}
 					linkTags={chunkExtractor.getLinkTags({ nonce })}
+					queryClient={queryClient}
 				/>
 			</StaticRouter>,
 			{
@@ -29,15 +33,18 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 				bootstrapScripts: chunkExtractor.assets
 					.filter(a => a.url.endsWith('.js'))
 					.map(a => a.url),
-				onShellReady() {
+				onAllReady() {
 					res.statusCode = 200
 					res.setHeader('content-type', 'text/html')
+
+					// Dehydrate after React tree has rendered and all queries resolved
+					const dehydratedState = dehydrate(queryClient)
+					res.write(
+						`<script nonce="${nonce}">window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState)}</script>`
+					)
+
 					pipe(res)
-				},
-				onShellError() {
-					res.statusCode = 500
-					res.setHeader('content-type', 'text/html')
-					res.send('<h1>Something went wrong</h1>')
+					queryClient.clear()
 				},
 				onError(error) {
 					logger.error(error)

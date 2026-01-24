@@ -1,18 +1,21 @@
-import { use } from 'react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
-import type { PostsResponse } from '@/src/client/api'
+import { fetchPosts, postsQueryKey } from '@/api'
 
-interface Props {
-	promise: Promise<PostsResponse>
-}
-export const Posts = ({ promise }: Props) => {
-	const posts = use(promise)
+export const Posts = () => {
+	// useSuspenseQuery will:
+	// - On server: suspend and fetch data, React streams HTML once resolved
+	// - On client: hydrate from dehydrated state or fetch if not available
+	const { data: posts } = useSuspenseQuery({
+		queryKey: postsQueryKey,
+		queryFn: fetchPosts
+	})
 
 	return (
 		<div>
-			<b>Data fetching demo</b>
+			<b>Data fetching demo (React Query + SSR)</b>
 			<ul>
-				{posts.map(post => (
+				{posts.slice(0, 10).map(post => (
 					<li key={post.id}>{post.title}</li>
 				))}
 			</ul>

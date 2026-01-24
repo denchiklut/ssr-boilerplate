@@ -23,6 +23,7 @@
 		"setup": "sh setup.sh"
 	},
 	"dependencies": {
+		"@tanstack/react-query": "^5.90.16",
 		"dotenv": "^17.2.3",
 		"express": "^5.2.1",
 		"morgan": "^1.10.1",
