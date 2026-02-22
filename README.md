@@ -16,6 +16,23 @@ If you are looking for **renderToPipeableStream** setup switch to the [feat/pipa
 -   [x] [Svgr](https://react-svgr.com/docs/webpack/) support for `.icon.svg` files
 -   [x] local `https`
 -   [x] `PipeableStream` support
+-   [x] [TanStack Query](https://tanstack.com/query/latest) (React Query) with SSR support
+
+### TanStack Query
+
+This boilerplate includes [TanStack Query](https://tanstack.com/query/latest) (`@tanstack/react-query`) fully integrated with SSR using the **dehydrate/hydrate** pattern:
+
+-   On the **server**, a fresh `QueryClient` is created per request. Data is fetched during rendering via `useSuspenseQuery`, then dehydrated and serialized into the HTML as `window.__REACT_QUERY_STATE__`.
+-   On the **client**, the dehydrated state is picked up by `HydrationBoundary`, populating the client-side cache so no re-fetching occurs on hydration.
+
+Key files:
+
+| File | Purpose |
+| --- | --- |
+| `src/client/components/@shared/query/index.tsx` | Isomorphic `QueryProvider` with hydration setup |
+| `src/server/middleware/render/index.tsx` | Server-side `QueryClient` creation and dehydration |
+| `src/client/components/home/posts/index.tsx` | Example usage of `useSuspenseQuery` |
+| `src/client/api/todos.api.ts` | API layer with query keys and fetch functions |
 
 ### SSR Suspense
 
