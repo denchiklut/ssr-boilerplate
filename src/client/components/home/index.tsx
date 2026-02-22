@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { fetchPosts } from '@/api'
 import { getENV, logger } from '@/common'
 
 import { CookieDemo } from './cookie-demo'
@@ -23,7 +22,7 @@ export const Home = () => {
 			<Demo />
 			<hr />
 			<Suspense fallback={<p>fetching posts...</p>}>
-				<Posts promise={fetchPosts()} />
+				<Posts />
 			</Suspense>
 		</div>
 	)
