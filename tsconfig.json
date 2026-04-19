@@ -33,7 +33,8 @@
 			"@/utils/*": ["./src/client/utils/*"],
 			"@/config/*": ["./config/*"]
 		},
-		"typeRoots": ["@types", "node_modules/@types"]
+		"typeRoots": ["@types", "node_modules/@types"],
+		"types": ["webpack-env"]
 	},
 	"exclude": ["node_modules"]
 }
