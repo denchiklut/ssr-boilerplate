@@ -37,7 +37,7 @@
 		"universal-cookie": "^8.1.0",
 		"universal-cookie-express": "^8.1.0",
 		"url-join": "5.0.0",
-		"uuid": "^13.0.0",
+		"uuid": "^14.0.0",
 		"winston": "^3.19.0",
 		"workbox-window": "^7.4.0",
 		"yup": "^1.7.1"
