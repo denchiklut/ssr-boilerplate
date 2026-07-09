@@ -3,7 +3,7 @@ import { rspack } from '@rspack/core'
 
 import { SRC_DIR } from '../env'
 
-export const typescript = {
+const swc = (reactServerComponents: boolean) => ({
 	test: /\.[jt]sx?$/,
 	type: 'javascript/auto',
 	exclude: [/[\\/]node_modules[\\/]/],
@@ -22,7 +22,29 @@ export const typescript = {
 						runtime: 'automatic'
 					}
 				}
-			}
+			},
+			rspackExperiments: { reactServerComponents }
+		}
+	}
+})
+
+export const typescript = swc(false)
+
+/** Parses `'use client'` / `'use server'` directives — for the RSC-aware compilers only. */
+export const typescriptRSC = swc(true)
+
+/**
+ * react-router marks its client boundary with a `'use client'` directive inside its
+ * dist files (`internal/react-server-client`), so it needs the RSC transform too.
+ */
+export const vendorRSC = {
+	test: /\.m?js$/,
+	include: [/node_modules[\\/]react-router[\\/]/],
+	use: {
+		loader: 'builtin:swc-loader',
+		options: {
+			jsc: { parser: { syntax: 'ecmascript' } },
+			rspackExperiments: { reactServerComponents: true }
 		}
 	}
 }
@@ -71,8 +93,8 @@ export const mediasRule = {
 
 export const svg = [
 	{
+		// no `issuer` condition: RSC-injected modules can have query-suffixed or virtual issuers
 		test: /\.icon.svg$/i,
-		issuer: /\.[jt]sx?$/,
 		use: ['@svgr/webpack']
 	},
 	{

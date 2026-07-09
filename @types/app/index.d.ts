@@ -8,7 +8,7 @@ declare global {
 		}
 
 		interface Response {
-			renderApp(): void
+			renderApp(): Promise<void>
 		}
 	}
 

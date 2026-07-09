@@ -26,7 +26,14 @@ export default defineConfig({
 		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	module: {
-		rules: [rules.typescript, rules.css, rules.fonts, rules.mediasRule, ...rules.svg]
+		rules: [
+			rules.typescriptRSC,
+			rules.vendorRSC,
+			rules.css,
+			rules.fonts,
+			rules.mediasRule,
+			...rules.svg
+		]
 	},
 	plugins: [
 		plugins.css,
@@ -35,6 +42,7 @@ export default defineConfig({
 		plugins.refresh,
 		plugins.statsPlugin,
 		plugins.pwa,
+		plugins.rscClientPlugin,
 		plugins.definePlugin(),
 		...plugins.htmlWebpackPlugin()
 	]

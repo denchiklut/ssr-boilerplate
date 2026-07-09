@@ -1,5 +1,5 @@
-import type { Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 
-export const render = (_: Request, res: Response) => {
-	res.renderApp()
+export const render = (_: Request, res: Response, next: NextFunction) => {
+	res.renderApp().catch(next)
 }

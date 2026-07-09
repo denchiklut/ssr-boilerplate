@@ -1,37 +1,51 @@
-import { type FC, lazy, StrictMode } from 'react'
-import { CookiesProvider } from 'react-cookie'
-import { Route, Routes } from 'react-router'
-
-import { type AppProps, getENV } from '@/common'
+import type { LinkHTMLAttributes } from 'react'
+import {
+	createContext,
+	Outlet,
+	type RouterContextProvider,
+	type unstable_RSCRouteConfig as RSCRouteConfig
+} from 'react-router'
 
 import { Html } from '../html'
-import { Layout } from '../layout'
-import { QueryProvider } from '../query'
+import { Providers } from './providers'
 import './global.scss'
 
-const Home = lazy(() => import('@/pages/home' as string))
-const About = lazy(() => import('@/pages/about' as string))
-const NotFound = lazy(() => import('@/pages/not-found' as string))
-
-export const App: FC<AppProps> = ({ nonce, cookies, linkTags, queryClient }) => {
-	__webpack_nonce__ = nonce
-	__webpack_public_path__ = getENV('CLIENT_PUBLIC_PATH')
-
-	return (
-		<StrictMode>
-			<QueryProvider queryClient={queryClient}>
-				<CookiesProvider cookies={cookies}>
-					<Html nonce={nonce} linkTags={linkTags}>
-						<Routes>
-							<Route path='/' element={<Layout />}>
-								<Route index element={<Home />} />
-								<Route path='about' element={<About />} />
-								<Route path='*' element={<NotFound />} />
-							</Route>
-						</Routes>
-					</Html>
-				</CookiesProvider>
-			</QueryProvider>
-		</StrictMode>
-	)
+export interface RenderMeta {
+	nonce?: string
+	cookie?: string
+	linkTags?: LinkHTMLAttributes<HTMLLinkElement>[]
 }
+
+/** Per-request data injected by the express render middleware. */
+export const renderContext = createContext<RenderMeta>({})
+
+const Root = ({ loaderData }: { loaderData: RenderMeta }) => (
+	<Html nonce={loaderData.nonce} linkTags={loaderData.linkTags}>
+		<Providers cookie={loaderData.cookie}>
+			<Outlet />
+		</Providers>
+	</Html>
+)
+
+export const routes = (): RSCRouteConfig => [
+	{
+		id: 'root',
+		loader: ({ context }) => (context as RouterContextProvider).get(renderContext),
+		Component: Root,
+		children: [
+			{
+				id: 'layout',
+				lazy: () => import('@/shared/layout' as string),
+				children: [
+					{ id: 'home', index: true, lazy: () => import('@/pages/home' as string) },
+					{ id: 'about', path: 'about', lazy: () => import('@/pages/about' as string) },
+					{
+						id: 'not-found',
+						path: '*',
+						lazy: () => import('@/pages/not-found' as string)
+					}
+				]
+			}
+		]
+	}
+]

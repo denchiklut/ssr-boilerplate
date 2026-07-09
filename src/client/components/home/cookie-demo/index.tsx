@@ -1,3 +1,5 @@
+'use client'
+
 import { useCookies } from 'react-cookie'
 
 export const CookieDemo = () => {

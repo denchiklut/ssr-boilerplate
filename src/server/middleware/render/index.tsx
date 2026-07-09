@@ -1,56 +1,60 @@
-import { dehydrate, QueryClient } from '@tanstack/react-query'
+import { Readable } from 'node:stream'
+import type { ReadableStream as NodeReadableStream } from 'node:stream/web'
 import type { NextFunction, Request, Response } from 'express'
-import { renderToPipeableStream } from 'react-dom/server'
-import { StaticRouter } from 'react-router'
 
-import { basename, logger, setEnvVars } from '@/common'
+import { logger, setEnvVars } from '@/common'
 
 import { ChunkExtractor } from './chunk-extractor'
-import { getApp, getStats } from './render.util'
+import { getRender, getStats } from './render.util'
+
+const toWebRequest = (req: Request): globalThis.Request => {
+	const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`
+
+	const headers = new Headers()
+	for (const [key, value] of Object.entries(req.headers)) {
+		if (Array.isArray(value)) for (const item of value) headers.append(key, item)
+		else if (value !== undefined) headers.set(key, value)
+	}
+
+	const body = ['GET', 'HEAD'].includes(req.method)
+		? undefined
+		: (Readable.toWeb(req) as ReadableStream<Uint8Array>)
+
+	return new globalThis.Request(url, {
+		body,
+		headers,
+		method: req.method,
+		// `duplex` is required by undici for streaming bodies, but missing from the RequestInit type
+		...(body && ({ duplex: 'half' } as object))
+	})
+}
 
 export const render = (req: Request, res: Response, next: NextFunction) => {
-	res.renderApp = () => {
+	res.renderApp = async () => {
 		logger.debug('render middleware start')
 
 		const chunkExtractor = new ChunkExtractor(getStats(res))
-		const { App } = getApp(res)
-		const { url, nonce } = req
+		const { handler } = getRender(res)
+		const { nonce } = req
 
-		const queryClient = new QueryClient()
+		const response = await handler(toWebRequest(req), {
+			nonce,
+			cookie: req.headers.cookie,
+			linkTags: chunkExtractor.getLinkTags({ nonce }),
+			bootstrapScriptContent: setEnvVars(),
+			bootstrapScripts: chunkExtractor.assets
+				.filter(a => a.url.endsWith('.js'))
+				.map(a => a.url)
+		})
 
-		const { pipe } = renderToPipeableStream(
-			<StaticRouter location={url} basename={basename}>
-				<App
-					nonce={nonce}
-					cookies={req.universalCookies}
-					linkTags={chunkExtractor.getLinkTags({ nonce })}
-					queryClient={queryClient}
-				/>
-			</StaticRouter>,
-			{
-				nonce,
-				bootstrapScriptContent: setEnvVars(),
-				bootstrapScripts: chunkExtractor.assets
-					.filter(a => a.url.endsWith('.js'))
-					.map(a => a.url),
-				onAllReady() {
-					res.statusCode = 200
-					res.setHeader('content-type', 'text/html')
+		res.status(response.status)
+		response.headers.forEach((value, key) => {
+			res.setHeader(key, value)
+		})
 
-					// Dehydrate after React tree has rendered and all queries resolved
-					const dehydratedState = dehydrate(queryClient)
-					res.write(
-						`<script nonce="${nonce}">window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState)}</script>`
-					)
-
-					pipe(res)
-					queryClient.clear()
-				},
-				onError(error) {
-					logger.error(error)
-				}
-			}
-		)
+		if (response.body)
+			Readable.fromWeb(response.body as NodeReadableStream<Uint8Array>).pipe(res)
+		else res.end()
 	}
 
 	next()

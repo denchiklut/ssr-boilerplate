@@ -1,3 +1,5 @@
+'use client'
+
 import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Link, Outlet } from 'react-router'
@@ -24,3 +26,5 @@ export const Layout = () => {
 		</>
 	)
 }
+
+export default Layout
