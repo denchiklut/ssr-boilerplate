@@ -1,4 +1,4 @@
-import type { Level } from '../../../types'
+import type { Level } from '../../types'
 
 export const css = (color: string) => [
 	`background: ${color}`,

@@ -1,21 +1,5 @@
-import type { ILogger } from '../types'
-import { print } from './utils'
+import { Logger } from '../types'
+import { Console } from './console'
 
-export class ClientLogger implements ILogger {
-	constructor(public ns: string) {}
-
-	@print
-	log() {}
-
-	@print
-	debug() {}
-
-	@print
-	info() {}
-
-	@print
-	warn() {}
-
-	@print
-	error() {}
-}
+@Console()
+export class ClientLogger extends Logger {}

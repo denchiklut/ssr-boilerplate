@@ -25,6 +25,9 @@ export default defineConfig({
 		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	plugins: [plugins.definePlugin({ server: true }), plugins.limitPlugin],
+	optimization: {
+		minimizer: [plugins.jsMinimizer]
+	},
 	module: {
 		rules: [rules.typescript]
 	},
