@@ -26,7 +26,7 @@
 		"@tanstack/react-query": "^5.99.1",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
-		"morgan": "^1.10.1",
+		"morgan": "^1.11.0",
 		"react": "^19.2.5",
 		"react-cookie": "^8.1.0",
 		"react-dom": "^19.2.5",
