@@ -1,21 +1,19 @@
 import type { ILogger } from '../types'
-import { print } from './utils'
+import { print } from './print'
 
 export class ClientLogger implements ILogger {
-	constructor(public ns: string) {}
-
-	@print
+	@print()
 	log() {}
 
-	@print
+	@print()
 	debug() {}
 
-	@print
+	@print()
 	info() {}
 
-	@print
+	@print()
 	warn() {}
 
-	@print
+	@print()
 	error() {}
 }

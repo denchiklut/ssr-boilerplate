@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
-import type { ExternalItem } from '@rspack/core'
+import { type ExternalItem, LightningCssMinimizerRspackPlugin } from '@rspack/core'
 import nodeExternals from 'webpack-node-externals'
 
 import * as env from '../env'
@@ -29,5 +29,8 @@ export default defineConfig({
 		rules: [rules.typescript, rules.css, rules.fonts, rules.mediasRule, ...rules.svg]
 	},
 	plugins: [plugins.css, plugins.limitPlugin, plugins.definePlugin({ server: true })],
+	optimization: {
+		minimizer: [plugins.jsMinimizer, new LightningCssMinimizerRspackPlugin()]
+	},
 	externals: [nodeExternals() as ExternalItem]
 })

@@ -6,7 +6,7 @@ const getLogger = (): ILogger => {
 		const { ServerLogger } = require('./server')
 		return new ServerLogger()
 	} else {
-		return new ClientLogger('app')
+		return new ClientLogger()
 	}
 }
 

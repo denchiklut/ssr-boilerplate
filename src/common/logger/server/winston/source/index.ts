@@ -1,4 +1,4 @@
-export function getSrc(caller: (...args: never[]) => unknown) {
+export function source(caller: (...args: never[]) => unknown) {
 	const limit = Error.stackTraceLimit
 	Error.stackTraceLimit = 1
 	const err = new Error()
@@ -10,5 +10,8 @@ export function getSrc(caller: (...args: never[]) => unknown) {
 	if (!match) return
 
 	const [, func, file = '', line = '0'] = match
-	return { func, line: Number(line), file: file.replace(/^webpack:\/\/[^/]+\//, '') }
+	const source = { func, line: Number(line), file: file.replace(/^webpack:\/\/[^/]+\//, '') }
+	const attrs = ['file', 'func', 'line'] as const
+
+	return Object.fromEntries(attrs.map(key => [`src.${key}`, source[key]]))
 }

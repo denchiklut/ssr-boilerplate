@@ -5,24 +5,17 @@ import { SRC_DIR } from '../env'
 
 export const typescript = {
 	test: /\.[jt]sx?$/,
+	exclude: /node_modules/,
 	type: 'javascript/auto',
-	exclude: [/[\\/]node_modules[\\/]/],
-	use: {
-		loader: 'builtin:swc-loader',
-		options: {
-			jsc: {
-				parser: {
-					syntax: 'typescript',
-					tsx: true,
-					decorators: true
-				},
-				transform: {
-					decoratorVersion: '2022-03',
-					react: {
-						runtime: 'automatic'
-					}
-				}
-			}
+	loader: 'builtin:swc-loader',
+	options: {
+		jsc: {
+			parser: { syntax: 'typescript', tsx: true, decorators: true },
+			transform: {
+				decoratorVersion: '2022-03',
+				react: { runtime: 'automatic' }
+			},
+			target: 'esnext'
 		}
 	}
 }

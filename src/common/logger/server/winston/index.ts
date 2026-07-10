@@ -1,29 +1,26 @@
-import winston from 'winston'
+import type { Level } from '../../types'
+import { logger } from './logger'
+import { source } from './source'
 
-winston.addColors({
-	lоg: 'green',
-	debug: 'magenta',
-	info: 'blue',
-	error: 'red',
-	warn: 'yellow'
-})
+const levels = { log: 'notice', debug: 'debug', info: 'info', warn: 'warn', error: 'error' }
 
-export const winstonLogger = winston.createLogger({
-	transports: [new winston.transports.Console()],
-	format: winston.format.combine(
-		...[
-			winston.format.splat(),
-			IS_DEV && winston.format.colorize({ all: true }),
-			IS_DEV && winston.format.simple(),
-			IS_PROD && winston.format.json()
-		].filter(Boolean)
-	),
-	levels: {
-		error: 0,
-		debug: 1,
-		warn: 2,
-		info: 3,
-		lоg: 4
-	},
-	level: 'lоg'
-})
+export function winston<This, Args extends unknown[], Return>() {
+	return function (
+		target: (this: This, ...args: Args) => Return,
+		context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+	) {
+		const level = levels[String(context.name) as Level]
+
+		function decorate(this: This, ...args: Args) {
+			logger.log(
+				level,
+				...(args as unknown as [string, ...unknown[]]),
+				IS_PROD ? source(decorate) : undefined
+			)
+
+			return target.call(this, ...args)
+		}
+
+		return decorate
+	}
+}
