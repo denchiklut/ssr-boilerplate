@@ -18,13 +18,17 @@ import { getENV } from '@/common'
 __webpack_public_path__ = getENV('CLIENT_PUBLIC_PATH')
 
 setServerCallback(
-	createCallServer({ createFromReadableStream, createTemporaryReferenceSet, encodeReply })
+	createCallServer({
+		createFromReadableStream,
+		createTemporaryReferenceSet,
+		encodeReply
+	})
 )
 
 createFromReadableStream<RSCPayload>(getRSCStream()).then(async payload => {
-	const formState = (payload.type === 'render' ? await payload.formState : undefined) as
-		| ReactFormState
-		| undefined
+	const formState = (
+		payload.type === 'render' ? await payload.formState : undefined
+	) as ReactFormState
 
 	startTransition(() => {
 		hydrateRoot(

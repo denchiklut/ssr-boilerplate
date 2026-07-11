@@ -12,10 +12,7 @@ interface Props {
 }
 
 export const Providers: FC<Props> = ({ children, cookie }) => {
-	// In the browser Cookies reads document.cookie; during SSR it parses the request header
-	const [cookies] = useState(
-		() => new Cookies(typeof document === 'undefined' ? cookie : undefined)
-	)
+	const [cookies] = useState(() => new Cookies(IS_SERVER ? cookie : undefined))
 
 	return (
 		<CookiesProvider cookies={cookies}>

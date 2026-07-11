@@ -1,6 +1,5 @@
 import { fetchPosts } from '@/api'
 
-// Server component: runs only on the server, never ships to the client bundle
 export const Posts = async () => {
 	const posts = await fetchPosts()
 

@@ -15,9 +15,9 @@ export const renderHTML = (request: Request, serverResponse: Response, options: 
 		createFromReadableStream,
 		async renderHTML(getPayload) {
 			const payload = await getPayload()
-			const formState = (payload.type === 'render' ? await payload.formState : undefined) as
-				| ReactFormState
-				| undefined
+			const formState = (
+				payload.type === 'render' ? await payload.formState : undefined
+			) as ReactFormState
 
 			return renderToReadableStream(<RSCStaticRouter getPayload={getPayload} />, {
 				formState,

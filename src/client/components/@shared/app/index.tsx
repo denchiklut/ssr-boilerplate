@@ -1,13 +1,7 @@
 import type { LinkHTMLAttributes } from 'react'
-import {
-	createContext,
-	Outlet,
-	type RouterContextProvider,
-	type unstable_RSCRouteConfig as RSCRouteConfig
-} from 'react-router'
+import { createContext, type unstable_RSCRouteConfig as RSCRouteConfig } from 'react-router'
 
 import { Html } from '../html'
-import { Providers } from './providers'
 import './global.scss'
 
 export interface RenderMeta {
@@ -16,22 +10,21 @@ export interface RenderMeta {
 	linkTags?: LinkHTMLAttributes<HTMLLinkElement>[]
 }
 
-/** Per-request data injected by the express render middleware. */
 export const renderContext = createContext<RenderMeta>({})
-
-const Root = ({ loaderData }: { loaderData: RenderMeta }) => (
-	<Html nonce={loaderData.nonce} linkTags={loaderData.linkTags}>
-		<Providers cookie={loaderData.cookie}>
-			<Outlet />
-		</Providers>
-	</Html>
-)
 
 export const routes = (): RSCRouteConfig => [
 	{
 		id: 'root',
-		loader: ({ context }) => (context as RouterContextProvider).get(renderContext),
-		Component: Root,
+		loader: ({ context }) => context.get(renderContext),
+		Component({ loaderData }: { loaderData: RenderMeta }) {
+			return (
+				<Html
+					nonce={loaderData.nonce}
+					linkTags={loaderData.linkTags}
+					cookie={loaderData.cookie}
+				/>
+			)
+		},
 		children: [
 			{
 				id: 'layout',
