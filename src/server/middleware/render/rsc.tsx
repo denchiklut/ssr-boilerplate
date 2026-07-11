@@ -1,7 +1,5 @@
-import {
-	unstable_matchRSCServerRequest as matchRSCServerRequest,
-	RouterContextProvider
-} from 'react-router'
+import type { LinkHTMLAttributes } from 'react'
+import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-router'
 import {
 	createTemporaryReferenceSet,
 	decodeAction,
@@ -10,22 +8,23 @@ import {
 	loadServerAction,
 	renderToReadableStream
 } from 'react-server-dom-rspack/server.node'
+import Cookies from 'universal-cookie'
 
 import { basename } from '@/common'
-import { type RenderMeta, renderContext, routes } from '@/shared/app'
+import { storage } from '@/server/request'
+import { routes } from '@/shared/app'
 
 import { renderHTML } from './ssr'
 
-export interface RenderOptions extends RenderMeta {
+export interface RenderOptions {
 	bootstrapScripts?: string[]
 	bootstrapScriptContent?: string
+	nonce: string
+	linkTags: LinkHTMLAttributes<HTMLLinkElement>[]
 }
 
-const fetchServer = (request: Request, meta: RenderMeta) => {
-	const requestContext = new RouterContextProvider()
-	requestContext.set(renderContext, meta)
-
-	return matchRSCServerRequest({
+const fetchServer = (request: Request) =>
+	matchRSCServerRequest({
 		createTemporaryReferenceSet,
 		decodeAction,
 		decodeFormState,
@@ -33,7 +32,6 @@ const fetchServer = (request: Request, meta: RenderMeta) => {
 		loadServerAction,
 		basename,
 		request,
-		requestContext,
 		routes: routes(),
 		generateResponse: (match, options) =>
 			new Response(renderToReadableStream(match.payload, options), {
@@ -41,14 +39,20 @@ const fetchServer = (request: Request, meta: RenderMeta) => {
 				headers: match.headers
 			})
 	})
-}
 
 export const handler = async (request: Request, options: RenderOptions): Promise<Response> => {
-	const meta: RenderMeta = {
-		nonce: options.nonce,
-		cookie: options.cookie,
-		linkTags: options.linkTags
-	}
-
-	return renderHTML(request, await fetchServer(request, meta), options)
+	return renderHTML(
+		request,
+		await storage.run(
+			{
+				nonce: options.nonce,
+				linkTags: options.linkTags,
+				url: new URL(request.url),
+				headers: request.headers,
+				cookies: new Cookies(request.headers.get('cookie'))
+			},
+			() => fetchServer(request)
+		),
+		options
+	)
 }

@@ -39,7 +39,6 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 
 		const response = await handler(toWebRequest(req), {
 			nonce,
-			cookie: req.headers.cookie,
 			linkTags: chunkExtractor.getLinkTags({ nonce }),
 			bootstrapScriptContent: setEnvVars(),
 			bootstrapScripts: chunkExtractor.assets

@@ -8,11 +8,6 @@ import { publicPath } from '@/common'
 import type { ChunkExtractorOptions } from './chunk-extractor'
 import type { handler } from './rsc'
 
-interface RenderModule {
-	handler: typeof handler
-}
-
-// rspack v2's default toJson output omits chunk groups — request what we consume explicitly
 const statsOptions = {
 	all: false,
 	ids: true,
@@ -40,7 +35,7 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	return { stats, publicPath: publicPath('/') }
 }
 
-export const getRender = (res: ServerResponse): RenderModule => {
+export const getRender = (res: ServerResponse): { handler: typeof handler } => {
 	if (IS_PROD) return require('../client/js/app.server.js')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson(statsOptions)

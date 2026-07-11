@@ -2,7 +2,6 @@ import '@testing-library/jest-dom'
 
 globalThis.IS_SERVER = false
 globalThis.IS_DEV = false
-globalThis.IS_SPA = true
 globalThis.clientPrefix = 'CLIENT_'
 
 jest.mock('../../src/common/env/env.util', () => ({

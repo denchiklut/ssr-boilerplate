@@ -8,7 +8,7 @@ import { QueryProvider } from '../query'
 
 interface Props {
 	children: ReactNode
-	cookie?: string
+	cookie?: Nullable<string>
 }
 
 export const Providers: FC<Props> = ({ children, cookie }) => {

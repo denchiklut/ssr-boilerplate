@@ -1,10 +1,12 @@
-import type { FC } from 'react'
 import { Outlet } from 'react-router'
 
-import { type AppProps, basePath, publicPath } from '@/common'
+import { basePath, publicPath } from '@/common'
+import { request } from '@/server/request'
 import { Providers } from '@/shared/app/providers'
 
-export const Html: FC<AppProps> = ({ nonce, linkTags, cookie }) => {
+export async function Html() {
+	const { linkTags, headers, nonce } = await request()
+
 	return (
 		<html lang='en'>
 			<head>
@@ -19,7 +21,7 @@ export const Html: FC<AppProps> = ({ nonce, linkTags, cookie }) => {
 			</head>
 
 			<body>
-				<Providers cookie={cookie}>
+				<Providers cookie={headers.get('cookie')}>
 					<Outlet />
 				</Providers>
 			</body>

@@ -1,30 +1,12 @@
-import type { LinkHTMLAttributes } from 'react'
-import { createContext, type unstable_RSCRouteConfig as RSCRouteConfig } from 'react-router'
+import type { unstable_RSCRouteConfig as RSCRouteConfig } from 'react-router'
 
 import { Html } from '../html'
 import './global.scss'
 
-export interface RenderMeta {
-	nonce?: string
-	cookie?: string
-	linkTags?: LinkHTMLAttributes<HTMLLinkElement>[]
-}
-
-export const renderContext = createContext<RenderMeta>({})
-
 export const routes = (): RSCRouteConfig => [
 	{
 		id: 'root',
-		loader: ({ context }) => context.get(renderContext),
-		Component({ loaderData }: { loaderData: RenderMeta }) {
-			return (
-				<Html
-					nonce={loaderData.nonce}
-					linkTags={loaderData.linkTags}
-					cookie={loaderData.cookie}
-				/>
-			)
-		},
+		Component: Html,
 		children: [
 			{
 				id: 'layout',

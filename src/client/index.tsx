@@ -25,12 +25,11 @@ setServerCallback(
 	})
 )
 
-createFromReadableStream<RSCPayload>(getRSCStream()).then(async payload => {
-	const formState = (
-		payload.type === 'render' ? await payload.formState : undefined
-	) as ReactFormState
+createFromReadableStream<RSCPayload>(getRSCStream()).then(payload => {
+	startTransition(async () => {
+		const formState =
+			payload.type === 'render' ? ((await payload.formState) as ReactFormState) : undefined
 
-	startTransition(() => {
 		hydrateRoot(
 			document,
 			<StrictMode>

@@ -59,7 +59,7 @@ You can use .env file to specify environment variables. This file is ignored by 
 
 Note that additionally there will be few useful `global variables` available for you.
 
--   `IS_DEV`, `IS_PROD`, `IS_SERVER`, `IS_SPA`
+-   `IS_DEV`, `IS_PROD`, `IS_SERVER`
 
 ### Step 3. Starting the project
 
