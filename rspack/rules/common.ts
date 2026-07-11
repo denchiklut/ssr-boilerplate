@@ -93,7 +93,6 @@ export const mediasRule = {
 
 export const svg = [
 	{
-		// no `issuer` condition: RSC-injected modules can have query-suffixed or virtual issuers
 		test: /\.icon.svg$/i,
 		use: ['@svgr/webpack']
 	},

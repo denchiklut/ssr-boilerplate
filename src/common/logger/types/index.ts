@@ -1,9 +1,9 @@
-export interface ILogger {
-	log(...args: unknown[]): void
-	debug(...args: unknown[]): void
-	info(...args: unknown[]): void
-	warn(...args: unknown[]): void
-	error(...args: unknown[]): void
+export abstract class Logger {
+	declare log: (...args: unknown[]) => void
+	declare debug: (...args: unknown[]) => void
+	declare info: (...args: unknown[]) => void
+	declare warn: (...args: unknown[]) => void
+	declare error: (...args: unknown[]) => void
 }
 
-export type Level = keyof ILogger
+export type Level = keyof Logger

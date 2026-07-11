@@ -1,29 +1,21 @@
-import winston from 'winston'
+import type { Logger } from '../../types'
+import { levels, logger } from './logger'
+import { source } from './source'
 
-winston.addColors({
-	lоg: 'green',
-	debug: 'magenta',
-	info: 'blue',
-	error: 'red',
-	warn: 'yellow'
-})
+type Constructor = abstract new (...args: never[]) => Logger
 
-export const winstonLogger = winston.createLogger({
-	transports: [new winston.transports.Console()],
-	format: winston.format.combine(
-		...[
-			winston.format.splat(),
-			IS_DEV && winston.format.colorize({ all: true }),
-			IS_DEV && winston.format.simple(),
-			IS_PROD && winston.format.json()
-		].filter(Boolean)
-	),
-	levels: {
-		error: 0,
-		debug: 1,
-		warn: 2,
-		info: 3,
-		lоg: 4
-	},
-	level: 'lоg'
-})
+export function Winston() {
+	return function <T extends Constructor>(target: T, _: ClassDecoratorContext<T>) {
+		for (const [method, level] of Object.entries(levels)) {
+			const decorate = function (...args: [string, ...unknown[]]) {
+				logger.log(level, ...args, IS_PROD ? source(decorate) : undefined)
+			}
+
+			Object.defineProperty(target.prototype, method, {
+				configurable: true,
+				writable: true,
+				value: decorate
+			})
+		}
+	}
+}

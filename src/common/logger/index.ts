@@ -1,12 +1,12 @@
 import { ClientLogger } from './client'
-import type { ILogger } from './types'
+import type { Logger } from './types'
 
-const getLogger = (): ILogger => {
+const getLogger = (): Logger => {
 	if (IS_SERVER) {
 		const { ServerLogger } = require('./server')
 		return new ServerLogger()
 	} else {
-		return new ClientLogger('app')
+		return new ClientLogger()
 	}
 }
 

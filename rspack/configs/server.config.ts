@@ -1,5 +1,6 @@
 import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
+import { LightningCssMinimizerRspackPlugin } from '@rspack/core'
 
 import * as env from '../env'
 import * as plugins from '../plugins'
@@ -53,5 +54,8 @@ export default defineConfig({
 		plugins.limitPlugin,
 		plugins.rscServerPlugin,
 		plugins.definePlugin({ server: true })
-	]
+	],
+	optimization: {
+		minimizer: [plugins.jsMinimizer, new LightningCssMinimizerRspackPlugin()]
+	}
 })
