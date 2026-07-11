@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
 
-export const healthcheck = (_: Request, res: Response) => {
+export function healthcheck(_: Request, res: Response) {
 	res.sendStatus(200)
 }

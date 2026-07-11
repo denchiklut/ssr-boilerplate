@@ -6,7 +6,6 @@ import * as env from '../env'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
 
-// The RSC render pipeline entry (react-server layer) and the HTML/SSR pass it delegates to.
 const rscEntry = join(env.SRC_DIR, 'server/middleware/render/rsc.tsx')
 const ssrModule = join(env.SRC_DIR, 'server/middleware/render/ssr.tsx')
 

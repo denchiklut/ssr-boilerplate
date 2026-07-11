@@ -23,6 +23,9 @@
 			},
 			"suspicious": {
 				"noArrayIndexKey": "off"
+			},
+			"complexity": {
+				"useArrowFunction": "off"
 			}
 		}
 	},

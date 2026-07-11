@@ -13,7 +13,7 @@
 		"dev:serve": "cross-env NODE_ENV=development nodemon --inspect dist/server",
 		"start": "run-s prod:*",
 		"prod:build": "rimraf dist && rspack --nodeEnv=production",
-		"prod:start": "cross-env NODE_ENV=production node dist/server",
+		"prod:start": "cross-env NODE_ENV=production node --enable-source-maps dist/server",
 		"spa": "rspack serve --nodeEnv=development -c=rspack/configs/spa.config.ts",
 		"ts-check": "tsgo -p tsconfig.json --noEmit",
 		"test": "jest --coverage --coverage-reporters=lcov",
