@@ -33,17 +33,41 @@ export const typescript = swc(false)
 /** Parses `'use client'` / `'use server'` directives — for the RSC-aware compilers only. */
 export const typescriptRSC = swc(true)
 
+const rscBoundary =
+	/node_modules[\\/]react-router[\\/]dist[\\/][^\\/]+[\\/]index-react-server-client\.js$/
+
 /**
  * react-router marks its client boundary with a `'use client'` directive inside its
- * dist files (`internal/react-server-client`), so it needs the RSC transform too.
+ * dist files, so the RSC swc transform must run over react-router in both compilers.
+ * The boundary file is compiled separately by `vendorReactRouter`, so exclude it here
+ * to avoid running two loaders over the same module.
  */
 export const vendorRSC = {
 	test: /\.m?js$/,
 	include: [/node_modules[\\/]react-router[\\/]/],
+	exclude: [rscBoundary],
 	use: {
 		loader: 'builtin:swc-loader',
 		options: {
 			jsc: { parser: { syntax: 'ecmascript' } },
+			rspackExperiments: { reactServerComponents: true }
+		}
+	}
+}
+
+/**
+ * The client boundary (`internal/react-server-client`) is a re-export-only file whose
+ * exports are resolved at runtime via the RSC manifest, so production `usedExports`
+ * would tree-shake them (React #306 on hydrate; https://github.com/web-infra-dev/rspack/issues/14756).
+ */
+export const vendorReactRouter = {
+	test: rscBoundary,
+	type: 'javascript/auto',
+	use: {
+		loader: 'builtin:swc-loader',
+		options: {
+			jsc: { parser: { syntax: 'ecmascript' } },
+			module: { type: 'commonjs' },
 			rspackExperiments: { reactServerComponents: true }
 		}
 	}
