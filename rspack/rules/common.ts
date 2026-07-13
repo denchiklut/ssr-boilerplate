@@ -1,37 +1,51 @@
 import { resolve } from 'node:path'
-import { rspack } from '@rspack/core'
+import { experiments, rspack } from '@rspack/core'
 
 import { SRC_DIR } from '../env'
 
-const swc = (reactServerComponents: boolean) => ({
-	test: /\.[jt]sx?$/,
-	type: 'javascript/auto',
-	exclude: [/[\\/]node_modules[\\/]/],
-	use: {
-		loader: 'builtin:swc-loader',
-		options: {
-			jsc: {
-				parser: {
-					syntax: 'typescript',
-					tsx: true,
-					decorators: true
-				},
-				transform: {
-					decoratorVersion: '2022-03',
-					react: {
-						runtime: 'automatic'
-					}
-				}
+const { Layers } = experiments.rsc
+
+const swc = (reactServerComponents: boolean, reactCompiler: boolean) => ({
+	loader: 'builtin:swc-loader',
+	options: {
+		jsc: {
+			parser: {
+				syntax: 'typescript',
+				tsx: true,
+				decorators: true
 			},
-			rspackExperiments: { reactServerComponents }
-		}
+			transform: {
+				decoratorVersion: '2022-03',
+				react: {
+					runtime: 'automatic'
+				},
+				reactCompiler
+			}
+		},
+		rspackExperiments: { reactServerComponents }
 	}
 })
 
-export const typescript = swc(false)
+const scripts = {
+	test: /\.[jt]sx?$/,
+	type: 'javascript/auto',
+	exclude: [/[\\/]node_modules[\\/]/]
+}
 
-/** Parses `'use client'` / `'use server'` directives — for the RSC-aware compilers only. */
-export const typescriptRSC = swc(true)
+export const typescript = { ...scripts, use: swc(false, true) }
+
+/**
+ * Parses `'use client'` / `'use server'` directives — for the RSC-aware compilers only.
+ *
+ * React Compiler is disabled in the react-server layer: `react/compiler-runtime` reads
+ * `__CLIENT_INTERNALS` from `react`, which the `react-server` build doesn't export, so
+ * compiled server components crash the Flight render (and memoization is useless there —
+ * server components render once per request).
+ */
+export const typescriptRSC = {
+	...scripts,
+	oneOf: [{ issuerLayer: Layers.rsc, use: swc(true, false) }, { use: swc(true, true) }]
+}
 
 const rscBoundary =
 	/node_modules[\\/]react-router[\\/]dist[\\/][^\\/]+[\\/]index-react-server-client\.js$/
