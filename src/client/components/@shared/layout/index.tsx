@@ -1,30 +1,17 @@
-'use client'
-
-import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
 import { Link, Outlet } from 'react-router'
 
-import { usePWA } from '@/utils'
+import { NavigationLoader } from '@/shared/navigation-loader'
 
-import { Fallback } from '../error'
-import { Loader } from '../loader'
-
-export const Layout = () => {
-	usePWA()
-
+export default async function Layout() {
 	return (
 		<>
 			<nav>
 				<Link to='/'>Home</Link> / <Link to='/about'>About</Link>
 			</nav>
 
-			<ErrorBoundary fallback={<Fallback />}>
-				<Suspense fallback={<Loader />}>
-					<Outlet />
-				</Suspense>
-			</ErrorBoundary>
+			<NavigationLoader>
+				<Outlet />
+			</NavigationLoader>
 		</>
 	)
 }
-
-export default Layout
