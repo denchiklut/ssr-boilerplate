@@ -11,7 +11,7 @@ export const hmr = () => {
 		const compiler = rspack(configs.slice(1))
 		const hot = whm(compiler)
 
-		// server components can't hot-update in the browser — tell clients to reload
+		// server components can't hot-update in the browser — tell clients to refetch the RSC payload
 		onRscChange(() => hot.publish({ action: 'rsc-update' }))
 
 		return [wdm(compiler, { publicPath, serverSideRender: true }), hot, render]

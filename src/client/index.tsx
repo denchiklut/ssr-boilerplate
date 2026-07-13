@@ -41,9 +41,12 @@ createFromReadableStream<RSCPayload>(getRSCStream()).then(payload => {
 })
 
 if (IS_DEV) {
-	// server components can't be hot-patched in the browser — reload on server rebuilds
+	// server components can't be hot-patched in the browser — refetch the RSC payload instead
 	const hot = require('webpack-hot-middleware/client?name=client')
 	hot.subscribeAll((event: { action?: string }) => {
-		if (event.action === 'rsc-update') window.location.reload()
+		if (event.action !== 'rsc-update') return
+		// reload only if the update lands before hydration exposed the router
+		if (window.__reactRouterDataRouter) void window.__reactRouterDataRouter.revalidate()
+		else window.location.reload()
 	})
 }

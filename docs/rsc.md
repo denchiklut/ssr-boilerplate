@@ -232,7 +232,7 @@ The one custom bit is the **HMR bridge**: `onServerComponentChanges` fires on se
 
 ### 2.5 Why we don't use rspack's built-in server-entry approach
 
-The [official rspack RSC guide](https://v2.rspack.rs/guide/tech/rsc#server-entry) structures apps around dedicated generated entries (an RSC entry and an SSR/server entry) and plugin-driven conventions for wiring assets into the HTML. This repo deliberately keeps its historical structure instead:
+The [official rspack RSC guide](https://v2.rspack.rs/guide/tech/rsc#server-entry) structures apps around dedicated generated entries (an RSC entry and an SSR/server entry) and a `'use server-entry'` directive: the plugin attaches `entryJsFiles` (the client compiler's entry output) and `entryCssFiles` (CSS collected from that server component's descendant tree) as static properties on the marked component, and the server reads assets off the import. This repo deliberately keeps its historical structure instead:
 
 - **One server bundle, one export.** `server.config`'s entry is our own `rsc.tsx`, built with `library: { type: 'commonjs2' }`, exporting `handler(request, options) → Promise<Response>`. The SSR half is not a second entry — it's `ssr.tsx` pulled into the same bundle in a different layer. The express app treats the whole render pipeline as a single opaque module it `require`s ([§4](#4-bundle-assets)).
 - **Manual asset injection.** Instead of the plugin deciding which scripts/styles reach the HTML, the express side reads the *client compiler's stats*, extracts the `main` entrypoint's assets with `ChunkExtractor`, and passes them into the render as `bootstrapScripts` / `linkTags` ([§4](#4-bundle-assets)). This keeps full control over nonces, preload tags and the env bootstrap script — the same mechanism the boilerplate used before RSC.
@@ -363,21 +363,31 @@ sequenceDiagram
 
 ## 4. Bundle assets
 
-We do **not** use the rspack RSC guide's server-entry asset convention. The server needs two things it can't know by itself — *which JS files bootstrap the client* and *which CSS files the client entry emitted* — and both come from the **client compiler's stats**, through two paths:
+We do **not** use the rspack RSC guide's server-entry asset convention. The server needs two things it can't know by itself — *which JS files bootstrap the client* and *which CSS files the client entry emitted* — and both come from the **client compiler's stats**. The pipeline, step by step:
 
-**Prod** — [`stats.plugin.ts`](../rspack/plugins/stats.plugin.ts) (client config only) writes `dist/client/stats.json` at emit time with exactly the fields the extractor needs (`assets`, `chunkGroups`, `chunkGroupChildren`, `publicPath`, `outputPath`, ids/hash). [`render.util.ts`](../src/server/middleware/render/render.util.ts) `getStats` reads that file; `getRender` does a plain `require('../client/js/app.server.js')` (cached by Node's module cache — the bundle is evaluated once per process).
+**1. Build time (client compiler only).** In prod, [`stats.plugin.ts`](../rspack/plugins/stats.plugin.ts) hooks `processAssets` at the REPORT stage and emits a trimmed `dist/client/stats.json` with exactly the fields the extractor needs — `assets`, `chunkGroups`, `chunkGroupChildren`, chunk→files, hash/ids, `publicPath`, `outputPath`. This is the client compiler's *own* view of what it emitted, so hashed filenames are always in sync with the build.
 
-**Dev** — `@rspack/dev-middleware` runs with `serverSideRender: true`, which exposes the latest `MultiStats` on `res.locals.webpack.devMiddleware.stats`. `getStats` calls `toJson(statsOptions)` and picks the child named `client`; `getRender` picks the child named `server`, finds `js/app.server.js` in `assetsByChunkName.main`, reads it from dev-middleware's **in-memory output filesystem** and evaluates it with `require-from-string` — on every request, so a rebuilt server bundle is picked up with zero express restarts.
+**2. Request time — obtaining stats** ([`render.util.ts`](../src/server/middleware/render/render.util.ts) `getStats`). Two paths, same shape out:
+   - **Prod** — read `dist/client/stats.json` from disk. (`getRender` alongside it is a plain `require('../client/js/app.server.js')`, cached by Node's module cache — the bundle is evaluated once per process.)
+   - **Dev** — `@rspack/dev-middleware` runs with `serverSideRender: true`, exposing the latest `MultiStats` on `res.locals.webpack.devMiddleware.stats`; `getStats` calls `toJson(statsOptions)` and picks the child named `client`. (`getRender` picks the child named `server`, finds `js/app.server.js` in `assetsByChunkName.main`, reads it from dev-middleware's **in-memory output filesystem** and evaluates it with `require-from-string` — on every request, so a rebuilt server bundle is picked up with zero express restarts.)
 
-> ⚠️ `statsOptions` is explicit (`all: false` + named fields) because in rspack v2 `stats.toJson({})` **omits chunk groups** — with defaults the extractor finds no entrypoints and throws.
+   Because both paths produce the same stats shape, dev and prod behave identically downstream.
 
-[`ChunkExtractor`](../src/server/middleware/render/chunk-extractor/chunk-extractor.ts) (a minimal, local re-implementation of the loadable-style extractor) resolves `namedChunkGroups['main'].assets`, filters hot-update artifacts, and joins each filename with `CLIENT_PUBLIC_PATH`. From it the render middleware derives:
+   > ⚠️ `statsOptions` is explicit (`all: false` + named fields) because in rspack v2 `stats.toJson({})` **omits chunk groups** — with defaults the extractor finds no entrypoints and throws.
 
-- `bootstrapScripts` — every `.js` asset of the `main` entrypoint → passed to Fizz, emitted as `<script async>` at the right streaming moment.
-- `linkTags` — for every `.css` asset, a `rel="preload" as="style"` + `rel="stylesheet"` pair (nonce'd). These **cannot** be injected by the express layer, because there is no HTML template — the document is React. So they travel through the ALS store ([§7](#7-request--per-request-context-via-asynclocalstorage)) and the [`Html`](../src/client/components/@shared/html/index.tsx) *server component* renders them in `<head>`.
-- `bootstrapScriptContent` — `setEnvVars()`, the inline env bootstrap.
+**3. Asset extraction** ([`ChunkExtractor`](../src/server/middleware/render/chunk-extractor/chunk-extractor.ts) — a minimal, local re-implementation of the loadable-style extractor). For each entrypoint (default `['main']`) it resolves `namedChunkGroups['main'].assets`. A chunk group's asset list is the **complete, ordered closure** of files needed to boot that entrypoint — anything `splitChunks` breaks out is still listed — so no chunk-graph walking is needed. It then filters to `.js`/`.css`, drops `.hot-update.js` artifacts (dev), dedupes by URL, and joins each filename with `CLIENT_PUBLIC_PATH`.
 
-Lazy-route chunks are *not* handled here: route-level `import()`s in `routes()` are server-side code-splitting, and client-component chunks referenced by the payload are loaded by `react-server-dom-rspack`'s runtime module map on demand. Only the entrypoint's assets need manual wiring.
+**4. Injection into HTML** ([render middleware](../src/server/middleware/render/index.tsx)). The extracted assets split into two roles:
+   - **JS** → `bootstrapScripts`: every `.js` asset of the `main` entrypoint, passed to Fizz's `renderToReadableStream`, which emits them as `<script async>` at the right streaming moment and coordinates hydration. (`bootstrapScriptContent` — `setEnvVars()`, the inline env bootstrap — rides along.)
+   - **CSS** → `linkTags`: for every `.css` asset, a `rel="preload" as="style"` + `rel="stylesheet"` pair (nonce'd). These **cannot** be injected by the express layer, because there is no HTML template — the document is React. So they travel through the ALS store ([§7](#7-request--per-request-context-via-asynclocalstorage)) and the [`Html`](../src/client/components/@shared/html/index.tsx) *server component* renders them in `<head>` during the Flight render — they land in the first flushed HTML bytes.
+
+**5. The part the extractor does *not* do.** Everything module-level — which chunk holds which `'use client'` component, loading those chunks in the browser, matching them up during hydration — is handled by the RSC client/server manifests the plugin pair wires together (§2.4); no manifest file is touched in app code. Likewise, lazy-route chunks need no handling here: route-level `import()`s in `routes()` are server-side code-splitting, and client-component chunks referenced by the payload are loaded by `react-server-dom-rspack`'s runtime module map on demand. Bundle-asset extraction in this architecture has exactly two jobs — entry JS for bootstrap, CSS links for the shell — and the extractor covers both.
+
+**CSS coverage invariant.** The extractor only sees the `main` chunk group — CSS in an *async* chunk group would be invisible to it (SSR'd HTML arrives before that chunk's CSS → FOUC). Today this cannot happen (verified against `dist/client/stats.json`, July 2026): even though routes are lazy and `@/pages/home` imports its own `.scss`, the ClientPlugin injects client-reference modules such that **all CSS merges into `css/main.*.css`** — the async chunks (`js/237.*` etc.) are JS-only, and `main` is the only named chunk group. If that ever changes (explicit CSS `splitChunks` cache groups, per-route CSS splitting in a future rspack), the fix is *not* extending the extractor but calling `preinit(cssUrl, { as: 'style', precedence, nonce })` from the component that owns the chunk — the hint rides the Flight stream, Fizz emits the link during SSR, and React dedupes it on client navigation. Cheap tripwire: assert that no chunk group besides the entrypoints contains `.css` assets.
+
+**Why no `preload()`/`preinit()` today.** react-dom's resource-hint APIs exist for components that *can't reach* `<head>` and discover resources mid-render. Neither applies here: the asset list is fully known before rendering starts, and `Html` renders the literal `<head>`, so the stylesheet links are in the first flushed HTML bytes — there is no earlier moment a hint could move them to. Likewise `bootstrapScripts` is the purpose-built Fizz API for the hydration entry; `preinit(src, {as: 'script'})` would be an equivalent-or-worse substitute. Rendering the tags yourself is the baseline the hint APIs emulate. One caveat if the approaches ever mix: `preinit`'ed stylesheets live in React's `precedence` system and manual links (no `precedence` prop) don't — React dedupes only *within* that system, so the same href via both mechanisms loads **twice**. Pick one mechanism per stylesheet.
+
+Two known cosmetic warts (harmless today): `getLinkTags()`'s `reduceRight` reverses stylesheet order relative to the chunk group's dependency order (irrelevant with a single CSS file; switch to `reduce` before splitting CSS), and the `rel="preload"` half of each pair adds nothing while the stylesheet link itself sits in the initial `<head>` (the preload scanner discovers both at the same instant). Also note prod re-reads and re-parses `stats.json` on every request via the `ChunkExtractor` constructor — the file never changes after boot, so this could be hoisted, but it's negligible at present scale.
 
 ---
 
@@ -409,11 +419,13 @@ createFromReadableStream<RSCPayload>(getRSCStream()).then(payload => {
 ```ts
 if (IS_DEV) {
     require('webpack-hot-middleware/client?name=client').subscribeAll(event => {
-        if (event.action === 'rsc-update') window.location.reload()
+        if (event.action !== 'rsc-update') return
+        if (window.__reactRouterDataRouter) void window.__reactRouterDataRouter.revalidate()
+        else window.location.reload()
     })
 }
 ```
-The receiving end of the RSC HMR bridge ([§8](#8-dev-workflow--hmr)). The `require` returns the same hot-middleware client instance the entry array already started, so this only adds a subscriber.
+The receiving end of the RSC HMR bridge ([§8](#8-dev-workflow--hmr)). The `require` returns the same hot-middleware client instance the entry array already started, so this only adds a subscriber. `__reactRouterDataRouter` is the data router `RSCHydratedRouter` exposes on `window`; `revalidate()` refetches the Flight payload and swaps the server-rendered tree in place (reload is only the pre-hydration fallback).
 
 ---
 
@@ -529,12 +541,12 @@ flowchart TD
     A["edit a file"] --> B{what is it?}
     B -->|"express/server infra code<br/>(src/server, non-render)"| C["rspack --watch rebuilds dist/server<br/>→ nodemon restarts express"]
     B -->|"client component ('use client')"| D["client compiler emits hot update<br/>→ whm SSE (/__webpack_hmr)<br/>→ react-refresh patches in place"]
-    B -->|"server component / routes / rsc-layer code"| E["server compiler rebuilds app.server.js<br/>→ ServerPlugin.onServerComponentChanges<br/>→ onRscChange → hot.publish({action:'rsc-update'})<br/>→ client subscribeAll → window.location.reload()"]
+    B -->|"server component / routes / rsc-layer code"| E["server compiler rebuilds app.server.js<br/>→ ServerPlugin.onServerComponentChanges<br/>→ onRscChange → hot.publish({action:'rsc-update'})<br/>→ client subscribeAll → router.revalidate()"]
 ```
 
 - **Client-component HMR** is stock: `HotModuleReplacementPlugin` + `ReactRefreshRspackPlugin` (dev-only, [hmr.plugin.ts](../rspack/plugins/hmr.plugin.ts) / [refresh.plugin.ts](../rspack/plugins/refresh.plugin.ts)) and the `webpack-hot-middleware/client?name=client` entry prefix (`name=client` matters — whm must read the `client` child of the multi-compiler stats).
-- **Server-component changes cannot hot-patch the browser** — their output exists only as Flight data; there's no browser module to swap. So the bridge downgrades to a full reload: the ServerPlugin hook fires after the server compiler rebuild, the middleware publishes a custom `rsc-update` event on whm's SSE channel, and the client entry's `subscribeAll` handler reloads. The next document request then `require-from-string`s the *new* `app.server.js` from the in-memory fs — no express restart involved.
-- A shared file (imported by both bundles) triggers both compilers in the same run; the reload wins (a reload re-fetches everything anyway).
+- **Server-component changes cannot hot-patch the browser** — their output exists only as Flight data; there's no browser module to swap. Instead the bridge revalidates: the ServerPlugin hook fires after the server compiler rebuild, the middleware publishes a custom `rsc-update` event on whm's SSE channel, and the client entry's `subscribeAll` handler calls `window.__reactRouterDataRouter.revalidate()`. The revalidation fetch goes through `wdm` (which holds it until the rebuild finishes) and the render middleware `require-from-string`s the *new* `app.server.js` from the in-memory fs — so the refetched Flight payload is always fresh, and client state (component state, scroll, focus) survives. If the event lands before hydration has exposed the router on `window`, the handler falls back to a full reload.
+- A shared file (imported by both bundles) triggers both compilers in the same run; react-refresh patches the client modules *and* the revalidation refetches the Flight payload — both apply.
 
 ---
 
@@ -564,3 +576,4 @@ Hard-won invariants; violate at your own risk:
 6. **Keep `statsOptions` explicit** in `render.util.ts` — rspack v2's `toJson({})` omits `chunkGroups`, silently breaking the `ChunkExtractor` (§4).
 7. **`request()` is RSC-scope only** — server components and server functions. Client components (even during SSR) must get request data as props from a server component (§7).
 8. `pnpm spa` (pure CSR mode) is knowingly non-functional under RSC.
+9. **All CSS must stay in the `main` chunk group.** The `ChunkExtractor` only reads the entrypoint's assets; CSS landing in an async chunk group would never get a `<link>` in the SSR'd `<head>` → FOUC. Currently guaranteed by how the ClientPlugin injects client references (§4) — re-verify after adding CSS `splitChunks` groups or upgrading rspack, and reach for `preinit()` (not extractor changes) if it breaks.
