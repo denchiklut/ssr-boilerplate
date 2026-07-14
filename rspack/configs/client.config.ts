@@ -29,7 +29,6 @@ export default defineConfig({
 		rules: [
 			rules.typescriptRSC,
 			rules.vendorRSC,
-			rules.vendorReactRouter,
 			rules.css,
 			rules.fonts,
 			rules.mediasRule,
