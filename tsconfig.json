@@ -21,6 +21,7 @@
 			"@/src/*": ["./src/*"],
 			"@/common": ["./src/common/index.ts"],
 			"@/common/*": ["./src/common/*"],
+			"@/server/request": ["./src/server/request/index.ts"],
 			"@/server/*": ["./src/server/*"],
 			"@/client/*": ["./src/client/*"],
 			"@/pages/*": ["./src/client/pages/*"],

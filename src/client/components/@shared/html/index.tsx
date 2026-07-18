@@ -1,9 +1,11 @@
-import type { FC } from 'react'
+import { Outlet } from 'react-router'
 
-import { type AppProps, basePath, publicPath } from '@/common'
+import { basePath, publicPath } from '@/common'
+import { request } from '@/server/request'
+import { Providers } from '@/shared/app/providers'
 
-export const Html: FC<AppProps> = ({ nonce, linkTags, children }) => {
-	if (IS_SPA) return <>{children}</>
+export async function Html() {
+	const { linkTags, headers, nonce } = await request()
 
 	return (
 		<html lang='en'>
@@ -18,7 +20,11 @@ export const Html: FC<AppProps> = ({ nonce, linkTags, children }) => {
 				{IS_PROD && <link nonce={nonce} rel='manifest' href={basePath('manifest.json')} />}
 			</head>
 
-			<body>{children}</body>
+			<body>
+				<Providers cookie={headers.get('cookie')}>
+					<Outlet />
+				</Providers>
+			</body>
 		</html>
 	)
 }

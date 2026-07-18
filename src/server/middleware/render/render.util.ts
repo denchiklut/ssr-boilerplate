@@ -1,12 +1,23 @@
 import { join, resolve } from 'node:path'
 import type { StatsCompilation } from '@rspack/core'
 import type { ServerResponse } from '@rspack/dev-middleware'
-import type { FC } from 'react'
 import requireFromString from 'require-from-string'
 
-import { type AppProps, publicPath } from '@/common'
+import { publicPath } from '@/common'
 
 import type { ChunkExtractorOptions } from './chunk-extractor'
+import type { handler } from './rsc'
+
+const statsOptions = {
+	all: false,
+	ids: true,
+	hash: true,
+	assets: true,
+	outputPath: true,
+	publicPath: true,
+	chunkGroups: true,
+	chunkGroupChildren: true
+}
 
 export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	if (IS_PROD) {
@@ -16,7 +27,7 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 		}
 	}
 
-	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson({})
+	const multiStats = res.locals?.webpack?.devMiddleware?.stats?.toJson(statsOptions)
 	const stats = multiStats?.children?.find(child => child.name === 'client') as StatsCompilation
 
 	if (!stats) throw Error('Webpack config is unsuitable for SSR')
@@ -24,10 +35,10 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 	return { stats, publicPath: publicPath('/') }
 }
 
-export const getApp = (res: ServerResponse): { App: FC<AppProps> } => {
+export const getRender = (res: ServerResponse): { handler: typeof handler } => {
 	if (IS_PROD) return require('../client/js/app.server.js')
 
-	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson({})
+	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson(statsOptions)
 	const statsCompilation = stats?.children?.find(child => child.name === 'server')
 	if (!statsCompilation) throw Error('Webpack config is unsuitable for SSR')
 

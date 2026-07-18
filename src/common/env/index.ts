@@ -22,7 +22,7 @@ export const getENV = getOrDefault(
 	createEnv({
 		clientPrefix,
 		schema: envSchema,
-		envs: IS_SERVER || IS_SPA ? process.env : window.env_vars
+		envs: IS_SERVER ? process.env : window.env_vars
 	})
 )
 

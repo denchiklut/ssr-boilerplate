@@ -1,11 +1,13 @@
 import { join } from 'node:path'
 import { defineConfig } from '@rspack/cli'
-import { type ExternalItem, LightningCssMinimizerRspackPlugin } from '@rspack/core'
-import nodeExternals from 'webpack-node-externals'
+import { LightningCssMinimizerRspackPlugin } from '@rspack/core'
 
 import * as env from '../env'
 import * as plugins from '../plugins'
 import * as rules from '../rules'
+
+const rscEntry = join(env.SRC_DIR, 'server/middleware/render/rsc.tsx')
+const ssrModule = join(env.SRC_DIR, 'server/middleware/render/ssr.tsx')
 
 export default defineConfig({
 	name: 'server',
@@ -13,12 +15,12 @@ export default defineConfig({
 	context: env.ROOT_DIR,
 	devtool: env.IS_DEV ? false : 'source-map',
 	mode: env.IS_DEV ? 'development' : 'production',
-	entry: './src/client/components/@shared/app',
+	entry: rscEntry,
 	output: {
 		path: join(env.DIST_DIR, 'client'),
 		filename: 'js/app.server.js',
 		library: { type: 'commonjs2' },
-		publicPath: '/'
+		publicPath: env.PUBLIC_PATH
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
@@ -26,11 +28,33 @@ export default defineConfig({
 		tsConfig: join(env.ROOT_DIR, 'tsconfig.json')
 	},
 	module: {
-		rules: [rules.typescript, rules.css, rules.fonts, rules.mediasRule, ...rules.svg]
+		rules: [
+			{ resource: ssrModule, layer: plugins.Layers.ssr },
+			{
+				resource: rscEntry,
+				layer: plugins.Layers.rsc,
+				resolve: { conditionNames: ['react-server', '...'] }
+			},
+			{
+				issuerLayer: plugins.Layers.rsc,
+				exclude: ssrModule,
+				resolve: { conditionNames: ['react-server', '...'] }
+			},
+			rules.typescriptRSC,
+			rules.vendorRSC,
+			rules.css,
+			rules.fonts,
+			rules.mediasRule,
+			...rules.svg
+		]
 	},
-	plugins: [plugins.css, plugins.limitPlugin, plugins.definePlugin({ server: true })],
+	plugins: [
+		plugins.css,
+		plugins.limitPlugin,
+		plugins.rscServerPlugin,
+		plugins.definePlugin({ server: true })
+	],
 	optimization: {
 		minimizer: [plugins.jsMinimizer, new LightningCssMinimizerRspackPlugin()]
-	},
-	externals: [nodeExternals() as ExternalItem]
+	}
 })

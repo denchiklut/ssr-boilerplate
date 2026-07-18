@@ -7,6 +7,8 @@ import { Demo } from './demo'
 import { Posts } from './posts'
 import { State } from './state'
 import css from './styles.scss'
+import { UseFormStatusDemo } from './use-form-status'
+import { UseServerDemo } from './use-server'
 
 export const Home = () => {
 	const host = getENV('CLIENT_HOST')
@@ -18,6 +20,10 @@ export const Home = () => {
 			<State />
 			<hr />
 			<CookieDemo />
+			<hr />
+			<UseFormStatusDemo />
+			<hr />
+			<UseServerDemo />
 			<hr />
 			<Demo />
 			<hr />
