@@ -1,21 +1,18 @@
-import { render } from '../render'
+import type { NextFunction, Request, Response } from 'express'
 
 export const hmr = () => {
-	if (IS_DEV) {
-		const { rspack } = require('@rspack/core')
-		const whm = require('webpack-hot-middleware')
-		const wdm = require('@rspack/dev-middleware').devMiddleware
-		const configs = require('../../../../rspack.config').default
-		const { onRscChange } = require('../../../../rspack/plugins/rsc.plugin')
-		const publicPath = configs[1]?.output?.publicPath
-		const compiler = rspack(configs.slice(1))
-		const hot = whm(compiler)
+	if (IS_PROD) return [(_: Request, __: Response, next: NextFunction) => next()]
 
-		// server components can't hot-update in the browser — tell clients to refetch the RSC payload
-		onRscChange(() => hot.publish({ action: 'rsc-update' }))
+	const { rspack } = require('@rspack/core')
+	const whm = require('webpack-hot-middleware')
+	const wdm = require('@rspack/dev-middleware').devMiddleware
+	const configs = require('../../../../rspack.config').default
+	const { onRscChange } = require('../../../../rspack/plugins/rsc.plugin')
+	const publicPath = configs[1]?.output?.publicPath
+	const compiler = rspack(configs.slice(1))
+	const hot = whm(compiler)
 
-		return [wdm(compiler, { publicPath, serverSideRender: true }), hot, render]
-	}
-
-	return [render]
+	// server components can't hot-update in the browser — tell clients to refetch the RSC payload
+	onRscChange(() => hot.publish({ action: 'rsc-update' }))
+	return [wdm(compiler, { publicPath, serverSideRender: true }), hot]
 }
