@@ -50,8 +50,6 @@ export const typescriptRSC = {
 /**
  * react-router marks its client boundary with a `'use client'` directive inside its
  * dist files, so the RSC swc transform must run over react-router in both compilers.
- * The boundary file is compiled separately by `vendorReactRouter`, so exclude it here
- * to avoid running two loaders over the same module.
  */
 export const vendorRSC = {
 	test: /\.m?js$/,
