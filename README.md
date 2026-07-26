@@ -7,11 +7,14 @@ A production-shaped **React Server Components** boilerplate: **rspack v2** (nati
 Feel free to suggest improvements.
 
 > 📖 **[docs/rsc.md](docs/rsc.md)** — the full architecture write-up: build layers, the two-stage render pipeline, asset injection, HMR bridge, and the invariants you must not break. Read it before changing anything in `rspack/` or `src/server/middleware/render/`.
+>
+> 📖 **[docs/response.md](docs/response.md)** — the response API: set headers, status and cookies from server components, including *after* an `await` via the render lock.
 
 ## Features
 
 -   [x] `RSC` — server components, server functions (`'use server'`), form actions
 -   [x] Streaming `SSR` — Flight render → Fizz HTML with the payload inlined
+-   [x] Response API — `setHeader`/`status`/`setCookie` from server components; `renderLock` holds the flush open across `await`s
 -   [x] `HMR` — react-refresh for client components, router revalidation for server components
 -   [x] Code splitting (lazy routes + client-reference chunks)
 -   [x] Runtime env vars (build once, deploy anywhere)
@@ -36,13 +39,13 @@ Every document request runs a **two-stage pipeline inside one Node process** —
 
 The same `handler` also answers `.rsc` navigation requests, `.manifest` route-discovery requests and server-function `POST`s. The whole document — `<html>` included — is a server component ([`Html`](src/client/components/@shared/html/index.tsx)); there is no HTML template.
 
-Per-request data (url, headers, cookies, nonce, CSS link tags) flows through a single `AsyncLocalStorage`, so any server component can `await request()` instead of drilling loader data:
+Per-request data (url, headers, cookies, nonce, CSS link tags) flows through a single `AsyncLocalStorage`, so any server component can call `request()` instead of drilling loader data:
 
 ```tsx
 import { request } from '@/server/request'
 
-export async function Header() {
-	const { cookies, url } = await request()
+export function Header() {
+	const { cookies, url } = request()
 	return <span>{url.pathname}</span>
 }
 ```
@@ -124,6 +127,7 @@ src/
     request/     AsyncLocalStorage store behind `request()`
     router/      static · version · health · pwa · app catch-all
 docs/rsc.md      architecture reference
+docs/response.md response API (headers · status · cookies · render lock)
 ```
 
 Path aliases (`@/common`, `@/shared/*`, `@/pages/*`, `@/components/*`, `@/api`, `@/utils`, `@/server/*`) are declared in [tsconfig.json](tsconfig.json).

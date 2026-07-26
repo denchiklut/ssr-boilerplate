@@ -4,8 +4,8 @@ import { basePath, publicPath } from '@/common'
 import { request } from '@/server/request'
 import { Providers } from '@/shared/app/providers'
 
-export async function Html() {
-	const { linkTags, headers, nonce } = await request()
+export function Html() {
+	const { linkTags, headers, nonce } = request()
 
 	return (
 		<html lang='en'>

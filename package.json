@@ -21,6 +21,7 @@
 		"setup": "sh setup.sh"
 	},
 	"dependencies": {
+		"cookie": "^1.1.1",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"morgan": "^1.11.0",

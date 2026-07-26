@@ -1,9 +1,12 @@
 import { redirect } from '@/server/navigation'
-import { request } from '@/server/request'
+import { request, setHeader } from '@/server/request'
 import { Page } from '@/shared/page'
 
-export default async function Private() {
-	const { cookies } = await request()
+export default function Private() {
+	const { cookies } = request()
+
+	// Session-gated content must never land in a shared cache (docs/response.md §4.1)
+	setHeader('Cache-Control', 'private, no-store')
 
 	// Redirecting from a server component ends the render — the response never
 	// reaches the browser as HTML. Do it before anything streams (see docs/rsc.md §11).

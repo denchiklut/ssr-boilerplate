@@ -8,14 +8,14 @@ import {
 	loadServerAction,
 	renderToReadableStream
 } from 'react-server-dom-rspack/server.node'
-import Cookies from 'universal-cookie'
 
 import { basename } from '@/common'
 import { logger } from '@/common/logger'
 import { applyBasename } from '@/server/navigation'
-import { storage } from '@/server/request'
+import { createRequestStore, storage } from '@/server/request'
 import { routes } from '@/shared/app'
 
+import { finalizeResponse } from './finalize'
 import { renderHTML } from './ssr'
 
 export interface RenderOptions {
@@ -43,17 +43,16 @@ const fetchServer = (request: Request) =>
 			})
 	})
 
-export const handler = async (request: Request, options: RenderOptions): Promise<Response> => {
-	const serverResponse = await storage.run(
-		{
-			nonce: options.nonce,
-			linkTags: options.linkTags,
-			url: new URL(request.url),
-			headers: request.headers,
-			cookies: new Cookies(request.headers.get('cookie'))
-		},
-		() => fetchServer(request)
-	)
+export const handler = (request: Request, options: RenderOptions): Promise<Response> => {
+	const store = createRequestStore(request, options)
 
-	return applyBasename(await renderHTML(request, serverResponse, options))
+	// One ALS scope around both render stages, so response mutations made at any
+	// point of the render are visible when `finalizeResponse` snapshots them.
+	return storage.run(store, async () => {
+		const response = applyBasename(
+			await renderHTML(request, await fetchServer(request), options)
+		)
+
+		return finalizeResponse(response, store)
+	})
 }

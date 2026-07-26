@@ -48,8 +48,11 @@ export const render = (req: Request, res: Response, next: NextFunction) => {
 
 		res.status(response.status)
 		response.headers.forEach((value, key) => {
-			res.setHeader(key, value)
+			// set-cookie is multi-valued — copied separately below, one line per cookie
+			if (key !== 'set-cookie') res.setHeader(key, value)
 		})
+		const cookies = response.headers.getSetCookie()
+		if (cookies.length) res.setHeader('set-cookie', cookies)
 
 		if (response.body)
 			Readable.fromWeb(response.body as NodeReadableStream<Uint8Array>).pipe(res)

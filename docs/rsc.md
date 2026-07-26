@@ -59,7 +59,7 @@ Design decisions that shape everything below:
 |---|---|
 | Keep the pre-RSC file structure (no dedicated `rsc.entry.ts` / `server.entry.ts` from the rspack guide) | One server bundle (`app.server.js`) exporting a `handler(Request) → Response`; the RSC/SSR split happens via **layers inside** that bundle, not via separate entries |
 | Asset injection is done manually from client-compiler stats ([§4](#4-bundle-assets)) | We control `bootstrapScripts`, CSS `<link>` tags, nonces — the plugin's built-in asset conventions are not used |
-| Per-request data flows through a single `AsyncLocalStorage` ([§7](#7-request--per-request-context-via-asynclocalstorage)) | Server components call `await request()` instead of receiving loader data through router context |
+| Per-request data flows through a single `AsyncLocalStorage` ([§7](#7-request--per-request-context-via-asynclocalstorage)) | Server components call `request()` instead of receiving loader data through router context |
 | The whole document (`<html>…`) is a server component (`Html`) | There is no HTML template; CSS links, favicons, the manifest, env bootstrap — all rendered by React |
 
 ---
@@ -487,28 +487,30 @@ export const storage = new AsyncLocalStorage<{
 export const request = () => {
     const value = storage.getStore()
     invariant(value, 'request() is only available during an RSC render')
-    return Promise.resolve(value)
+    return value
 }
 ```
 
-**Seeding.** `handler` in `rsc.tsx` wraps stage 1 in `storage.run(store, () => fetchServer(request))` (§3.3). Node's `async_hooks` propagate the store across every await/microtask *started inside that scope* — which includes React's own scheduling of server-component renders and the lazy `import()`s of route modules. Since `matchRSCServerRequest` also decodes and executes server functions, **server actions see the same store** — `await request()` works inside `'use server'` functions too.
+**Seeding.** `handler` in `rsc.tsx` wraps stage 1 in `storage.run(store, () => fetchServer(request))` (§3.3). Node's `async_hooks` propagate the store across every await/microtask *started inside that scope* — which includes React's own scheduling of server-component renders and the lazy `import()`s of route modules. Since `matchRSCServerRequest` also decodes and executes server functions, **server actions see the same store** — `request()` works inside `'use server'` functions too.
 
 **Consumption.** Any server component:
 
 ```tsx
-export async function Html() {
-    const { linkTags, headers, nonce } = await request()
+export function Html() {
+    const { linkTags, headers, nonce } = request()
     // render <link> tags, read cookies via headers, apply CSP nonce…
 }
 ```
 
-It returns a promise purely for forward compatibility (mirrors Next's `headers()`/`cookies()` API shape); the value is synchronous today.
+It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`cookies()`): the store exists before the render starts, and the async shape only earns its keep under prerendering semantics this repo doesn't have. A sync `request()` also keeps the render-lock rule literal — reading request data is never "an `await` before the lock" (docs/response.md §4.4).
 
 **Boundaries.**
 
 - Not available in **client components** — including during SSR. Two guards enforce this: `import 'server-only'` fails the build if the module is pulled into a graph without the `react-server` condition, and the `invariant` catches calls outside the ALS scope at runtime. Note stage 2 (Fizz) runs *outside* `storage.run` — by the time HTML renders, server components have already executed and their output is baked into the payload; client components needing request data must receive it as **props from a server component** (e.g. `Html` passes `headers.get('cookie')` into `<Providers cookie={…}>` so `react-cookie` hydrates without mismatch).
 - One deliberate design choice: this replaces the earlier `RouterContextProvider` → root-loader → `loaderData` plumbing. A single ALS store means server components at any depth read request data directly, no prop-drilling and no loader indirection — and unlike Next.js there's a single store, not a work/workUnit split (that split only matters for prerender/ISR-style caching semantics this repo doesn't have).
 - `linkTags`/`nonce` riding in the store is what lets the express layer influence `<head>` even though the document is a server component (§4).
+
+The store also carries **mutable response state** — `setHeader()`/`status()`/`setCookie()` and the `renderLock()` that lets them run *after* an `await` on a streamed response. That half of the API has its own write-up: **[docs/response.md](response.md)**.
 
 ---
 
@@ -592,8 +594,8 @@ Hard-won invariants; violate at your own risk:
 import { redirect } from '@/server/navigation'
 import { request } from '@/server/request'
 
-export default async function Private() {
-    const { cookies } = await request()
+export default function Private() {
+    const { cookies } = request()
     if (!cookies.get('session')) redirect('/')
     // …
 }
@@ -634,7 +636,7 @@ Document responses are the exception — the browser needs the full path in `Loc
 
 ### Where to put redirect logic
 
-- **Server component** — the default. Reads request state through `await request()`, ends the render.
+- **Server component** — the default. Reads request state through `request()`, ends the render.
 - **Route `loader`** — when the redirect must be decided before any component runs, or when you want the cheap 202 path rather than an errored Flight render. Note `RSCRouteConfigEntry` has **no `middleware` field** in RSC mode, so a loader is the earliest *route-level* hook there is.
 - **Express middleware**, before `router` in [`src/server/index.ts`](../src/server/index.ts) — for redirects that need no React at all (legacy URL maps, trailing-slash canonicalisation, a blanket auth gate). This is the only true pre-render hook and it skips the entire two-stage pipeline:
   ```ts
