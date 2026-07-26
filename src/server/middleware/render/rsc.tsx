@@ -36,11 +36,16 @@ const fetchServer = (request: Request) =>
 		request,
 		routes: routes(),
 		onError: logger.error,
+		// react-router's options carry no abort signal — wire the request's own,
+		// so a client disconnect ends the Flight stream (as it already does Fizz)
 		generateResponse: (match, options) =>
-			new Response(renderToReadableStream(match.payload, options), {
-				status: match.statusCode,
-				headers: match.headers
-			})
+			new Response(
+				renderToReadableStream(match.payload, { ...options, signal: request.signal }),
+				{
+					status: match.statusCode,
+					headers: match.headers
+				}
+			)
 	})
 
 export const handler = (request: Request, options: RenderOptions): Promise<Response> => {

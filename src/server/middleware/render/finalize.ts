@@ -1,12 +1,7 @@
-import { logger } from '@/common/logger'
 import type { RequestStore } from '@/server/request'
-
-/** Safety valve: a leaked `renderLock` flushes headers late instead of hanging the response. */
-const LOCK_TIMEOUT = 10_000
 
 const GATE = Symbol('gate')
 const INTERRUPT = Symbol('interrupt')
-const TIMEOUT = Symbol('timeout')
 
 type ReadResult = ReadableStreamReadResult<Uint8Array>
 
@@ -49,12 +44,14 @@ const applyStore = (response: Response, store: RequestStore, body: BodyInit | nu
  *   `HTTP_HEADERS` into a `Response` once the race breaks. That is the loop
  *   below; `read ??= reader.read()` is their `next`.
  *
- * Two deliberate differences: their loop lives inside the renderer and only
+ * One deliberate difference: their loop lives inside the renderer and only
  * covers Flight, whereas this one wraps the opaque `Response` from `handler`
- * (so it covers Fizz documents, `.rsc` payloads and actions alike), and they
- * have no equivalent of LOCK_TIMEOUT — a leaked unlock there waits on the
- * stream ending. Nothing in either piece touches the Flight implementation,
- * which is why it ports to `react-server-dom-rspack` unchanged.
+ * (so it covers Fizz documents, `.rsc` payloads and actions alike). Like
+ * upstream, there is no lock timeout — a leaked unlock waits on the stream
+ * ending, and the bound on that is the client disconnecting: the request's
+ * abort signal (wired in `toWebRequest`) aborts the render, which ends the
+ * stream. Nothing in either piece touches the Flight implementation, which is
+ * why it ports to `react-server-dom-rspack` unchanged.
  */
 export const finalizeResponse = async (
 	response: Response,
@@ -67,9 +64,6 @@ export const finalizeResponse = async (
 	const interrupt = new Promise<typeof INTERRUPT>(resolve =>
 		setImmediate(() => resolve(INTERRUPT))
 	)
-	const timeout = new Promise<typeof TIMEOUT>(resolve =>
-		setTimeout(() => resolve(TIMEOUT), LOCK_TIMEOUT).unref()
-	)
 
 	// An in-flight read carries over when the gate or interrupt wins the race —
 	// it becomes the first thing the output stream awaits.
@@ -80,18 +74,11 @@ export const finalizeResponse = async (
 		read ??= reader.read()
 		const { gate } = store.lock
 
-		const winner = await Promise.race([
-			read,
-			gate ? Promise.race([gate.then<typeof GATE>(() => GATE), timeout]) : interrupt
-		])
+		const winner = await Promise.race([read, gate?.then<typeof GATE>(() => GATE) ?? interrupt])
 
 		// A lock released — re-race: a chained lock may have re-armed the gate.
 		if (winner === GATE) continue
 		if (winner === INTERRUPT) break
-		if (winner === TIMEOUT) {
-			logger.warn('renderLock held for over %dms — flushing response headers', LOCK_TIMEOUT)
-			break
-		}
 
 		read = null
 		if (winner.done) {

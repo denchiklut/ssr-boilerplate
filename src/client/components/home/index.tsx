@@ -10,7 +10,7 @@ import css from './styles.scss'
 import { UseFormStatusDemo } from './use-form-status'
 import { UseServerDemo } from './use-server'
 
-export const Home = () => {
+export function Home() {
 	const host = getENV('CLIENT_HOST')
 	logger.info('Env host: %s', host)
 
