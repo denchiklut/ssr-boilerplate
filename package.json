@@ -18,6 +18,7 @@
 		"lint:style": "stylelint --fix src/**/*.{css,scss}",
 		"lint:script": "biome check --write --unsafe .",
 		"lint": "run-p lint:*",
+		"repro": "node scripts/repro-form-action.mjs",
 		"setup": "sh setup.sh"
 	},
 	"dependencies": {
