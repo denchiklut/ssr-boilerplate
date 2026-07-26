@@ -11,6 +11,7 @@ import {
 import Cookies from 'universal-cookie'
 
 import { basename } from '@/common'
+import { logger } from '@/common/logger'
 import { applyBasename } from '@/server/navigation'
 import { storage } from '@/server/request'
 import { routes } from '@/shared/app'
@@ -34,6 +35,7 @@ const fetchServer = (request: Request) =>
 		basename,
 		request,
 		routes: routes(),
+		onError: logger.error,
 		generateResponse: (match, options) =>
 			new Response(renderToReadableStream(match.payload, options), {
 				status: match.statusCode,
