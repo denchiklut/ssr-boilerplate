@@ -1,11 +1,11 @@
 # Repro — `decodeAction` / `decodeFormState` never receive the server manifest
 
-Minimal-ish reproduction for [rspack issue TODO](https://github.com/web-infra-dev/rspack/issues).
+Minimal-ish reproduction for [rspack#14950](https://github.com/web-infra-dev/rspack/issues/14950).
 
-`react-server-dom-rspack@0.0.2` is inconsistent about who supplies the server manifest.
-Most manifest-consuming exports read `__rspack_rsc_manifest__` themselves — but
-`decodeAction(body, serverManifest)` and `decodeFormState(actionResult, body, serverManifest)`
-still carry React's upstream signature and expect the caller to pass it.
+`react-server-dom-rspack` lost the manifest-injecting wrappers for `decodeAction` and
+`decodeFormState` when its packaging changed. The package's own source still wraps both
+correctly; the published artifact does not, and instead re-exports React's upstream
+signatures, which require the caller to pass the manifest.
 
 react-router 8 calls them as `decodeAction(formData)` and `decodeFormState(result, formData)`,
 so that argument arrives `undefined`, `resolveServerReference` evaluates `undefined[actionId]`,
@@ -69,37 +69,89 @@ decode functions straight from `react-server-dom-rspack/server.node` into react-
 
 ```ts
 matchRSCServerRequest({
-    decodeReply,      // ✅ reads __rspack_rsc_manifest__.serverManifest itself
-    loadServerAction, // ✅ reads __rspack_rsc_manifest__.serverManifest itself
-    decodeAction,     // ❌ wants (body, serverManifest)
-    decodeFormState,  // ❌ wants (actionResult, body, serverManifest)
+    decodeReply,      // fine — shipped build reads the manifest itself
+    loadServerAction, // fine — shipped build reads the manifest itself
+    decodeAction,     // 400s — shipped build expects (body, serverManifest)
+    decodeFormState,  // 400s — shipped build expects (actionResult, body, serverManifest)
     …
 })
 ```
 
-Signatures in `node_modules/react-server-dom-rspack/cjs/react-server-dom-rspack-server.node.production.js`:
+Passing them through unwrapped is what the package's own source asks for: it wraps both,
+injecting the manifest so callers don't have to —
+[`src/server.node.ts`](https://github.com/SyMind/react-server-dom-rspack/blob/main/src/server.node.ts):
 
-| Export | Line | Signature | Manifest |
+```ts
+export function decodeAction(body: FormData): Promise<() => unknown> | null {
+  return ReactServer.decodeAction(body, __rspack_rsc_manifest__.serverManifest);
+}
+
+export function decodeFormState(
+  actionResult: unknown,
+  body: FormData,
+): Promise<unknown | null> {
+  return ReactServer.decodeFormState(
+    actionResult,
+    body,
+    __rspack_rsc_manifest__.serverManifest,
+  );
+}
+```
+
+The published package no longer does. Since `0.0.1-beta.1` it ships React's vendored bundle
+directly — `server.node.js` is a thin re-export of
+`cjs/react-server-dom-rspack-server.node.{production,development}.js` with no wrapper layer —
+so consumers get React's upstream signatures instead.
+
+### Regression timeline
+
+| Version | Published | `decodeAction` as shipped | `.d.ts` shipped |
 |---|---|---|---|
-| `decodeAction` | 3101 | `(body, serverManifest)` | **caller must pass** |
-| `decodeFormState` | 3121 | `(actionResult, body, serverManifest)` | **caller must pass** |
-| `decodeReply` | 3138 | `(body, options)` | reads the global |
-| `decodeReplyFromAsyncIterable` | 3154 | `(iterable, options)` | reads the global |
-| `decodeReplyFromBusboy` | 3181 | `(busboyStream, options)` | reads the global |
-| `loadServerAction` | 3272 | `(actionId)` | reads the global |
+| `0.0.1-alpha.8` | 2026-01-04 | `(body)` — injects the manifest itself ✅ | 10 files |
+| `0.0.1-beta.1` | 2026-02-26 | `(body, serverManifest)` ❌ | none |
+| `0.0.2` | 2026-03-14 | `(body, serverManifest)` ❌ | none |
+| `19.3.0-canary-0280004e-20260417` | 2026-04-17 | `(body, serverManifest)` ❌ | none |
+
+`decodeFormState` regressed identically. Other manifest-consuming exports kept their wrappers
+across the same transition — `decodeReply(body, options)`,
+`decodeReplyFromAsyncIterable(iterable, options)`, `decodeReplyFromBusboy(busboyStream, options)`,
+`loadServerAction(actionId)` and `renderToReadableStream` all still self-serve
+`__rspack_rsc_manifest__`. So the shipped package is internally inconsistent about who supplies
+the manifest, and it is **still broken in the newest published version** — upgrading the pin
+does not help.
+
+Dropping the `.d.ts` files in the same transition is what makes it silent: consumers now
+hand-write the signatures, so a wrong guess fails at runtime instead of at build time.
 
 ## Workaround
 
-Wrapping the two at the call site fixes it — this branch deliberately leaves them unwrapped
-so the bug reproduces:
+Wrapping the two at the call site fixes it. This branch deliberately leaves them unwrapped so
+the bug reproduces — to apply the workaround, edit
+[`src/server/middleware/render/rsc.tsx`](src/server/middleware/render/rsc.tsx):
 
 ```ts
-const decodeFormAction = formData =>
+// src/server/middleware/render/rsc.tsx
+const decodeFormAction: DecodeActionFunction = formData =>
     decodeAction(formData, __rspack_rsc_manifest__.serverManifest)
 
-const decodeActionFormState = (actionResult, formData) =>
+const decodeActionFormState: DecodeFormStateFunction = (actionResult, formData) =>
     decodeFormState(actionResult, formData, __rspack_rsc_manifest__.serverManifest)
+
+const fetchServer = (request: Request) =>
+    matchRSCServerRequest({
+        decodeReply,      // unchanged — reads the manifest itself
+        loadServerAction, // unchanged — reads the manifest itself
+        decodeAction: decodeFormAction,
+        decodeFormState: decodeActionFormState,
+        …
+    })
 ```
+
+`DecodeActionFunction` / `DecodeFormStateFunction` are react-router's
+`unstable_Decode*Function` types. `__rspack_rsc_manifest__` is a bundler global injected by
+rspack's RSC ServerPlugin — it needs an ambient declaration, which this repo keeps in
+[`@types/rsc/index.d.ts`](@types/rsc/index.d.ts) alongside the module declarations for
+`react-server-dom-rspack` (the package ships no types of its own).
 
 After that, `pnpm repro` reports:
 
@@ -111,10 +163,10 @@ POST / → 200 OK (1526ms)
 
 ## Suggested fix
 
-Have `decodeAction` and `decodeFormState` read `__rspack_rsc_manifest__.serverManifest` like
-the rest of the package, keeping the explicit argument as an optional override. Shipping
-`.d.ts` files would also make this class of mismatch a compile error — the package currently
-ships none, so every consumer hand-writes the signatures and a wrong guess is silent.
+Restore parity with `src/server.node.ts` in the published build, so `decodeAction` and
+`decodeFormState` inject `__rspack_rsc_manifest__.serverManifest` like every other export,
+and restore the `.d.ts` files so this class of mismatch is a compile error rather than a
+runtime 400.
 
 ## Environment
 
