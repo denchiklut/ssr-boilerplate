@@ -11,6 +11,7 @@ import {
 import Cookies from 'universal-cookie'
 
 import { basename } from '@/common'
+import { applyBasename } from '@/server/navigation'
 import { storage } from '@/server/request'
 import { routes } from '@/shared/app'
 
@@ -41,18 +42,16 @@ const fetchServer = (request: Request) =>
 	})
 
 export const handler = async (request: Request, options: RenderOptions): Promise<Response> => {
-	return renderHTML(
-		request,
-		await storage.run(
-			{
-				nonce: options.nonce,
-				linkTags: options.linkTags,
-				url: new URL(request.url),
-				headers: request.headers,
-				cookies: new Cookies(request.headers.get('cookie'))
-			},
-			() => fetchServer(request)
-		),
-		options
+	const serverResponse = await storage.run(
+		{
+			nonce: options.nonce,
+			linkTags: options.linkTags,
+			url: new URL(request.url),
+			headers: request.headers,
+			cookies: new Cookies(request.headers.get('cookie'))
+		},
+		() => fetchServer(request)
 	)
+
+	return applyBasename(await renderHTML(request, serverResponse, options))
 }

@@ -15,6 +15,11 @@ export const routes = (): RSCRouteConfig => [
 					{ id: 'home', index: true, lazy: () => import('@/pages/home' as string) },
 					{ id: 'about', path: 'about', lazy: () => import('@/pages/about' as string) },
 					{
+						id: 'private',
+						path: 'private',
+						lazy: () => import('@/pages/private' as string)
+					},
+					{
 						id: 'not-found',
 						path: '*',
 						lazy: () => import('@/pages/not-found' as string)

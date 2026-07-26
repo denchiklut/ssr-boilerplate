@@ -13,7 +13,7 @@ export const renderHTML = (request: Request, serverResponse: Response, options: 
 		request,
 		serverResponse,
 		createFromReadableStream,
-		async renderHTML(getPayload) {
+		async renderHTML(getPayload, { onError, onHeaders }) {
 			const payload = await getPayload()
 			const formState = (
 				payload.type === 'render' ? await payload.formState : undefined
@@ -21,6 +21,8 @@ export const renderHTML = (request: Request, serverResponse: Response, options: 
 
 			return renderToReadableStream(<RSCStaticRouter getPayload={getPayload} />, {
 				formState,
+				onError,
+				onHeaders,
 				nonce: options.nonce,
 				signal: request.signal,
 				bootstrapScripts: options.bootstrapScripts,

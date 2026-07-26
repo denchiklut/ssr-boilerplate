@@ -21,6 +21,7 @@ How this boilerplate implements RSC with **rspack v2** (native RSC support: laye
 - [8. Dev workflow & HMR](#8-dev-workflow--hmr)
 - [9. Production build](#9-production-build)
 - [10. Gotchas](#10-gotchas)
+- [11. Redirects](#11-redirects)
 
 ---
 
@@ -340,7 +341,7 @@ What `unstable_routeRSCServerRequest` does (verified against react-router 8 sour
 2. **Redirect detection.** The Flight stream is cloned and pre-decoded; a `202` + `{type:'redirect'}` payload becomes a real 3xx `Response` with a `Location` header before any HTML work happens.
 3. **HTML render.** Otherwise the stream is teed: one copy feeds `createFromReadableStream` → the decoded payload renders through `RSCStaticRouter` under Fizz (this is where client components actually execute on the server — in the SSR layer, with the default React build). `formState` enables progressive form-action enhancement (no-JS `useActionState` submits). `bootstrapScripts` / `nonce` are plain Fizz options.
 4. **Payload injection.** The *other* copy of the Flight stream is piped through `injectRSCPayload(...)`: as HTML streams out, Flight chunks are interleaved as inline `<script>`s that push into `window.__FLIGHT_DATA`. Late-arriving Flight rows (e.g. `Suspense` content resolving mid-stream) appear in the HTML exactly when ready.
-5. Redirects thrown *during* the render (from a component) are recovered as a trailing `<meta http-equiv="refresh">` since headers are already sent.
+5. **Redirects thrown during the render** (from a server component, which surface as a Flight error carrying a `REACT_ROUTER_ERROR:REDIRECT:…` digest) are recovered from Fizz's `onError`: a real 3xx if the shell hasn't flushed yet, otherwise a trailing `<meta http-equiv="refresh">` since the headers are already gone. This only works because `ssr.tsx` forwards the `onError`/`onHeaders` callbacks `routeRSCServerRequest` passes into `renderHTML` — see [§11](#11-redirects).
 
 ```mermaid
 sequenceDiagram
@@ -575,5 +576,88 @@ Hard-won invariants; violate at your own risk:
 5. **React Compiler must stay off in the `Layers.rsc` branch** of `typescriptRSC` — compiled server components crash the Flight render (`reading 'H'`), and prod redacts the error into a useless empty digest (§2.3).
 6. **Keep `statsOptions` explicit** in `render.util.ts` — rspack v2's `toJson({})` omits `chunkGroups`, silently breaking the `ChunkExtractor` (§4).
 7. **`request()` is RSC-scope only** — server components and server functions. Client components (even during SSR) must get request data as props from a server component (§7).
-8. `pnpm spa` (pure CSR mode) is knowingly non-functional under RSC.
-9. **All CSS must stay in the `main` chunk group.** The `ChunkExtractor` only reads the entrypoint's assets; CSS landing in an async chunk group would never get a `<link>` in the SSR'd `<head>` → FOUC. Currently guaranteed by how the ClientPlugin injects client references (§4) — re-verify after adding CSS `splitChunks` groups or upgrading rspack, and reach for `preinit()` (not extractor changes) if it breaks.
+8. **Forward `onError`/`onHeaders`** from `routeRSCServerRequest`'s `renderHTML(getPayload, options)` into Fizz. Drop them and every server-component redirect breaks — 500 before the shell flushes, silently ignored after (§11).
+9. `pnpm spa` (pure CSR mode) is knowingly non-functional under RSC.
+10. **All CSS must stay in the `main` chunk group.** The `ChunkExtractor` only reads the entrypoint's assets; CSS landing in an async chunk group would never get a `<link>` in the SSR'd `<head>` → FOUC. Currently guaranteed by how the ClientPlugin injects client references (§4) — re-verify after adding CSS `splitChunks` groups or upgrading rspack, and reach for `preinit()` (not extractor changes) if it breaks.
+
+---
+
+## 11. Redirects
+
+### The API
+
+[`src/server/navigation/index.ts`](../src/server/navigation/index.ts) (aliased `@/server/navigation`) wraps react-router's redirect helpers so they **throw** instead of returning a `Response`:
+
+```tsx
+import { redirect } from '@/server/navigation'
+import { request } from '@/server/request'
+
+export default async function Private() {
+    const { cookies } = await request()
+    if (!cookies.get('session')) redirect('/')
+    // …
+}
+```
+
+| Export | Status | Client-side effect |
+|---|---|---|
+| `redirect(url, init?)` | 307 | navigate (push) |
+| `permanentRedirect(url, init?)` | 308 | navigate (push) |
+| `replace(url, init?)` | 307 | navigate, replacing the history entry |
+| `redirectDocument(url, init?)` | 307 | full document navigation |
+
+`init` is react-router's `number | ResponseInit`, so `redirect('/x', 303)` or `redirect('/x', { status: 303, headers })` both work.
+
+Three deliberate differences from importing `redirect` straight from `react-router`:
+
+- **It throws.** react-router's returns a `Response` you must remember to `throw`; forgetting silently renders on. This mirrors next.js and `@lazarv/react-server`, both of which throw.
+- **It types as `never`**, so TypeScript narrows past the call. (As a function's *last* statement you still need `return redirect(…)` — otherwise the inferred return type is `void` and TS rejects the component.)
+- **Default 307/308, not react-router's 302.** The express catch-all is `router.all(/.*/)`, so a no-JS form POST that redirected with a 302 would be method-downgraded to GET by the browser. 307/308 preserve the method. Use `303` explicitly in form actions, where POST → GET *is* what you want.
+
+`import 'server-only'` keeps the module out of client bundles, the same guard `@/server/request` uses. Client components redirect with `useNavigate()` / `<Navigate>` instead — unlike next.js, there is no client-callable `redirect()` here.
+
+### Three transports, one API
+
+A redirect reaches the browser by a different route depending on where it was thrown. All three are react-router machinery; the wrapper just picks the entry point.
+
+| Thrown from | Mechanism | Document request | `.rsc` navigation |
+|---|---|---|---|
+| route `loader` / `action` | `generateRedirectResponse` → **202** + `{type:'redirect'}` Flight payload | `routeRSCServerRequest` pre-decodes the payload and returns a real 3xx before any HTML renders (§3.4 step 2) | 202 passes through; `RSCHydratedRouter` navigates on the payload |
+| server component | Flight `onError` → `REACT_ROUTER_ERROR:REDIRECT:{…}` digest embedded in the stream | Fizz `onError` decodes the digest → real 3xx, or `<meta http-equiv="refresh">` if the shell already flushed (§3.4 step 5) | 200 with the digest in the payload; `RSCErrorHandler` calls `router.navigate()` |
+| server function (`'use server'`) | react-router captures it on its own ALS (`ctx.redirect`) → 202 payload | 3xx (no-JS form POST) | `createCallServer` navigates on the `redirect` payload |
+
+### Basename ownership
+
+**Write app-relative paths — never include the basename.** That is what the client router expects: it prepends `basename` itself when it navigates on a redirect payload, so a pre-prefixed path would double up (`/app/app/about`).
+
+Document responses are the exception — the browser needs the full path in `Location` — so the prefix is applied once at the boundary by `applyBasename` in [`rsc.tsx`](../src/server/middleware/render/rsc.tsx), which rewrites `Location` on 3xx responses only. It skips absolute URLs and is idempotent, which matters: react-router *does* prepend the basename itself for redirects coming out of form actions.
+
+### Where to put redirect logic
+
+- **Server component** — the default. Reads request state through `await request()`, ends the render.
+- **Route `loader`** — when the redirect must be decided before any component runs, or when you want the cheap 202 path rather than an errored Flight render. Note `RSCRouteConfigEntry` has **no `middleware` field** in RSC mode, so a loader is the earliest *route-level* hook there is.
+- **Express middleware**, before `router` in [`src/server/index.ts`](../src/server/index.ts) — for redirects that need no React at all (legacy URL maps, trailing-slash canonicalisation, a blanket auth gate). This is the only true pre-render hook and it skips the entire two-stage pipeline:
+  ```ts
+  app.use((req, res, next) => (req.path === '/old' ? res.redirect(308, '/new') : next()))
+  ```
+
+### Redirect before you stream
+
+Once the shell has flushed, headers are gone and the redirect degrades to a `<meta http-equiv="refresh">` in the body. Two consequences, both avoided by deciding the redirect early rather than inside a late `Suspense` boundary:
+
+- the response is a 200 that *looks* successful to crawlers and monitoring;
+- react-router writes the raw location into that meta tag, **without** the basename — so under a non-root `CLIENT_HOST` the fallback navigates to the wrong URL. `applyBasename` can't reach it; it lives in the streamed body, not the headers.
+
+### Verified behaviour
+
+Checked against the dev server, with `CLIENT_HOST` at both `/` and `/app`:
+
+| Case | Result |
+|---|---|
+| `GET /private` document, redirect in shell | `307` + `Location: /` (`/app/` under basename) |
+| same, thrown inside a `Suspense` boundary post-flush | `200` + `<meta http-equiv="refresh">` |
+| loader redirect, document | `307` + `Location` |
+| loader redirect, `.rsc` | `202` + `{"type":"redirect","location":"/about","status":307}` |
+| component redirect, `.rsc` | `200`, redirect digest in the payload, client navigates |
+| server-function redirect (form submit with JS) | client lands on the target |
+| external absolute URL | `307` + `Location: https://example.com/`, left unprefixed |
