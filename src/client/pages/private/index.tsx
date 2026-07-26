@@ -5,7 +5,7 @@ import { Page } from '@/shared/page'
 export default function Private() {
 	const { cookies } = request()
 
-	// Session-gated content must never land in a shared cache (docs/response.md §4.1)
+	// Session-gated content must never land in a shared cache (docs/response.md §3.1)
 	setHeader('Cache-Control', 'private, no-store')
 
 	// Redirecting from a server component ends the render — the response never

@@ -3,20 +3,19 @@
 How a server component can **await data and then still mutate the HTTP response** — set `Cache-Control` from fetched page data, set a status code, append `Set-Cookie` — even though the response streams.
 
 - [1. The problem](#1-the-problem)
-- [2. Prior art — @lazarv/react-server's render lock](#2-prior-art--lazarvreact-servers-render-lock)
-- [3. When do headers actually flush in this repo?](#3-when-do-headers-actually-flush-in-this-repo)
-- [4. The API](#4-the-api)
-  - [4.1 `setHeader` / `appendHeader` / `deleteHeader`](#41-setheader--appendheader--deleteheader)
-  - [4.2 `status`](#42-status)
-  - [4.3 `setCookie` / `deleteCookie`](#43-setcookie--deletecookie)
-  - [4.4 `renderLock`](#44-renderlock)
-- [5. How it works](#5-how-it-works)
-  - [5.1 Response state rides the request store](#51-response-state-rides-the-request-store)
-  - [5.2 The lock is a counting semaphore](#52-the-lock-is-a-counting-semaphore)
-  - [5.3 The finalize loop](#53-the-finalize-loop)
-  - [5.4 Why a lock taken before the first `await` can never race](#54-why-a-lock-taken-before-the-first-await-can-never-race)
-- [6. Rules & caveats](#6-rules--caveats)
-- [7. Verified behaviour](#7-verified-behaviour)
+- [2. When do headers actually flush in this repo?](#2-when-do-headers-actually-flush-in-this-repo)
+- [3. The API](#3-the-api)
+  - [3.1 `setHeader` / `appendHeader` / `deleteHeader`](#31-setheader--appendheader--deleteheader)
+  - [3.2 `status`](#32-status)
+  - [3.3 `setCookie` / `deleteCookie`](#33-setcookie--deletecookie)
+  - [3.4 `renderLock`](#34-renderlock)
+- [4. How it works](#4-how-it-works)
+  - [4.1 Response state rides the request store](#41-response-state-rides-the-request-store)
+  - [4.2 The lock is a counting semaphore](#42-the-lock-is-a-counting-semaphore)
+  - [4.3 The finalize loop](#43-the-finalize-loop)
+  - [4.4 Why a lock taken before the first `await` can never race](#44-why-a-lock-taken-before-the-first-await-can-never-race)
+- [5. Rules & caveats](#5-rules--caveats)
+- [6. Verified behaviour](#6-verified-behaviour)
 
 ---
 
@@ -35,19 +34,11 @@ export default async function ProductPage({ params }) {
 }
 ```
 
-Yet it is exactly what you want: derive caching policy (or a cookie, or a status code) **from the data the page itself fetched**. Next.js punts on this — `headers()` is read-only, response mutation is confined to middleware/route handlers, which run *before* the page and can't see its data. [@lazarv/react-server](https://react-server.dev/features/http#render-lock) solves it with a *render lock*, and that solution turns out to be portable to this repo.
+Yet it is exactly what you want: derive caching policy (or a cookie, or a status code) **from the data the page itself fetched**. Next.js punts on this — `headers()` is read-only, response mutation is confined to middleware/route handlers, which run *before* the page and can't see its data.
 
-## 2. Prior art — @lazarv/react-server's render lock
+The way out is a **render lock**, and the name is a misnomer: rendering and streaming never pause. What gets held is the *flush of status + headers to the socket*, while the render runs at full speed and its output piles into a buffer. That needs nothing from the Flight implementation — it sits entirely around an opaque stream at the HTTP layer, which is why it works here with React's own `react-server-dom-rspack`. (Credit for the design: see the note in [`finalize.ts`](../src/server/middleware/render/finalize.ts).)
 
-react-server ships its own Flight-protocol implementation, so the first question was whether the lock depends on it. **It doesn't.** Reading the source ([`server/render.mjs`](https://github.com/lazarv/react-server/blob/main/packages/react-server/server/render.mjs), [`server/render-rsc.jsx`](https://github.com/lazarv/react-server/blob/main/packages/react-server/server/render-rsc.jsx)) shows the lock never touches the renderer — it is implemented entirely *around* an opaque stream, at the HTTP layer, out of three pieces:
-
-1. **Mutable response state in per-request context.** Their `headers()` / `status()` / `setCookie()` don't touch a real `Response` — they mutate a `Headers` object and a status record held in request-scoped context. The real `Response` is constructed *late*, snapshotting whatever is in context at that moment.
-2. **A counting semaphore.** `useRender().lock` increments a counter and parks a promise in context that resolves when the counter returns to zero. It does not pause React in any way.
-3. **A buffered read loop between the Flight stream and the socket.** Chunks are read in a loop where each iteration races the next `read()` against the lock promise — or, when no lock is held, against a single `setImmediate` tick. While locked, chunks pile into a buffer; render proceeds at full speed. Only when unlocked (or after one idle tick) is the `Response` built from the *current* context state, the buffer flushed, and the rest of the stream piped through untouched.
-
-So "locking the render" is a misnomer: rendering and streaming never pause. **What's locked is the flush of status + headers to the socket.** That requires nothing from the Flight implementation — which is why the same trick works here with React's own `react-server-dom-rspack`.
-
-## 3. When do headers actually flush in this repo?
+## 2. When do headers actually flush in this repo?
 
 The two request types (docs/rsc.md §3) have very different natural timing:
 
@@ -64,13 +55,13 @@ Two gaps remain, and they are what the lock closes:
 - components inside `<Suspense>` — the shell doesn't wait for them, on document requests;
 - **all** components on `.rsc`/action requests — there is no shell, Flight streams eagerly.
 
-Both are covered by one mechanism because both funnel through the same place: `handler` in [`rsc.tsx`](../src/server/middleware/render/rsc.tsx) returns a single web `Response` for every request type, and the finalize loop (§5.3) wraps exactly that.
+Both are covered by one mechanism because both funnel through the same place: `handler` in [`rsc.tsx`](../src/server/middleware/render/rsc.tsx) returns a single web `Response` for every request type, and the finalize loop (§4.3) wraps exactly that.
 
-## 4. The API
+## 3. The API
 
 Everything lives in [`@/server/request`](../src/server/request/index.ts), next to `request()`, and follows the same rules: **server components and `'use server'` functions only** (guarded by `server-only` + a runtime invariant), callable at any depth, no prop-drilling.
 
-### 4.1 `setHeader` / `appendHeader` / `deleteHeader`
+### 3.1 `setHeader` / `appendHeader` / `deleteHeader`
 
 ```tsx
 import { renderLock, setHeader } from '@/server/request'
@@ -87,12 +78,12 @@ export default async function ProductPage({ params }) {
 }
 ```
 
-The `renderLock` wrapper is what makes the post-`await` mutation reliable on *every* transport (§4.4). It isn't always required — **do you need it?** Decide by where the mutation runs and where the header must appear:
+The `renderLock` wrapper is what makes the post-`await` mutation reliable on *every* transport (§3.4). It isn't always required — **do you need it?** Decide by where the mutation runs and where the header must appear:
 
 | Your mutation | Document (hard nav) | `.rsc` (client nav) | Verdict |
 |---|---|---|---|
 | **before** the component's first `await` | ✅ | ✅ | never needs a lock — always safe |
-| after an `await`, **no lock**, component outside `<Suspense>` | ✅ (the Fizz shell holds the flush, §3) | ⛔ silently dropped | fine **iff** the header is document-only |
+| after an `await`, **no lock**, component outside `<Suspense>` | ✅ (the Fizz shell holds the flush, §2) | ⛔ silently dropped | fine **iff** the header is document-only |
 | after an `await`, **no lock**, under `<Suspense>` | ⛔ | ⛔ | always needs the lock |
 | after an `await`, **inside `renderLock`** | ✅ | ✅ | the canonical form for data-derived headers |
 
@@ -100,9 +91,9 @@ So a top-level `setHeader` after an `await`, without a lock, is a legitimate pat
 
 When deciding which bucket a header is in, don't dismiss the `.rsc` case as "just data, the HTML already loaded" — the payload response has its own URL and its own life in every HTTP cache. `Cache-Control` on `/page.rsc` is what lets a CDN/browser/service worker serve client-side navigations (usually far more frequent than hard loads), and *missing* `private, no-store` there is how a shared cache leaks one user's payload to another. `Set-Cookie` is processed on fetch responses too, and `status()` is what monitoring and CDNs see. In practice the cache/cookie/status family is nearly always "both transports" (→ lock); genuinely document-only headers are the document-processing kind — CSP, `Link` preloads, `Refresh` — which the browser ignores on fetch responses anyway.
 
-They mutate a response-`Headers` object in the request store. At finalize these are **merged over** whatever the render produced (react-router's `match.headers`, content-type, etc.): `set` replaces, `append` adds, `delete` removes. `Set-Cookie` is always append-semantics (§4.3).
+They mutate a response-`Headers` object in the request store. At finalize these are **merged over** whatever the render produced (react-router's `match.headers`, content-type, etc.): `set` replaces, `append` adds, `delete` removes. `Set-Cookie` is always append-semantics (§3.3).
 
-### 4.2 `status`
+### 3.2 `status`
 
 ```tsx
 import { status } from '@/server/request'
@@ -115,7 +106,7 @@ export default function NotFound() {
 
 An explicit `status()` **wins** over the status react-router computed for the match. Without it, react-router's status passes through untouched.
 
-### 4.3 `setCookie` / `deleteCookie`
+### 3.3 `setCookie` / `deleteCookie`
 
 ```tsx
 import { renderLock, setCookie } from '@/server/request'
@@ -134,9 +125,9 @@ export default async function Page() {
 
 Serialized with the [`cookie`](https://www.npmjs.com/package/cookie) package (the same one `universal-cookie` uses to parse) and **appended** — multiple `setCookie` calls produce multiple `Set-Cookie` lines, and the express layer copies them with append semantics too. `deleteCookie(name, options)` is `setCookie` with an epoch expiry; pass the same `path`/`domain` the cookie was set with.
 
-### 4.4 `renderLock`
+### 3.4 `renderLock`
 
-The escape hatch for the two gap cases in §3 — hold the response open across an `await`. Two forms, **fully equivalent** — pick by taste:
+The escape hatch for the two gap cases in §2 — hold the response open across an `await`. Two forms, **fully equivalent** — pick by taste:
 
 ```tsx
 import { renderLock, setHeader } from '@/server/request'
@@ -158,29 +149,29 @@ setHeader('X-Posts-Total', String(posts.length))
 unlock()
 ```
 
-There is nothing special about passing the async work *into* the lock — the lock doesn't watch your promise. All that matters is **when `renderLock()` itself runs**: it must be called *before the component's first `await`*, so the lock is counted while the response is still held (§5.4 explains the guarantee). Both forms above do that — `renderLock(...)` executes synchronously in the component's prelude; the slow work then happens inside an already-open lock window.
+There is nothing special about passing the async work *into* the lock — the lock doesn't watch your promise. All that matters is **when `renderLock()` itself runs**: it must be called *before the component's first `await`*, so the lock is counted while the response is still held (§4.4 explains the guarantee). Both forms above do that — `renderLock(...)` executes synchronously in the component's prelude; the slow work then happens inside an already-open lock window.
 
 Which is also why this ordering is **broken**:
 
 ```tsx
 // ⛔ WRONG — no lock is held during the fetch. The response flushes while
 // fetchPosts is in flight; by the time renderLock runs there is nothing left
-// to hold, and the setHeader is silently dropped (§6).
+// to hold, and the setHeader is silently dropped (§5).
 const posts = await fetchPosts()
 await renderLock(() => setHeader('X-Posts-Total', String(posts.length)))
 ```
 
-(On a document request outside `<Suspense>` this happens to work — the Fizz shell blocks the response anyway (§3) — but it loses the header under `<Suspense>` and on every `.rsc` navigation. Don't rely on it.)
+(On a document request outside `<Suspense>` this happens to work — the Fizz shell blocks the response anyway (§2) — but it loses the header under `<Suspense>` and on every `.rsc` navigation. Don't rely on it.)
 
-One nuance of the callback form: release is *deferred by one macrotask* after the callback settles (§5.2), so a synchronous `setHeader` immediately after the `await renderLock(...)` line still makes it out. That's a chaining affordance, not a pattern to lean on — when a mutation derives from the fetched data, put it inside the callback (or use the bare form).
+One nuance of the callback form: release is *deferred by one macrotask* after the callback settles (§4.2), so a synchronous `setHeader` immediately after the `await renderLock(...)` line still makes it out. That's a chaining affordance, not a pattern to lean on — when a mutation derives from the fetched data, put it inside the callback (or use the bare form).
 
 **The one rule: take the lock before your component's first `await`.** Locks nest — the response flushes when the last one releases. A safety timeout (10 s) logs a warning and flushes anyway if a lock is never released, so a bug degrades to "headers sent late/unmodified", not a hung request.
 
-## 5. How it works
+## 4. How it works
 
-Three small pieces, mirroring react-server's design (§2), adapted to the store and pipeline this repo already has.
+Three small pieces, fitted to the store and pipeline this repo already has: mutable response state in per-request context, a counting semaphore, and a buffered read loop between the render stream and the socket.
 
-### 5.1 Response state rides the request store
+### 4.1 Response state rides the request store
 
 The AsyncLocalStorage store (docs/rsc.md §7) gains two fields:
 
@@ -199,7 +190,7 @@ lock: {
 
 All API functions are thin wrappers over `storage.getStore()` — which is why they work at any depth, in server functions, after any number of `await`s: the store propagates with the async context (and the whole render, both stages, now runs inside one `storage.run` scope in `handler`).
 
-### 5.2 The lock is a counting semaphore
+### 4.2 The lock is a counting semaphore
 
 `renderLock()` increments `lock.count` and lazily creates the shared `gate` promise. `unlock` is idempotent and **defers its decrement by one `setImmediate`**:
 
@@ -211,11 +202,11 @@ const unlock = () => {
 }
 ```
 
-The deferral is what makes locks *chainable*: when `await renderLock(fn)` resolves, your continuation runs on the microtask queue — **before** the scheduled decrement — so a follow-up `renderLock()` keeps the gate closed with no gap. It is also why "mutate right after the `await`" in §4.4 works: those synchronous calls run before the decrement lands.
+The deferral is what makes locks *chainable*: when `await renderLock(fn)` resolves, your continuation runs on the microtask queue — **before** the scheduled decrement — so a follow-up `renderLock()` keeps the gate closed with no gap. It is also why "mutate right after the `await`" in §3.4 works: those synchronous calls run before the decrement lands.
 
-### 5.3 The finalize loop
+### 4.3 The finalize loop
 
-[`finalize.ts`](../src/server/middleware/render/finalize.ts), called as the last step of `handler` — inside the bundle, inside `storage.run`. (It cannot live in the express middleware: the express process and the rspack server bundle are **separate module graphs** — `getRender` loads the bundle via `require`/`requireFromString` — so they hold different `storage` instances. Express-land code calling `storage.getStore()` would see `undefined`.)
+[`finalize.ts`](../src/server/middleware/render/finalize.ts) (where the design credit lives), called as the last step of `handler` — inside the bundle, inside `storage.run`. (It cannot live in the express middleware: the express process and the rspack server bundle are **separate module graphs** — `getRender` loads the bundle via `require`/`requireFromString` — so they hold different `storage` instances. Express-land code calling `storage.getStore()` would see `undefined`.)
 
 ```ts
 export const finalizeResponse = async (response: Response, store: Store): Promise<Response> => {
@@ -247,11 +238,11 @@ Reading it against the race's three outcomes:
 - **The gate wins** → a lock just released. Loop around and re-evaluate: either a chained lock re-armed the gate (keep waiting) or `gate` is `null` and the already-resolved `interrupt` wins the next race (flush).
 - **The interrupt wins** → one `setImmediate` tick passed with no lock held and no chunk pending. Flush.
 
-One subtlety inherited from react-server: an in-flight `reader.read()` must **carry over** (`read ??=`) — when the gate or interrupt wins the race, the pending read isn't lost, it's the first thing the output stream awaits. The output is a new `ReadableStream` that enqueues `buffered` in `start()` and delegates `pull()` to the reader, so **backpressure is preserved** — express's `.pipe` drives it exactly as before.
+One subtlety: an in-flight `reader.read()` must **carry over** (`read ??=`) — when the gate or interrupt wins the race, the pending read isn't lost, it's the first thing the output stream awaits. The output is a new `ReadableStream` that enqueues `buffered` in `start()` and delegates `pull()` to the reader, so **backpressure is preserved** — express's `.pipe` drives it exactly as before.
 
 `applyStore` builds the final `Response`: `store.response.status ?? response.status`, headers = the render's headers with the store's merged over them (`set` semantics, except `Set-Cookie` which appends), and hands the express layer a response it can treat exactly as today — the middleware's only change is copying `Set-Cookie` with `res.append`.
 
-### 5.4 Why a lock taken before the first `await` can never race
+### 4.4 Why a lock taken before the first `await` can never race
 
 The guarantee comes from Flight's scheduling, verified in `react-server-dom-rspack`:
 
@@ -264,13 +255,13 @@ function startWork(request) {
 
 `renderToReadableStream` queues the first render pass **as a microtask** at call time — inside `generateResponse`, deep inside `await fetchServer(request)`. `performWork` synchronously runs the prelude of every server component reachable without awaiting a parent; any `renderLock()` there increments the counter. The finalize loop starts strictly later (after the `fetchServer`/`renderHTML` promise chains — later microtasks by FIFO order) and its no-lock exit needs a full `setImmediate` macrotask on top. By then, every prelude lock is counted.
 
-The corollary is the rule in §4.4: a lock taken *after* an `await` sits behind your data, not in the prelude — nothing stops the idle tick from firing first. (On document requests you get away with it outside `<Suspense>`, because the Fizz shell blocks `handler` anyway — but don't build on that; write components that are correct on `.rsc` navigations too.)
+The corollary is the rule in §3.4: a lock taken *after* an `await` sits behind your data, not in the prelude — nothing stops the idle tick from firing first. (On document requests you get away with it outside `<Suspense>`, because the Fizz shell blocks `handler` anyway — but don't build on that; write components that are correct on `.rsc` navigations too.)
 
 Components whose *parent* suspends before rendering them get their locks registered transitively: the parent's own await either happens under a lock (extending the window) or the child's rows were never going to make the first flush anyway.
 
-## 6. Rules & caveats
+## 5. Rules & caveats
 
-- **Lock before the first `await`.** The only ordering rule (§5.4). Everything before the first `await` — including `setHeader` itself — is race-free even without a lock.
+- **Lock before the first `await`.** The only ordering rule (§4.4). Everything before the first `await` — including `setHeader` itself — is race-free even without a lock.
 - **A lock delays TTFB for the whole response.** That's the feature — the client waits on your data before the first byte. Use it for decisions worth blocking on (cache policy, auth cookies), not around every fetch. The no-lock overhead of finalize is one `setImmediate` tick (~0 ms).
 - **Buffering means memory.** While locked, Flight/Fizz output accumulates in an array. For header-decision windows (tens–hundreds of ms) this is a few KB; don't hold a lock across a 30 s job.
 - **The timeout is a safety valve, not an API.** 10 s (`LOCK_TIMEOUT` in `finalize.ts`), logs a warning, then flushes with whatever headers exist. A leaked `unlock` never hangs a response — and if the stream *completes* while a lock is still held, the loop flushes immediately (every component has settled, so no further mutation can come), meaning a leak on a fast page costs nothing at all.
@@ -279,7 +270,7 @@ Components whose *parent* suspends before rendering them get their locks registe
 - **Client components can't do any of this** — same boundary as `request()` (docs/rsc.md §7): `server-only` fails the build, the invariant catches runtime misuse.
 - **Actions get it too.** `POST` requests run through the same `handler` → finalize path, so `setCookie` inside a `'use server'` function lands on the action response — no lock needed for anything done before the action returns, since the action completes before react-router even starts rendering the revalidated tree.
 
-## 7. Verified behaviour
+## 6. Verified behaviour
 
 All of the following was exercised against the dev server (July 2026), with the API dogfooded in three places: [`not-found`](../src/client/pages/not-found/index.tsx) (`status(404)`), [`private`](../src/client/pages/private/index.tsx) (`setHeader` before a redirect), and [`Posts`](../src/client/components/home/posts/index.tsx) (`renderLock` + data-derived header inside `<Suspense>`).
 

@@ -502,7 +502,7 @@ export function Html() {
 }
 ```
 
-It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`cookies()`): the store exists before the render starts, and the async shape only earns its keep under prerendering semantics this repo doesn't have. A sync `request()` also keeps the render-lock rule literal — reading request data is never "an `await` before the lock" (docs/response.md §4.4).
+It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`cookies()`): the store exists before the render starts, and the async shape only earns its keep under prerendering semantics this repo doesn't have. A sync `request()` also keeps the render-lock rule literal — reading request data is never "an `await` before the lock" (docs/response.md §3.4).
 
 **Boundaries.**
 

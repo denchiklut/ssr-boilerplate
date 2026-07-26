@@ -31,7 +31,30 @@ const applyStore = (response: Response, store: RequestStore, body: BodyInit | nu
 /**
  * Defers the status/headers snapshot of a streamed response until every
  * `renderLock` has released (or one idle macrotask passes with none held),
- * buffering body chunks in the meantime. See docs/response.md §5.3.
+ * buffering body chunks in the meantime. See docs/response.md §4.3.
+ *
+ * Adapted from @lazarv/react-server's render lock, which is two pieces
+ * (permalinks pinned at e58d437):
+ *
+ * - the counting semaphore — `useRender().lock` in `server/render.mjs`:
+ *   https://github.com/lazarv/react-server/blob/e58d437ca9db895b71a52c62c1552ad12a4cdf6f/packages/react-server/server/render.mjs#L17-L45
+ *   A `RENDER_LOCK` counter plus a `RENDER_WAIT` promise parked in per-request
+ *   context, whose decrement is deferred by one `immediate()` so chained locks
+ *   leave no gap. Mirrored by `store.lock` here (docs/response.md §4.2).
+ *
+ * - the buffered read loop — inside the Flight render in `server/render-rsc.jsx`:
+ *   https://github.com/lazarv/react-server/blob/e58d437ca9db895b71a52c62c1552ad12a4cdf6f/packages/react-server/server/render-rsc.jsx#L1289-L1331
+ *   `Promise.race([read, getContext(RENDER_WAIT) ?? interrupt])`, carrying an
+ *   in-flight read over via `next`, then snapshotting `HTTP_STATUS`/
+ *   `HTTP_HEADERS` into a `Response` once the race breaks. That is the loop
+ *   below; `read ??= reader.read()` is their `next`.
+ *
+ * Two deliberate differences: their loop lives inside the renderer and only
+ * covers Flight, whereas this one wraps the opaque `Response` from `handler`
+ * (so it covers Fizz documents, `.rsc` payloads and actions alike), and they
+ * have no equivalent of LOCK_TIMEOUT — a leaked unlock there waits on the
+ * stream ending. Nothing in either piece touches the Flight implementation,
+ * which is why it ports to `react-server-dom-rspack` unchanged.
  */
 export const finalizeResponse = async (
 	response: Response,
