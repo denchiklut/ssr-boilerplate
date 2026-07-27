@@ -909,17 +909,44 @@ Three deliberate differences from `react-router`'s own `redirect`:
 
 **`renderLock` does not extend a redirect's deadline.** The rest of the response API flushes on the finalize snapshot, which a lock holds open ([§8.5](#85-renderlock)). A redirect's deadline is the Fizz shell flush instead, which is upstream of that buffering — once the shell is out, react-router degrades to `<meta http-equiv="refresh">` and no lock can undo it (see [Redirect before you stream](#redirect-before-you-stream)).
 
-Client components redirect with `useNavigate()` / `<Navigate>` instead — unlike next.js, there is no client-callable `redirect()` here.
+### `<Redirect />` — the client-component half
 
-### Three transports, one API
+`response()` is server-only, so client components get a component instead of a function:
 
-A redirect reaches the browser by a different route depending on where it was thrown. All three are react-router machinery; the wrapper just picks the entry point.
+```tsx
+import { Redirect } from '@/utils'
+
+export const Gate = ({ authorized, authUrl }: Props) => {
+    if (!authorized) return <Redirect href={authUrl} />
+    // …
+}
+```
+
+```ts
+<Redirect to='/about' status={308} replace />   // app-relative, stays in the router
+<Redirect href='https://auth.example.com' />    // absolute URL, leaves the app
+```
+
+`to` and `href` are mutually exclusive at the type level. `to` is app-relative and carries no basename, exactly like `<Link to>`; `href` is an absolute URL. `status` and `replace` mean what they do on `response().redirect`, and `status` is only observable on the initial document — a client navigation has no HTTP response to put it on.
+
+**Why a component and not a function.** A redirect from the client is two different things depending on how you got there, and a component is the only shape that can be both. On the initial document the component renders on the *server*, during the SSR pass, and throws — so the browser gets a real 3xx instead of HTML it would immediately discard. On a client navigation it never touches the server at all; it renders `<Navigate>` (or `location.assign` for an absolute `href`, in an effect, since that leaves the router's world entirely).
+
+**It mints its own error digest.** `routeRSCServerRequest`'s `onError` recognises a render-time redirect *only* by a `REACT_ROUTER_ERROR:REDIRECT:{…}` digest string — a thrown `Response` is ignored and 500s. Server components get that digest for free, because the Flight renderer mints it when it encodes the error; a client component throws during the SSR pass, downstream of that, so [`redirect.util.ts`](../src/client/utils/redirect/redirect.util.ts) rebuilds the string itself. That mirrors react-router's unexported `createRedirectErrorDigest` and is **pinned to react-router 8.2.0** — `decodeRedirectErrorDigest` type-checks every field, so a shape change downgrades the redirect to a 500 rather than failing quietly.
+
+**Same deadline as everything else here.** The throw is recovered by the same Fizz `onError` path as a server-component redirect, so it inherits the shell-flush deadline and the `<meta http-equiv="refresh">` fallback ([below](#redirect-before-you-stream)) — and, like `response().redirect`, `renderLock` cannot extend it.
+
+Next.js does offer a client-callable `redirect()`, restricted to the render phase for exactly this reason; the constraint is inherent, not a gap in this wrapper.
+
+### Four transports, one idea
+
+A redirect reaches the browser by a different route depending on where it was thrown. All of them are react-router machinery; the wrappers just pick the entry point.
 
 | Thrown from | Mechanism | Document request | `.rsc` navigation |
 |---|---|---|---|
 | route `loader` / `action` | `generateRedirectResponse` → **202** + `{type:'redirect'}` Flight payload | `routeRSCServerRequest` pre-decodes the payload and returns a real 3xx before any HTML renders (§3.4 step 2) | 202 passes through; `RSCHydratedRouter` navigates on the payload |
 | server component | Flight `onError` → `REACT_ROUTER_ERROR:REDIRECT:{…}` digest embedded in the stream | Fizz `onError` decodes the digest → real 3xx, or `<meta http-equiv="refresh">` if the shell already flushed (§3.4 step 5) | 200 with the digest in the payload; `RSCErrorHandler` calls `router.navigate()` |
 | server function (`'use server'`) | react-router captures it on its own ALS (`ctx.redirect`) → 202 payload | 3xx (no-JS form POST) | `createCallServer` navigates on the `redirect` payload |
+| client component (`<Redirect />`) | throws a hand-built redirect digest during the SSR pass | Fizz `onError` decodes it → real 3xx, same path as a server component | never runs on the server; renders `<Navigate>` in the browser |
 
 ### Basename ownership
 
@@ -930,6 +957,7 @@ Document responses are the exception — the browser needs the full path in `Loc
 ### Where to put redirect logic
 
 - **Server component** — the default. Reads request state through `request()`, ends the render.
+- **Client component** — `<Redirect />`, when the decision depends on state only the browser has (a client-side auth hook, a store). If the data is already available on the server, prefer a server component: `response().redirect` needs no round trip and no digest mimicry.
 - **Route `loader`** — when the redirect must be decided before any component runs, or when you want the cheap 202 path rather than an errored Flight render. Note `RSCRouteConfigEntry` has **no `middleware` field** in RSC mode, so a loader is the earliest *route-level* hook there is.
 - **Express middleware**, before `router` in [`src/server/index.ts`](../src/server/index.ts) — for redirects that need no React at all (legacy URL maps, trailing-slash canonicalisation, a blanket auth gate). This is the only true pre-render hook and it skips the entire two-stage pipeline:
   ```ts
@@ -956,3 +984,14 @@ Checked against the dev server, with `CLIENT_HOST` at both `/` and `/app`:
 | component redirect, `.rsc` | `200`, redirect digest in the payload, client navigates |
 | server-function redirect (form submit with JS) | client lands on the target |
 | external absolute URL | `307` + `Location: https://example.com/`, left unprefixed |
+
+`<Redirect />` specifically (July 2026):
+
+| Case | Result |
+|---|---|
+| `<Redirect to>` document | `307` + `Location: /about` (`/app/about` under basename) |
+| `<Redirect to status={308}>` document | `308` + `Location` |
+| `<Redirect href>` document | `307` + `Location: https://example.com/`, left unprefixed under basename |
+| `<Redirect to>` client navigation | `<Navigate>` runs in the browser; lands on `/about`, 2 history entries |
+| `<Redirect to replace>` client navigation | lands on `/about`, 1 history entry — the redirecting one is replaced |
+| `<Redirect href>` client navigation | `location.assign` → full document load (`navigation.type === 'navigate'`) |

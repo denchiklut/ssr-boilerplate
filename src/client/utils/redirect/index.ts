@@ -1,2 +1,1 @@
-export * from './pwa'
 export * from './redirect'
