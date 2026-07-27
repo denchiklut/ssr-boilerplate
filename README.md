@@ -44,7 +44,7 @@ Per-request state flows through a single `AsyncLocalStorage`, so any server comp
 **`request()` — read what came in** ([docs/rsc.md §7](docs/rsc.md#7-request-api--request))
 
 ```tsx
-import { request } from '@/server/request'
+import { request } from '@/rsc'
 
 export function Header() {
 	const { url, headers, cookies, nonce } = request()
@@ -56,7 +56,7 @@ export function Header() {
 **`response()` — write what goes out** ([docs/rsc.md §8](docs/rsc.md#8-response-api--response))
 
 ```tsx
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 export default async function ProductPage({ params }) {
 	const { headers, cookies, status, renderLock } = response()

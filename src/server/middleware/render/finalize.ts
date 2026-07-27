@@ -1,4 +1,4 @@
-import type { RequestStore } from '@/server/request'
+import type { RequestStore } from '@/rsc'
 
 const GATE = Symbol('gate')
 const INTERRUPT = Symbol('interrupt')

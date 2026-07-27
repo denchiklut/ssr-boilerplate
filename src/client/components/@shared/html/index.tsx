@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router'
 
 import { basePath, publicPath } from '@/common'
-import { request } from '@/server/request'
+import { request } from '@/rsc'
 import { Providers } from '@/shared/app/providers'
 
 export function Html() {

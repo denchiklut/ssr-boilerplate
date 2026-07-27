@@ -1,4 +1,4 @@
-import { request, response } from '@/server/request'
+import { request, response } from '@/rsc'
 import { Page } from '@/shared/page'
 
 export default function Private() {

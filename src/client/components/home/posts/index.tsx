@@ -1,5 +1,5 @@
 import { fetchPosts } from '@/api'
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 export async function Posts() {
 	const { headers, renderLock } = response()

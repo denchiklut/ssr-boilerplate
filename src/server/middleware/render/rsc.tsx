@@ -11,7 +11,7 @@ import {
 
 import { basename } from '@/common'
 import { logger } from '@/common/logger'
-import { createRequestStore, storage } from '@/server/request'
+import { createRequestStore, storage } from '@/rsc'
 import { routes } from '@/shared/app'
 
 import { applyBasename } from './basename'

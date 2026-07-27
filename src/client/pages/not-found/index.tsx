@@ -1,4 +1,4 @@
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 import { Page } from '@/shared/page'
 
 export default () => {

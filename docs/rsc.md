@@ -141,7 +141,7 @@ flowchart TD
         E["rsc.tsx (entry)"] --> RR["react-router → index-react-server.js<br/>matchRSCServerRequest"]
         E --> FS["react-server-dom-rspack/server.node<br/>(Flight encoder)"]
         E --> RT["routes() → Html, layouts, pages<br/>(server components)"]
-        E --> ALS["@/server/request (ALS store)"]
+        E --> ALS["@/rsc (ALS store)"]
         RT --> R1["react → react.react-server.js"]
     end
     subgraph ssr["Layers.ssr — default resolution"]
@@ -480,7 +480,7 @@ This module is imported by `rsc.tsx`, so it lives in the RSC layer: every `Compo
 
 ## 7. Request API — `request()`
 
-[`src/server/request/index.ts`](../src/server/request/index.ts) (aliased `@/server/request`) holds one `AsyncLocalStorage` store per request. It has a **read half**, reached with `request()` (this section), and a **write half**, reached with `response()` ([§8](#8-response-api--response)):
+[`src/server/utils/rsc/index.ts`](../src/server/utils/rsc/index.ts) (aliased `@/rsc`) holds one `AsyncLocalStorage` store per request. It has a **read half**, reached with `request()` (this section), and a **write half**, reached with `response()` ([§8](#8-response-api--response)):
 
 ```ts
 import 'server-only'
@@ -582,7 +582,7 @@ Both are covered by one mechanism because both funnel through the same place: `h
 ### 8.2 `headers`
 
 ```tsx
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 export default async function ProductPage({ params }) {
     const { headers, renderLock } = response()
@@ -618,7 +618,7 @@ Reading it back (`headers.get(…)`) sees only what *you* have set — the rende
 ### 8.3 `status`
 
 ```tsx
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 export default function NotFound() {
     const { status } = response()
@@ -633,7 +633,7 @@ An explicit `status()` **wins** over the status react-router computed for the ma
 ### 8.4 `cookies`
 
 ```tsx
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 export default async function Page() {
     const { cookies, renderLock } = response()
@@ -658,7 +658,7 @@ Note the asymmetry with the read side: `request().cookies` is a [`universal-cook
 The escape hatch for the two gap cases in §8.1 — hold the response open across an `await`. Two forms, **fully equivalent** — pick by taste:
 
 ```tsx
-import { response } from '@/server/request'
+import { response } from '@/rsc'
 
 const { headers, renderLock } = response()
 
@@ -874,7 +874,7 @@ Hard-won invariants; violate at your own risk:
 `redirect` is part of the response API ([§8](#8-response-api--response)) — a redirect is a status plus a `Location`, so it lives with the other response writes rather than in a module of its own:
 
 ```tsx
-import { request, response } from '@/server/request'
+import { request, response } from '@/rsc'
 
 export default function Private() {
     const { cookies } = request()
