@@ -6,15 +6,13 @@ A production-shaped **React Server Components** boilerplate: **rspack v2** (nati
 
 Feel free to suggest improvements.
 
-> 📖 **[docs/rsc.md](docs/rsc.md)** — the full architecture write-up: build layers, the two-stage render pipeline, asset injection, HMR bridge, and the invariants you must not break. Read it before changing anything in `rspack/` or `src/server/middleware/render/`.
->
-> 📖 **[docs/response.md](docs/response.md)** — the response API: set headers, status and cookies from server components, including *after* an `await` via the render lock.
+> 📖 **[docs/rsc.md](docs/rsc.md)** — the full architecture write-up: build layers, the two-stage render pipeline, asset injection, the [request](docs/rsc.md#7-request-api--request) & [response](docs/rsc.md#8-response-api--response) APIs, HMR bridge, and the invariants you must not break. Read it before changing anything in `rspack/` or `src/server/middleware/render/`.
 
 ## Features
 
 -   [x] `RSC` — server components, server functions (`'use server'`), form actions
 -   [x] Streaming `SSR` — Flight render → Fizz HTML with the payload inlined
--   [x] Response API — `setHeader`/`status`/`setCookie` from server components; `renderLock` holds the flush open across `await`s
+-   [x] Request & response APIs — `request()` reads url/headers/cookies; `response()` writes `headers`/`cookies`/`status`, with `renderLock` holding the flush open across `await`s
 -   [x] `HMR` — react-refresh for client components, router revalidation for server components
 -   [x] Code splitting (lazy routes + client-reference chunks)
 -   [x] Runtime env vars (build once, deploy anywhere)
@@ -39,16 +37,47 @@ Every document request runs a **two-stage pipeline inside one Node process** —
 
 The same `handler` also answers `.rsc` navigation requests, `.manifest` route-discovery requests and server-function `POST`s. The whole document — `<html>` included — is a server component ([`Html`](src/client/components/@shared/html/index.tsx)); there is no HTML template.
 
-Per-request data (url, headers, cookies, nonce, CSS link tags) flows through a single `AsyncLocalStorage`, so any server component can call `request()` instead of drilling loader data:
+## Request & response APIs
+
+Per-request state flows through a single `AsyncLocalStorage`, so any server component — at any depth, and inside `'use server'` functions — reaches it directly, with no prop-drilling and no loader indirection. Two mirrored accessors, both synchronous:
+
+**`request()` — read what came in** ([docs/rsc.md §7](docs/rsc.md#7-request-api--request))
 
 ```tsx
 import { request } from '@/server/request'
 
 export function Header() {
-	const { cookies, url } = request()
+	const { url, headers, cookies, nonce } = request()
+
 	return <span>{url.pathname}</span>
 }
 ```
+
+**`response()` — write what goes out** ([docs/rsc.md §8](docs/rsc.md#8-response-api--response))
+
+```tsx
+import { response } from '@/server/request'
+
+export default async function ProductPage({ params }) {
+	const { headers, cookies, status, renderLock } = response()
+
+	// renderLock holds the status/headers flush open across the await, so a
+	// header derived from fetched data still makes it out — on the streamed
+	// document *and* on .rsc client navigations
+	const product = await renderLock(async () => {
+		const product = await getProduct(params.id)
+		headers.set('Cache-Control', product.draft ? 'private, no-store' : 's-maxage=300')
+
+		return product
+	})
+
+	if (!product) status(404)
+
+	return <Product data={product} />
+}
+```
+
+The render lock is the part with no equivalent in Next.js, where response mutation is confined to middleware/route handlers that run *before* the page and can't see its data. Rendering never pauses — only the flush of status + headers to the socket is held, while output buffers. Details, rules and the timing guarantee: [docs/rsc.md §8](docs/rsc.md#8-response-api--response).
 
 ## Getting started
 
@@ -124,22 +153,21 @@ src/
   common/        env, logger (winston/console), path helpers — isomorphic
   server/
     middleware/  render (rsc.tsx · ssr.tsx · chunk-extractor), hmr, nonce, logger…
-    request/     AsyncLocalStorage store behind `request()`
+    request/     AsyncLocalStorage store behind `request()` / `response()`
     router/      static · version · health · pwa · app catch-all
-docs/rsc.md      architecture reference
-docs/response.md response API (headers · status · cookies · render lock)
+docs/rsc.md      architecture reference (incl. request & response APIs)
 ```
 
 Path aliases (`@/common`, `@/shared/*`, `@/pages/*`, `@/components/*`, `@/api`, `@/utils`, `@/server/*`) are declared in [tsconfig.json](tsconfig.json).
 
 ## Gotchas
 
-The short list — full reasoning in [docs/rsc.md §10](docs/rsc.md#10-gotchas):
+The short list — full reasoning in [docs/rsc.md §11](docs/rsc.md#11-gotchas):
 
 1. **Never build the client config alone.** `rspack --configName=client` deadlocks: the RSC plugin pair synchronizes the client and server compilers, so they must run in the same multi-compiler build.
 2. **Never add `webpack-node-externals` to the server (render) config.** React, react-dom, react-router and react-server-dom-rspack must be *bundled* for the per-layer `react-server` condition to resolve at all.
 3. **Don't remove the `vendorRSC` rule.** react-router ships a real `'use client'` directive inside its dist files, and loaders don't run over `node_modules` by default — without the transform the server build dies with `useEffect not found in react`.
 4. **React Compiler stays off inside the RSC layer.** Compiled server components crash the Flight render; prod redacts the error into a useless empty digest.
-5. **`request()` is RSC-scope only.** Client components — including during SSR — must receive request data as props from a server component.
+5. **`request()`/`response()` are RSC-scope only.** Client components — including during SSR — must receive request data as props from a server component.
 6. **All CSS must stay in the `main` chunk group**, otherwise it never reaches the SSR'd `<head>` (→ FOUC). Reach for `preinit()`, not extractor changes, if that ever breaks.
 7. **Pure SPA/CSR mode is not supported** under RSC.

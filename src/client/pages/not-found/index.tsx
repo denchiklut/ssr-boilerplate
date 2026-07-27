@@ -1,7 +1,8 @@
-import { status } from '@/server/request'
+import { response } from '@/server/request'
 import { Page } from '@/shared/page'
 
 export default () => {
+	const { status } = response()
 	status(404)
 
 	return (

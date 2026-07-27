@@ -12,6 +12,29 @@ export interface ResponseState {
 	headers: Headers
 }
 
+export interface ResponseCookies {
+	/** Appends a `Set-Cookie` line. Defaults to `path: '/'`. */
+	set: (name: string, value: string, options?: SerializeOptions) => void
+	/** Expires a cookie — pass the same `path`/`domain` it was set with, or browsers keep it. */
+	delete: (name: string, options?: Omit<SerializeOptions, 'expires' | 'maxAge'>) => void
+}
+
+export interface RenderLock {
+	/** Bare form — you own the release. */
+	(): () => void
+	/** Callback form — releases when the callback settles, even on throw. */
+	<T>(fn: () => T | Promise<T>): Promise<T>
+}
+
+export interface ResponseApi {
+	/** Merged over the render's own headers at finalize: `set` replaces, `append` adds, `delete` removes. */
+	headers: Headers
+	cookies: ResponseCookies
+	/** Overrides the status react-router computed for the match. */
+	status: (code: number, statusText?: string) => void
+	renderLock: RenderLock
+}
+
 export interface RenderLockState {
 	count: number
 	gate: Promise<void> | null
@@ -53,55 +76,42 @@ const store = (caller: string) => {
 export const request = () => store('request()')
 
 /**
- * Response mutations below are merged into the HTTP response when it is
- * finalized — see docs/response.md. They only take effect if they run before
- * the response flushes: before the component's first `await`, or inside a
+ * The write half of `request()` — mutations are merged into the HTTP response
+ * when it is finalized (see docs/rsc.md §8). They only take effect if they run
+ * before the response flushes: before the component's first `await`, or inside a
  * `renderLock` window.
  */
-export const setHeader = (name: string, value: string) => {
-	store('setHeader()').response.headers.set(name, value)
+export const response = (): ResponseApi => {
+	const state = store('response()').response
+
+	const set = (name: string, value: string, options?: SerializeOptions) => {
+		state.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
+	}
+
+	return {
+		headers: state.headers,
+		cookies: {
+			set,
+			delete: (name, options) => set(name, '', { ...options, expires: new Date(0) })
+		},
+		status: (code, statusText) => {
+			state.status = code
+			state.statusText = statusText
+		},
+		renderLock
+	}
 }
 
-export const appendHeader = (name: string, value: string) => {
-	store('appendHeader()').response.headers.append(name, value)
-}
-
-export const deleteHeader = (name: string) => {
-	store('deleteHeader()').response.headers.delete(name)
-}
-
-/** Overrides the status react-router computed for the match. */
-export const status = (code: number, statusText?: string) => {
-	const { response } = store('status()')
-
-	response.status = code
-	response.statusText = statusText
-}
-
-export const setCookie = (name: string, value: string, options?: SerializeOptions) => {
-	store('setCookie()').response.headers.append(
-		'set-cookie',
-		serialize(name, value, { path: '/', ...options })
-	)
-}
-
-/** Pass the same `path`/`domain` the cookie was set with, or browsers keep it. */
-export const deleteCookie = (
-	name: string,
-	options?: Omit<SerializeOptions, 'expires' | 'maxAge'>
-) => {
-	setCookie(name, '', { ...options, expires: new Date(0) })
-}
-
-export function renderLock(): () => void
-export function renderLock<T>(fn: () => T | Promise<T>): Promise<T>
+function renderLock(): () => void
+function renderLock<T>(fn: () => T | Promise<T>): Promise<T>
 
 /**
- * Holds the response's status/headers flush open across `await`s so the
- * mutations above still make it out — take it BEFORE the component's first
- * `await`. Locks nest; the response flushes when the last one releases.
+ * Exposed as `response().renderLock`. Holds the response's status/headers flush
+ * open across `await`s so the mutations above still make it out — take it BEFORE
+ * the component's first `await`. Locks nest; the response flushes when the last
+ * one releases.
  */
-export function renderLock<T>(fn?: () => T | Promise<T>) {
+function renderLock<T>(fn?: () => T | Promise<T>) {
 	const { lock } = store('renderLock()')
 
 	lock.count++

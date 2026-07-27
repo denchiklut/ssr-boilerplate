@@ -17,11 +17,20 @@ How this boilerplate implements RSC with **rspack v2** (native RSC support: laye
 - [4. Bundle assets](#4-bundle-assets)
 - [5. Client entry (`src/client/index.tsx`)](#5-client-entry-srcclientindextsx)
 - [6. react-router integration](#6-react-router-integration)
-- [7. `request()` — per-request context via AsyncLocalStorage](#7-request--per-request-context-via-asynclocalstorage)
-- [8. Dev workflow & HMR](#8-dev-workflow--hmr)
-- [9. Production build](#9-production-build)
-- [10. Gotchas](#10-gotchas)
-- [11. Redirects](#11-redirects)
+- [7. Request API — `request()`](#7-request-api--request)
+- [8. Response API — `response()`](#8-response-api--response)
+  - [8.1 Streams vs. headers](#81-streams-vs-headers)
+  - [8.2 `headers`](#82-headers)
+  - [8.3 `status`](#83-status)
+  - [8.4 `cookies`](#84-cookies)
+  - [8.5 `renderLock`](#85-renderlock)
+  - [8.6 How it works](#86-how-it-works)
+  - [8.7 Rules & caveats](#87-rules--caveats)
+  - [8.8 Verified behaviour](#88-verified-behaviour)
+- [9. Dev workflow & HMR](#9-dev-workflow--hmr)
+- [10. Production build](#10-production-build)
+- [11. Gotchas](#11-gotchas)
+- [12. Redirects](#12-redirects)
 
 ---
 
@@ -59,7 +68,7 @@ Design decisions that shape everything below:
 |---|---|
 | Keep the pre-RSC file structure (no dedicated `rsc.entry.ts` / `server.entry.ts` from the rspack guide) | One server bundle (`app.server.js`) exporting a `handler(Request) → Response`; the RSC/SSR split happens via **layers inside** that bundle, not via separate entries |
 | Asset injection is done manually from client-compiler stats ([§4](#4-bundle-assets)) | We control `bootstrapScripts`, CSS `<link>` tags, nonces — the plugin's built-in asset conventions are not used |
-| Per-request data flows through a single `AsyncLocalStorage` ([§7](#7-request--per-request-context-via-asynclocalstorage)) | Server components call `request()` instead of receiving loader data through router context |
+| Per-request data flows through a single `AsyncLocalStorage` ([§7](#7-request-api--request)) | Server components call `request()` instead of receiving loader data through router context |
 | The whole document (`<html>…`) is a server component (`Html`) | There is no HTML template; CSS links, favicons, the manifest, env bootstrap — all rendered by React |
 
 ---
@@ -78,7 +87,7 @@ Design decisions that shape everything below:
 
 Why three, and why split this way:
 
-- **`express`** is the plain HTTP server: middleware, routing, logging. It knows nothing about React. It is *not* part of the RSC compiler pair, so it can be built and watched independently — which is what makes the dev loop work ([§8](#8-dev-workflow--hmr)). The `/app.server.js/` external keeps `require('../client/js/app.server.js')` as a literal runtime `require` instead of bundling the render bundle into the express bundle.
+- **`express`** is the plain HTTP server: middleware, routing, logging. It knows nothing about React. It is *not* part of the RSC compiler pair, so it can be built and watched independently — which is what makes the dev loop work ([§9](#9-dev-workflow--hmr)). The `/app.server.js/` external keeps `require('../client/js/app.server.js')` as a literal runtime `require` instead of bundling the render bundle into the express bundle.
 - **`client`** is the browser bundle. It carries the HMR/react-refresh plumbing in dev and the `ClientPlugin` half of the RSC plugin pair.
 - **`server`** is the *render* bundle. Its entry is the RSC handler itself. Two non-obvious choices:
   - `output.path` is `dist/client` — it's emitted **next to the client assets**, so in prod the express bundle finds it at `../client/js/app.server.js` relative to `dist/server`, and in dev it lives in the same in-memory filesystem `@rspack/dev-middleware` already manages.
@@ -229,7 +238,7 @@ export const rscServerPlugin = new ServerPlugin({          // → server.config 
 
 The manifest plumbing is entirely internal — `react-server-dom-rspack` picks it up through rspack runtime globals; no manifest file is read in app code.
 
-The one custom bit is the **HMR bridge**: `onServerComponentChanges` fires on server-compiler rebuilds that touched server components; `onRscChange(listener)` is a plain module-level pub/sub the dev middleware subscribes to ([§8](#8-dev-workflow--hmr)). This works because in dev the rspack config module and the express server run in the **same Node process**, so both sides see the same module instance.
+The one custom bit is the **HMR bridge**: `onServerComponentChanges` fires on server-compiler rebuilds that touched server components; `onRscChange(listener)` is a plain module-level pub/sub the dev middleware subscribes to ([§9](#9-dev-workflow--hmr)). This works because in dev the rspack config module and the express server run in the **same Node process**, so both sides see the same module instance.
 
 ### 2.5 Why we don't use rspack's built-in server-entry approach
 
@@ -270,7 +279,7 @@ express()
 3. **Handler resolution** (`getRender(res)`, [§4](#4-bundle-assets)): prod — `require('../client/js/app.server.js')`; dev — the freshest bundle read out of dev-middleware's in-memory fs and evaluated with `require-from-string`.
 4. **Invoke** the bundle's `handler(webRequest, options)` with:
    - `nonce` — from the nonce middleware,
-   - `linkTags` — CSS preload+stylesheet descriptors (rendered later *by a server component*, [§7](#7-request--per-request-context-via-asynclocalstorage)),
+   - `linkTags` — CSS preload+stylesheet descriptors (rendered later *by a server component*, [§7](#7-request-api--request)),
    - `bootstrapScriptContent` — `setEnvVars()`: an inline `window.env_vars=Object.freeze({...})` snippet exposing `CLIENT_*` env to the browser,
    - `bootstrapScripts` — the client entry's JS asset URLs.
 5. **Web `Response` → Express**: status + headers copied, `Readable.fromWeb(response.body).pipe(res)` — the whole thing stays a stream end-to-end.
@@ -341,7 +350,7 @@ What `unstable_routeRSCServerRequest` does (verified against react-router 8 sour
 2. **Redirect detection.** The Flight stream is cloned and pre-decoded; a `202` + `{type:'redirect'}` payload becomes a real 3xx `Response` with a `Location` header before any HTML work happens.
 3. **HTML render.** Otherwise the stream is teed: one copy feeds `createFromReadableStream` → the decoded payload renders through `RSCStaticRouter` under Fizz (this is where client components actually execute on the server — in the SSR layer, with the default React build). `formState` enables progressive form-action enhancement (no-JS `useActionState` submits). `bootstrapScripts` / `nonce` are plain Fizz options.
 4. **Payload injection.** The *other* copy of the Flight stream is piped through `injectRSCPayload(...)`: as HTML streams out, Flight chunks are interleaved as inline `<script>`s that push into `window.__FLIGHT_DATA`. Late-arriving Flight rows (e.g. `Suspense` content resolving mid-stream) appear in the HTML exactly when ready.
-5. **Redirects thrown during the render** (from a server component, which surface as a Flight error carrying a `REACT_ROUTER_ERROR:REDIRECT:…` digest) are recovered from Fizz's `onError`: a real 3xx if the shell hasn't flushed yet, otherwise a trailing `<meta http-equiv="refresh">` since the headers are already gone. This only works because `ssr.tsx` forwards the `onError`/`onHeaders` callbacks `routeRSCServerRequest` passes into `renderHTML` — see [§11](#11-redirects).
+5. **Redirects thrown during the render** (from a server component, which surface as a Flight error carrying a `REACT_ROUTER_ERROR:REDIRECT:…` digest) are recovered from Fizz's `onError`: a real 3xx if the shell hasn't flushed yet, otherwise a trailing `<meta http-equiv="refresh">` since the headers are already gone. This only works because `ssr.tsx` forwards the `onError`/`onHeaders` callbacks `routeRSCServerRequest` passes into `renderHTML` — see [§12](#12-redirects).
 
 ```mermaid
 sequenceDiagram
@@ -380,7 +389,7 @@ We do **not** use the rspack RSC guide's server-entry asset convention. The serv
 
 **4. Injection into HTML** ([render middleware](../src/server/middleware/render/index.tsx)). The extracted assets split into two roles:
    - **JS** → `bootstrapScripts`: every `.js` asset of the `main` entrypoint, passed to Fizz's `renderToReadableStream`, which emits them as `<script async>` at the right streaming moment and coordinates hydration. (`bootstrapScriptContent` — `setEnvVars()`, the inline env bootstrap — rides along.)
-   - **CSS** → `linkTags`: for every `.css` asset, a `rel="preload" as="style"` + `rel="stylesheet"` pair (nonce'd). These **cannot** be injected by the express layer, because there is no HTML template — the document is React. So they travel through the ALS store ([§7](#7-request--per-request-context-via-asynclocalstorage)) and the [`Html`](../src/client/components/@shared/html/index.tsx) *server component* renders them in `<head>` during the Flight render — they land in the first flushed HTML bytes.
+   - **CSS** → `linkTags`: for every `.css` asset, a `rel="preload" as="style"` + `rel="stylesheet"` pair (nonce'd). These **cannot** be injected by the express layer, because there is no HTML template — the document is React. So they travel through the ALS store ([§7](#7-request-api--request)) and the [`Html`](../src/client/components/@shared/html/index.tsx) *server component* renders them in `<head>` during the Flight render — they land in the first flushed HTML bytes.
 
 **5. The part the extractor does *not* do.** Everything module-level — which chunk holds which `'use client'` component, loading those chunks in the browser, matching them up during hydration — is handled by the RSC client/server manifests the plugin pair wires together (§2.4); no manifest file is touched in app code. Likewise, lazy-route chunks need no handling here: route-level `import()`s in `routes()` are server-side code-splitting, and client-component chunks referenced by the payload are loaded by `react-server-dom-rspack`'s runtime module map on demand. Bundle-asset extraction in this architecture has exactly two jobs — entry JS for bootstrap, CSS links for the shell — and the extractor covers both.
 
@@ -426,7 +435,7 @@ if (IS_DEV) {
     })
 }
 ```
-The receiving end of the RSC HMR bridge ([§8](#8-dev-workflow--hmr)). The `require` returns the same hot-middleware client instance the entry array already started, so this only adds a subscriber. `__reactRouterDataRouter` is the data router `RSCHydratedRouter` exposes on `window`; `revalidate()` refetches the Flight payload and swaps the server-rendered tree in place (reload is only the pre-hydration fallback).
+The receiving end of the RSC HMR bridge ([§9](#9-dev-workflow--hmr)). The `require` returns the same hot-middleware client instance the entry array already started, so this only adds a subscriber. `__reactRouterDataRouter` is the data router `RSCHydratedRouter` exposes on `window`; `revalidate()` refetches the Flight payload and swaps the server-rendered tree in place (reload is only the pre-hydration fallback).
 
 ---
 
@@ -469,19 +478,23 @@ This module is imported by `rsc.tsx`, so it lives in the RSC layer: every `Compo
 
 ---
 
-## 7. `request()` — per-request context via AsyncLocalStorage
+## 7. Request API — `request()`
 
-[`src/server/request/index.ts`](../src/server/request/index.ts) (aliased `@/server/request`):
+[`src/server/request/index.ts`](../src/server/request/index.ts) (aliased `@/server/request`) holds one `AsyncLocalStorage` store per request. It has a **read half**, reached with `request()` (this section), and a **write half**, reached with `response()` ([§8](#8-response-api--response)):
 
 ```ts
 import 'server-only'
 
 export const storage = new AsyncLocalStorage<{
+    // read — what came in
     url: URL
     nonce: string
     headers: Headers
     cookies: Cookies          // universal-cookie, parsed once per request
     linkTags?: LinkHTMLAttributes<HTMLLinkElement>[]
+    // write — what goes out (§8)
+    response: { status?: number; statusText?: string; headers: Headers }
+    lock: { count: number; gate: Promise<void> | null; release: () => void }
 }>()
 
 export const request = () => {
@@ -491,7 +504,7 @@ export const request = () => {
 }
 ```
 
-**Seeding.** `handler` in `rsc.tsx` wraps stage 1 in `storage.run(store, () => fetchServer(request))` (§3.3). Node's `async_hooks` propagate the store across every await/microtask *started inside that scope* — which includes React's own scheduling of server-component renders and the lazy `import()`s of route modules. Since `matchRSCServerRequest` also decodes and executes server functions, **server actions see the same store** — `request()` works inside `'use server'` functions too.
+**Seeding.** `handler` in `rsc.tsx` wraps the render in `storage.run(store, …)` (§3.3). Node's `async_hooks` propagate the store across every await/microtask *started inside that scope* — which includes React's own scheduling of server-component renders and the lazy `import()`s of route modules. Since `matchRSCServerRequest` also decodes and executes server functions, **server actions see the same store** — `request()` works inside `'use server'` functions too.
 
 **Consumption.** Any server component:
 
@@ -502,7 +515,7 @@ export function Html() {
 }
 ```
 
-It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`cookies()`): the store exists before the render starts, and the async shape only earns its keep under prerendering semantics this repo doesn't have. A sync `request()` also keeps the render-lock rule literal — reading request data is never "an `await` before the lock" (docs/response.md §3.4).
+It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`cookies()`): the store exists before the render starts, and the async shape only earns its keep under prerendering semantics this repo doesn't have. A sync `request()` also keeps the render-lock rule literal — reading request data is never "an `await` before the lock" (§8.5).
 
 **Boundaries.**
 
@@ -510,11 +523,281 @@ It is deliberately **synchronous** (unlike Next's promise-shaped `headers()`/`co
 - One deliberate design choice: this replaces the earlier `RouterContextProvider` → root-loader → `loaderData` plumbing. A single ALS store means server components at any depth read request data directly, no prop-drilling and no loader indirection — and unlike Next.js there's a single store, not a work/workUnit split (that split only matters for prerender/ISR-style caching semantics this repo doesn't have).
 - `linkTags`/`nonce` riding in the store is what lets the express layer influence `<head>` even though the document is a server component (§4).
 
-The store also carries **mutable response state** — `setHeader()`/`status()`/`setCookie()` and the `renderLock()` that lets them run *after* an `await` on a streamed response. That half of the API has its own write-up: **[docs/response.md](response.md)**.
+---
+
+## 8. Response API — `response()`
+
+The mirror image of `request()`: same store, same rules (server components and `'use server'` functions only, callable at any depth, no prop-drilling), but it **writes** the outgoing HTTP response.
+
+```tsx
+const { url, headers, cookies } = request()                  // read what came in
+const { headers, cookies, status, renderLock } = response()  // write what goes out
+
+headers.get('user-agent')     // request headers  →  headers.set('Cache-Control', …)
+cookies.get('session')        // request cookies  →  cookies.set('session', …)
+```
+
+| | |
+|---|---|
+| `headers` | a plain [`Headers`](https://developer.mozilla.org/docs/Web/API/Headers) — `set` / `append` / `delete` (§8.2) |
+| `status` | `status(code, statusText?)` (§8.3) |
+| `cookies` | `set(name, value, options?)` / `delete(name, options?)` (§8.4) |
+| `renderLock` | holds the flush open across an `await` (§8.5) |
+
+### 8.1 Streams vs. headers
+
+RSC responses **stream** — that is the whole point (§1). But it creates a fundamental tension with HTTP: **status and headers go out with the first body byte**, and after that they are immutable. So this, naively, cannot work:
+
+```tsx
+export default async function ProductPage({ params }) {
+    const { headers } = response()
+    const product = await getProduct(params.id)          // slow
+    // ⛔ too late? the stream may already have flushed
+    headers.set('Cache-Control', product.draft ? 'no-store' : 's-maxage=300')
+    return <Product data={product} />
+}
+```
+
+Yet it is exactly what you want: derive caching policy (or a cookie, or a status code) **from the data the page itself fetched**. Next.js punts on this — `headers()` is read-only, response mutation is confined to middleware/route handlers, which run *before* the page and can't see its data.
+
+The way out is a **render lock** (§8.5), and the name is a misnomer: rendering and streaming never pause. What gets held is the *flush of status + headers to the socket*, while the render runs at full speed and its output piles into a buffer. That needs nothing from the Flight implementation — it sits entirely around an opaque stream at the HTTP layer, which is why it works here with React's own `react-server-dom-rspack`. (Credit for the design: see the note in [`finalize.ts`](../src/server/middleware/render/finalize.ts).)
+
+**When do headers actually flush here?** The two request types (§3) have very different natural timing:
+
+| | Document (`GET /page`) | Data (`GET /page.rsc`, `POST` action) |
+|---|---|---|
+| Response construction | after the **Fizz shell** is ready | immediately, in `generateResponse` |
+| What the shell waits for | every Flight row outside `<Suspense>` | nothing — Flight rows flush as they resolve |
+| `await` + `headers.set` in a page component | ✅ works **without a lock** (unless the component is under `<Suspense>`) | ⛔ headers likely gone after the first rows flush |
+
+For **document** requests, `handler` resolves only when `react-dom/server`'s `renderToReadableStream` promise settles — i.e. when the shell is complete — and the shell in turn awaits the Flight rows of all non-suspended content. A page component that awaits data and then calls `headers.set()` gets its header out *for free*.
+
+Two gaps remain, and they are what the lock closes:
+
+- components inside `<Suspense>` — the shell doesn't wait for them, on document requests;
+- **all** components on `.rsc`/action requests — there is no shell, Flight streams eagerly.
+
+Both are covered by one mechanism because both funnel through the same place: `handler` in [`rsc.tsx`](../src/server/middleware/render/rsc.tsx) returns a single web `Response` for every request type, and the finalize loop (§8.6) wraps exactly that.
+
+### 8.2 `headers`
+
+```tsx
+import { response } from '@/server/request'
+
+export default async function ProductPage({ params }) {
+    const { headers, renderLock } = response()
+
+    const product = await renderLock(async () => {
+        const product = await getProduct(params.id)
+        headers.set('Cache-Control', product.draft ? 'private, no-store' : 's-maxage=300, stale-while-revalidate=60')
+
+        return product
+    })
+
+    return <Product data={product} />
+}
+```
+
+The `renderLock` wrapper is what makes the post-`await` mutation reliable on *every* transport (§8.5). It isn't always required — **do you need it?** Decide by where the mutation runs and where the header must appear:
+
+| Your mutation | Document (hard nav) | `.rsc` (client nav) | Verdict |
+|---|---|---|---|
+| **before** the component's first `await` | ✅ | ✅ | never needs a lock — always safe |
+| after an `await`, **no lock**, component outside `<Suspense>` | ✅ (the Fizz shell holds the flush, §8.1) | ⛔ silently dropped | fine **iff** the header is document-only |
+| after an `await`, **no lock**, under `<Suspense>` | ⛔ | ⛔ | always needs the lock |
+| after an `await`, **inside `renderLock`** | ✅ | ✅ | the canonical form for data-derived headers |
+
+So a top-level `headers.set` after an `await`, without a lock, is a legitimate pattern **when the header only matters for hard navigations** — the same component still runs on client navigations, its `headers.set` fires and is dropped, which is harmless if "no header on `.rsc`" is what you want. The moment the header must also be present when a user client-navigates onto the page, wrap the await in `renderLock`.
+
+When deciding which bucket a header is in, don't dismiss the `.rsc` case as "just data, the HTML already loaded" — the payload response has its own URL and its own life in every HTTP cache. `Cache-Control` on `/page.rsc` is what lets a CDN/browser/service worker serve client-side navigations (usually far more frequent than hard loads), and *missing* `private, no-store` there is how a shared cache leaks one user's payload to another. `Set-Cookie` is processed on fetch responses too, and `status()` is what monitoring and CDNs see. In practice the cache/cookie/status family is nearly always "both transports" (→ lock); genuinely document-only headers are the document-processing kind — CSP, `Link` preloads, `Refresh` — which the browser ignores on fetch responses anyway.
+
+`response().headers` **is** the response-`Headers` object in the store — no wrapper, no copy, so the whole `Headers` surface is available. At finalize it is **merged over** whatever the render produced (react-router's `match.headers`, content-type, etc.): `set` replaces, `append` adds, `delete` removes. `Set-Cookie` is always append-semantics (§8.4).
+
+Reading it back (`headers.get(…)`) sees only what *you* have set — the render's own headers don't exist until finalize. For incoming headers use `request()`.
+
+### 8.3 `status`
+
+```tsx
+import { response } from '@/server/request'
+
+export default function NotFound() {
+    const { status } = response()
+
+    status(404)
+    return <p>Not found</p>
+}
+```
+
+An explicit `status()` **wins** over the status react-router computed for the match. Without it, react-router's status passes through untouched. A second argument sets the status text; omitting it clears any previously set one.
+
+### 8.4 `cookies`
+
+```tsx
+import { response } from '@/server/request'
+
+export default async function Page() {
+    const { cookies, renderLock } = response()
+
+    const experiment = await renderLock(async () => {
+        const experiment = await assignExperiment()
+        cookies.set('exp', experiment.bucket, { maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax' })
+
+        return experiment
+    })
+
+    return <Experiment bucket={experiment.bucket} />
+}
+```
+
+Serialized with the [`cookie`](https://www.npmjs.com/package/cookie) package (the same one `universal-cookie` uses to parse), defaulting to `path: '/'`, and **appended** — multiple `cookies.set` calls produce multiple `Set-Cookie` lines, and the express layer copies them with append semantics too. `cookies.delete(name, options)` is `cookies.set` with an epoch expiry; pass the same `path`/`domain` the cookie was set with.
+
+Note the asymmetry with the read side: `request().cookies` is a [`universal-cookie`](https://www.npmjs.com/package/universal-cookie) instance (`get`/`getAll` over the parsed `Cookie` header), while `response().cookies` only writes — its `set` emits a `Set-Cookie` line, it does not update what `request().cookies.get()` returns within the same render.
+
+### 8.5 `renderLock`
+
+The escape hatch for the two gap cases in §8.1 — hold the response open across an `await`. Two forms, **fully equivalent** — pick by taste:
+
+```tsx
+import { response } from '@/server/request'
+
+const { headers, renderLock } = response()
+
+// callback form — releases automatically when the callback settles (even on throw)
+const posts = await renderLock(async () => {
+    const posts = await fetchPosts()
+    headers.set('X-Posts-Total', String(posts.length))
+
+    return posts
+})
+```
+
+```tsx
+// bare form — you own the release (wrap in try/finally if the await can throw)
+const unlock = renderLock()
+const posts = await fetchPosts()
+headers.set('X-Posts-Total', String(posts.length))
+unlock()
+```
+
+There is nothing special about passing the async work *into* the lock — the lock doesn't watch your promise. All that matters is **when `renderLock()` itself runs**: it must be called *before the component's first `await`*, so the lock is counted while the response is still held (§8.6 explains the guarantee). Both forms above do that — `renderLock(...)` executes synchronously in the component's prelude; the slow work then happens inside an already-open lock window.
+
+Which is also why this ordering is **broken**:
+
+```tsx
+// ⛔ WRONG — no lock is held during the fetch. The response flushes while
+// fetchPosts is in flight; by the time renderLock runs there is nothing left
+// to hold, and the headers.set is silently dropped (§8.7).
+const posts = await fetchPosts()
+await renderLock(() => headers.set('X-Posts-Total', String(posts.length)))
+```
+
+(On a document request outside `<Suspense>` this happens to work — the Fizz shell blocks the response anyway (§8.1) — but it loses the header under `<Suspense>` and on every `.rsc` navigation. Don't rely on it.)
+
+One nuance of the callback form: release is *deferred by one macrotask* after the callback settles (§8.6), so a synchronous `headers.set` immediately after the `await renderLock(...)` line still makes it out. That's a chaining affordance, not a pattern to lean on — when a mutation derives from the fetched data, put it inside the callback (or use the bare form).
+
+**The one rule: take the lock before your component's first `await`.** Locks nest — the response flushes when the last one releases. There is no timeout (matching the upstream design): a lock held while its data is slow defers the flush for as long as the data takes, and the intended headers always go out. The flip side is that a *never*-released lock defers the flush until the stream ends (§8.7) — prefer the callback form, or `try/finally` around the bare form, so a throw can't leak the lock.
+
+### 8.6 How it works
+
+Three small pieces, fitted to the store and pipeline this repo already has: mutable response state in per-request context, a counting semaphore, and a buffered read loop between the render stream and the socket.
+
+**Response state rides the request store.** `response()` is a thin facade over the store's `response` and `lock` fields (§7) — `headers` is handed back as-is, `cookies`/`status`/`renderLock` write into the same objects — so it is just a `storage.getStore()` lookup, like `request()`. Which is why it works at any depth, in server functions, after any number of `await`s: the store propagates with the async context (and the whole render, both stages, runs inside one `storage.run` scope in `handler`). Calling `response()` twice returns equivalent handles onto the same state; there is nothing to keep in sync.
+
+#### The lock is a counting semaphore
+
+`renderLock()` increments `lock.count` and lazily creates the shared `gate` promise. `unlock` is idempotent and **defers its decrement by one `setImmediate`**:
+
+```ts
+const unlock = () => {
+    setImmediate(() => {
+        if (--lock.count === 0) { lock.release(); lock.gate = null }
+    })
+}
+```
+
+The deferral is what makes locks *chainable*: when `await renderLock(fn)` resolves, your continuation runs on the microtask queue — **before** the scheduled decrement — so a follow-up `renderLock()` keeps the gate closed with no gap. It is also why "mutate right after the `await`" in §8.5 works: those synchronous calls run before the decrement lands.
+
+#### The finalize loop
+
+[`finalize.ts`](../src/server/middleware/render/finalize.ts) (where the design credit lives), called as the last step of `handler` — inside the bundle, inside `storage.run`. (It cannot live in the express middleware: the express process and the rspack server bundle are **separate module graphs** — `getRender` loads the bundle via `require`/`requireFromString` — so they hold different `storage` instances. Express-land code calling `storage.getStore()` would see `undefined`.)
+
+```ts
+export const finalizeResponse = async (response: Response, store: Store): Promise<Response> => {
+    if (!response.body) return applyStore(response, store)   // redirects etc.
+
+    const reader = response.body.getReader()
+    const buffered: Uint8Array[] = []
+    const interrupt = immediateTick()                        // setImmediate, fires once
+    let read: Promise<ReadResult> | null = null
+
+    while (true) {
+        read ??= reader.read()
+        const winner = await Promise.race([read, store.lock.gate?.then(() => GATE) ?? interrupt])
+        if (winner === GATE) continue                        // re-race: a chained lock may have re-armed
+        if (winner === INTERRUPT) break                      // idle tick, no lock held → flush now
+        read = null                                          // the read settled — consume it
+        if (winner.done) break
+        buffered.push(winner.value)
+    }
+
+    // headers/status snapshot happens HERE — after locks, before first byte
+    return applyStore(makeResponse(buffered, read, reader), store)
+}
+```
+
+Reading it against the race's three outcomes:
+
+- **A chunk wins** → buffer it, keep looping. While a lock is held this is the steady state: render output accumulates in `buffered`, nothing reaches the socket.
+- **The gate wins** → a lock just released. Loop around and re-evaluate: either a chained lock re-armed the gate (keep waiting) or `gate` is `null` and the already-resolved `interrupt` wins the next race (flush).
+- **The interrupt wins** → one `setImmediate` tick passed with no lock held and no chunk pending. Flush.
+
+One subtlety: an in-flight `reader.read()` must **carry over** (`read ??=`) — when the gate or interrupt wins the race, the pending read isn't lost, it's the first thing the output stream awaits. The output is a new `ReadableStream` that enqueues `buffered` in `start()` and delegates `pull()` to the reader, so **backpressure is preserved** — express's `.pipe` drives it exactly as before.
+
+`applyStore` builds the final `Response`: `store.response.status ?? response.status`, headers = the render's headers with the store's merged over them (`set` semantics, except `Set-Cookie` which appends), and hands the express layer a response it can treat exactly as any other — the middleware just copies `Set-Cookie` separately, one line per cookie (§3.2).
+
+#### Why a lock taken before the first `await` can never race
+
+The guarantee comes from Flight's scheduling, verified in `react-server-dom-rspack`:
+
+```js
+function startWork(request) {
+    scheduleMicrotask(() => requestStorage.run(request, performWork, request))
+    …
+}
+```
+
+`renderToReadableStream` queues the first render pass **as a microtask** at call time — inside `generateResponse`, deep inside `await fetchServer(request)`. `performWork` synchronously runs the prelude of every server component reachable without awaiting a parent; any `renderLock()` there increments the counter. The finalize loop starts strictly later (after the `fetchServer`/`renderHTML` promise chains — later microtasks by FIFO order) and its no-lock exit needs a full `setImmediate` macrotask on top. By then, every prelude lock is counted.
+
+The corollary is the rule in §8.5: a lock taken *after* an `await` sits behind your data, not in the prelude — nothing stops the idle tick from firing first. (On document requests you get away with it outside `<Suspense>`, because the Fizz shell blocks `handler` anyway — but don't build on that; write components that are correct on `.rsc` navigations too.)
+
+Components whose *parent* suspends before rendering them get their locks registered transitively: the parent's own await either happens under a lock (extending the window) or the child's rows were never going to make the first flush anyway.
+
+### 8.7 Rules & caveats
+
+- **Lock before the first `await`.** The only ordering rule (§8.6). Everything before the first `await` — including the mutation itself — is race-free even without a lock.
+- **A lock delays TTFB for the whole response.** That's the feature — the client waits on your data before the first byte. Use it for decisions worth blocking on (cache policy, auth cookies), not around every fetch. The no-lock overhead of finalize is one `setImmediate` tick (~0 ms).
+- **Buffering means memory.** While locked, Flight/Fizz output accumulates in an array. For header-decision windows (tens–hundreds of ms) this is a few KB; don't hold a lock across a 30 s job.
+- **No timeout — a lock defers the flush until it releases or the stream ends.** Matching upstream: headers are never flushed while a lock is held, however slow the data, so the intended mutations always make it out. A leaked `unlock` on a stream that *completes* costs nothing — the loop flushes at `done` (every component has settled, so no further mutation can come). A leaked `unlock` on a stream that *never* ends is the one bad case: the response stays open, unflushed, until the client disconnects — which aborts the render via the request's signal (wired in `toWebRequest`, taken by both Fizz and Flight), ending the stream and with it the request. Write lock sites so a throw can't leak (§8.5).
+- **After the flush, mutations are silently lost.** Same as every server runtime; there is no error because components legitimately re-run in contexts where headers already went out (a locked sibling flushed first, deep Suspense content, …).
+- **`status()` vs react-router.** Explicit `status()` wins; otherwise react-router's match status (404 for no match, action status, …) passes through. Don't `status(302)` by hand — use `redirect()` from `@/server/navigation` (§12), which react-router turns into the right transport per request type.
+- **Client components can't do any of this** — same boundary as `request()` (§7): `server-only` fails the build, the invariant catches runtime misuse.
+- **Actions get it too.** `POST` requests run through the same `handler` → finalize path, so `cookies.set` inside a `'use server'` function lands on the action response — no lock needed for anything done before the action returns, since the action completes before react-router even starts rendering the revalidated tree.
+
+### 8.8 Verified behaviour
+
+All of the following was exercised against the dev server (July 2026), with the API dogfooded in three places: [`not-found`](../src/client/pages/not-found/index.tsx) (`status(404)`), [`private`](../src/client/pages/private/index.tsx) (`headers.set` before a redirect), and [`Posts`](../src/client/components/home/posts/index.tsx) (`renderLock` + data-derived header inside `<Suspense>`).
+
+- **The hard case works.** `Posts` — under `<Suspense>`, awaiting an external fetch — sets `X-Posts-Total` from the fetched data, and the header arrives on **both** transports: the document (`curl -si /` → `x-posts-total: 200`) and the data request (`curl -si /.rsc` → same). The latter is impossible without the lock: Flight rows had already been produced and were sitting in the finalize buffer.
+- **`status(404)` on the catch-all route** turns the previously-200 not-found page into a real 404, on `/missing` and `/missing.rsc` alike.
+- **Mutations survive onto redirect responses.** `/private` without a session returns `307` + `location: /` *and* the `cache-control: private, no-store` set before `redirect()` threw — the body-`null` finalize path merges store state onto whatever response the render produced.
+- **Multiple cookies don't fold.** Two `cookies.set` calls plus a `cookies.delete` produced three `Set-Cookie` lines (`first=1; Path=/`, `second=2; Path=/; HttpOnly`, `third=; Path=/x; Expires=Thu, 01 Jan 1970 00:00:00 GMT`) through the express copy (`getSetCookie()` → `res.setHeader('set-cookie', string[])`).
+- **A completed stream beats a held lock.** A bare `renderLock()` leaked in a fully-sync page added zero delay: the Fizz stream completed, the loop saw `done` and flushed. Correct, since every component had settled — no mutation could come anymore.
+- **A slow lock defers the flush indefinitely and the headers still win.** A locked component sleeping 12 s under `<Suspense>`: TTFB was ~12 s and the response carried the header set after the sleep — no truncated flush. (An earlier revision had a 10 s `LOCK_TIMEOUT` that would have flushed at 10 s without the header; it was removed in favor of the upstream wait-for-stream-end semantics plus client-disconnect abort.)
+- **Streaming and hydration are unaffected.** Full document renders byte-identical in structure (buffer → passthrough preserves chunk boundaries via `pull()` delegation), the browser hydrates with zero console errors, and client-side navigation (`/about.rsc`, `_.rsc`) works — the finalized `Response` is indistinguishable from the old direct one to everything downstream.
 
 ---
 
-## 8. Dev workflow & HMR
+## 9. Dev workflow & HMR
 
 `pnpm dev` runs (via `run-p` / `run-s`):
 
@@ -553,7 +836,7 @@ flowchart TD
 
 ---
 
-## 9. Production build
+## 10. Production build
 
 `pnpm start` → `rimraf dist && rspack --nodeEnv=production` (all three configs in one run — again keeping the RSC pair together) → `node --enable-source-maps dist/server`.
 
@@ -567,7 +850,7 @@ What changes vs dev:
 
 ---
 
-## 10. Gotchas
+## 11. Gotchas
 
 Hard-won invariants; violate at your own risk:
 
@@ -578,13 +861,13 @@ Hard-won invariants; violate at your own risk:
 5. **React Compiler must stay off in the `Layers.rsc` branch** of `typescriptRSC` — compiled server components crash the Flight render (`reading 'H'`), and prod redacts the error into a useless empty digest (§2.3).
 6. **Keep `statsOptions` explicit** in `render.util.ts` — rspack v2's `toJson({})` omits `chunkGroups`, silently breaking the `ChunkExtractor` (§4).
 7. **`request()` is RSC-scope only** — server components and server functions. Client components (even during SSR) must get request data as props from a server component (§7).
-8. **Forward `onError`/`onHeaders`** from `routeRSCServerRequest`'s `renderHTML(getPayload, options)` into Fizz. Drop them and every server-component redirect breaks — 500 before the shell flushes, silently ignored after (§11).
+8. **Forward `onError`/`onHeaders`** from `routeRSCServerRequest`'s `renderHTML(getPayload, options)` into Fizz. Drop them and every server-component redirect breaks — 500 before the shell flushes, silently ignored after (§12).
 9. `pnpm spa` (pure CSR mode) is knowingly non-functional under RSC.
 10. **All CSS must stay in the `main` chunk group.** The `ChunkExtractor` only reads the entrypoint's assets; CSS landing in an async chunk group would never get a `<link>` in the SSR'd `<head>` → FOUC. Currently guaranteed by how the ClientPlugin injects client references (§4) — re-verify after adding CSS `splitChunks` groups or upgrading rspack, and reach for `preinit()` (not extractor changes) if it breaks.
 
 ---
 
-## 11. Redirects
+## 12. Redirects
 
 ### The API
 

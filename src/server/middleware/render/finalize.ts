@@ -26,7 +26,7 @@ const applyStore = (response: Response, store: RequestStore, body: BodyInit | nu
 /**
  * Defers the status/headers snapshot of a streamed response until every
  * `renderLock` has released (or one idle macrotask passes with none held),
- * buffering body chunks in the meantime. See docs/response.md §4.3.
+ * buffering body chunks in the meantime. See docs/rsc.md §8.6.
  *
  * Adapted from @lazarv/react-server's render lock, which is two pieces
  * (permalinks pinned at e58d437):
@@ -35,7 +35,7 @@ const applyStore = (response: Response, store: RequestStore, body: BodyInit | nu
  *   https://github.com/lazarv/react-server/blob/e58d437ca9db895b71a52c62c1552ad12a4cdf6f/packages/react-server/server/render.mjs#L17-L45
  *   A `RENDER_LOCK` counter plus a `RENDER_WAIT` promise parked in per-request
  *   context, whose decrement is deferred by one `immediate()` so chained locks
- *   leave no gap. Mirrored by `store.lock` here (docs/response.md §4.2).
+ *   leave no gap. Mirrored by `store.lock` here (docs/rsc.md §8.6).
  *
  * - the buffered read loop — inside the Flight render in `server/render-rsc.jsx`:
  *   https://github.com/lazarv/react-server/blob/e58d437ca9db895b71a52c62c1552ad12a4cdf6f/packages/react-server/server/render-rsc.jsx#L1289-L1331

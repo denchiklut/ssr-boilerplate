@@ -24,7 +24,7 @@ const toWebRequest = (req: Request, res: Response): globalThis.Request => {
 	// A premature socket close (client gone before the response finished) aborts
 	// the render: Fizz and Flight both take this signal, so aborting ends their
 	// streams — which is also what unblocks the finalize loop on a leaked
-	// renderLock (docs/response.md §5).
+	// renderLock (docs/rsc.md §8.7).
 	const controller = new AbortController()
 	res.on('close', () => {
 		if (!res.writableFinished) controller.abort()

@@ -1,13 +1,15 @@
 import { fetchPosts } from '@/api'
-import { renderLock, setHeader } from '@/server/request'
+import { response } from '@/server/request'
 
 export async function Posts() {
+	const { headers, renderLock } = response()
+
 	// This component streams inside <Suspense>, so headers would normally be gone
 	// by the time the fetch resolves — the lock holds the flush open so a header
-	// derived from the fetched data still makes it out (docs/response.md §3.4).
+	// derived from the fetched data still makes it out (docs/rsc.md §8.5).
 	const posts = await renderLock(async () => {
 		const posts = await fetchPosts()
-		setHeader('X-Posts-Total', String(posts.length))
+		headers.set('X-Posts-Total', String(posts.length))
 
 		return posts
 	})
