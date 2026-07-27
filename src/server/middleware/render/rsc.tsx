@@ -11,10 +11,10 @@ import {
 
 import { basename } from '@/common'
 import { logger } from '@/common/logger'
-import { applyBasename } from '@/server/navigation'
 import { createRequestStore, storage } from '@/server/request'
 import { routes } from '@/shared/app'
 
+import { applyBasename } from './basename'
 import { finalizeResponse } from './finalize'
 import { renderHTML } from './ssr'
 

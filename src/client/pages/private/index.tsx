@@ -1,10 +1,9 @@
-import { redirect } from '@/server/navigation'
 import { request, response } from '@/server/request'
 import { Page } from '@/shared/page'
 
 export default function Private() {
 	const { cookies } = request()
-	const { headers } = response()
+	const { headers, redirect } = response()
 
 	// Session-gated content must never land in a shared cache (docs/rsc.md §8.2)
 	headers.set('Cache-Control', 'private, no-store')

@@ -3,6 +3,11 @@ import 'server-only'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { type SerializeOptions, serialize } from 'cookie'
 import type { LinkHTMLAttributes } from 'react'
+import {
+	redirect as createRedirect,
+	redirectDocument as createRedirectDocument,
+	replace as createReplace
+} from 'react-router'
 import invariant from 'tiny-invariant'
 import Cookies from 'universal-cookie'
 
@@ -26,6 +31,19 @@ export interface RenderLock {
 	<T>(fn: () => T | Promise<T>): Promise<T>
 }
 
+export interface RedirectInit {
+	/**
+	 * Defaults to 307. 307/308 preserve the request method; 302/301 let browsers
+	 * rewrite POST → GET. Use 303 explicitly in form actions, where POST → GET is
+	 * the desired outcome.
+	 */
+	status?: number
+	/** Replace the current history entry instead of pushing one. Client navigations only. */
+	replace?: boolean
+	/** Force a full document navigation rather than a client-side one. */
+	document?: boolean
+}
+
 export interface ResponseApi {
 	/** Merged over the render's own headers at finalize: `set` replaces, `append` adds, `delete` removes. */
 	headers: Headers
@@ -33,6 +51,15 @@ export interface ResponseApi {
 	/** Overrides the status react-router computed for the match. */
 	status: (code: number, statusText?: string) => void
 	renderLock: RenderLock
+	/**
+	 * Ends the render with a redirect — it throws, so it types as `never` and
+	 * TypeScript narrows past the call. Paths are app-relative (no basename), the
+	 * same as `<Link to>`.
+	 *
+	 * Unlike the mutations above, this is *not* subject to the finalize merge, so
+	 * `renderLock` does nothing for it — see the timing note on `response()`.
+	 */
+	redirect: (url: string, init?: RedirectInit) => never
 }
 
 export interface RenderLockState {
@@ -80,6 +107,10 @@ export const request = () => store('request()')
  * when it is finalized (see docs/rsc.md §8). They only take effect if they run
  * before the response flushes: before the component's first `await`, or inside a
  * `renderLock` window.
+ *
+ * `redirect` is the exception: it throws instead of being merged, so it obeys a
+ * different deadline (the Fizz shell flush, docs/rsc.md §12) that `renderLock`
+ * cannot extend. Redirect early rather than reaching for a lock.
  */
 export const response = (): ResponseApi => {
 	const state = store('response()').response
@@ -98,8 +129,26 @@ export const response = (): ResponseApi => {
 			state.status = code
 			state.statusText = statusText
 		},
-		renderLock
+		renderLock,
+		redirect
 	}
+}
+
+/**
+ * Exposed as `response().redirect`. The three react-router constructors differ
+ * only in a marker header, so they are options here rather than separate
+ * functions. Headers belong on `response().headers` / `response().cookies`, not
+ * on the redirect: a redirect thrown from a server component reaches the client
+ * as a digest carrying only location/status/replace/document, so anything hung
+ * off the `Response` itself is dropped.
+ */
+const redirect = (url: string, { status = 307, replace, document }: RedirectInit = {}) => {
+	// `document` outranking `replace` mirrors the router: its document-reload
+	// branch returns before `X-Remix-Replace` is ever read, so the two markers
+	// never compose upstream either.
+	const create = document ? createRedirectDocument : replace ? createReplace : createRedirect
+
+	throw create(url, status)
 }
 
 function renderLock(): () => void

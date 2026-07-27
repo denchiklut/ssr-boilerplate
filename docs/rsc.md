@@ -779,7 +779,7 @@ Components whose *parent* suspends before rendering them get their locks registe
 - **Buffering means memory.** While locked, Flight/Fizz output accumulates in an array. For header-decision windows (tens–hundreds of ms) this is a few KB; don't hold a lock across a 30 s job.
 - **No timeout — a lock defers the flush until it releases or the stream ends.** Matching upstream: headers are never flushed while a lock is held, however slow the data, so the intended mutations always make it out. A leaked `unlock` on a stream that *completes* costs nothing — the loop flushes at `done` (every component has settled, so no further mutation can come). A leaked `unlock` on a stream that *never* ends is the one bad case: the response stays open, unflushed, until the client disconnects — which aborts the render via the request's signal (wired in `toWebRequest`, taken by both Fizz and Flight), ending the stream and with it the request. Write lock sites so a throw can't leak (§8.5).
 - **After the flush, mutations are silently lost.** Same as every server runtime; there is no error because components legitimately re-run in contexts where headers already went out (a locked sibling flushed first, deep Suspense content, …).
-- **`status()` vs react-router.** Explicit `status()` wins; otherwise react-router's match status (404 for no match, action status, …) passes through. Don't `status(302)` by hand — use `redirect()` from `@/server/navigation` (§12), which react-router turns into the right transport per request type.
+- **`status()` vs react-router.** Explicit `status()` wins; otherwise react-router's match status (404 for no match, action status, …) passes through. Don't `status(302)` by hand — use the sibling `redirect()` on the same object (§12), which react-router turns into the right transport per request type.
 - **Client components can't do any of this** — same boundary as `request()` (§7): `server-only` fails the build, the invariant catches runtime misuse.
 - **Actions get it too.** `POST` requests run through the same `handler` → finalize path, so `cookies.set` inside a `'use server'` function lands on the action response — no lock needed for anything done before the action returns, since the action completes before react-router even starts rendering the revalidated tree.
 
@@ -871,35 +871,45 @@ Hard-won invariants; violate at your own risk:
 
 ### The API
 
-[`src/server/navigation/index.ts`](../src/server/navigation/index.ts) (aliased `@/server/navigation`) wraps react-router's redirect helpers so they **throw** instead of returning a `Response`:
+`redirect` is part of the response API ([§8](#8-response-api--response)) — a redirect is a status plus a `Location`, so it lives with the other response writes rather than in a module of its own:
 
 ```tsx
-import { redirect } from '@/server/navigation'
-import { request } from '@/server/request'
+import { request, response } from '@/server/request'
 
 export default function Private() {
     const { cookies } = request()
+    const { redirect } = response()
+
     if (!cookies.get('session')) redirect('/')
     // …
 }
 ```
 
-| Export | Status | Client-side effect |
+```ts
+redirect(url: string, init?: { status?: number; replace?: boolean; document?: boolean }): never
+```
+
+| Option | Default | Effect |
 |---|---|---|
-| `redirect(url, init?)` | 307 | navigate (push) |
-| `permanentRedirect(url, init?)` | 308 | navigate (push) |
-| `replace(url, init?)` | 307 | navigate, replacing the history entry |
-| `redirectDocument(url, init?)` | 307 | full document navigation |
+| `status` | `307` | any status; `308` is the permanent equivalent, `303` the form-action one |
+| `replace` | `false` | client navigation replaces the history entry instead of pushing |
+| `document` | `false` | client navigation forces a full document load |
 
-`init` is react-router's `number | ResponseInit`, so `redirect('/x', 303)` or `redirect('/x', { status: 303, headers })` both work.
+react-router ships four separate constructors for this, but they differ only in a marker header (`X-Remix-Replace`, `X-Remix-Reload-Document`) on the same `Response`, so they collapse into options on one function.
 
-Three deliberate differences from importing `redirect` straight from `react-router`:
+`document` outranks `replace` — not a shortcut taken here, but what the router does: its document-reload branch calls `location.assign`/`replace` and returns before `X-Remix-Replace` is read, so the two markers never compose upstream either.
+
+Three deliberate differences from `react-router`'s own `redirect`:
 
 - **It throws.** react-router's returns a `Response` you must remember to `throw`; forgetting silently renders on. This mirrors next.js and `@lazarv/react-server`, both of which throw.
 - **It types as `never`**, so TypeScript narrows past the call. (As a function's *last* statement you still need `return redirect(…)` — otherwise the inferred return type is `void` and TS rejects the component.)
-- **Default 307/308, not react-router's 302.** The express catch-all is `router.all(/.*/)`, so a no-JS form POST that redirected with a 302 would be method-downgraded to GET by the browser. 307/308 preserve the method. Use `303` explicitly in form actions, where POST → GET *is* what you want.
+- **Default 307, not react-router's 302.** The express catch-all is `router.all(/.*/)`, so a no-JS form POST that redirected with a 302 would be method-downgraded to GET by the browser. 307/308 preserve the method. Use `303` explicitly in form actions, where POST → GET *is* what you want.
 
-`import 'server-only'` keeps the module out of client bundles, the same guard `@/server/request` uses. Client components redirect with `useNavigate()` / `<Navigate>` instead — unlike next.js, there is no client-callable `redirect()` here.
+**Headers go on `response()`, not on the redirect.** There is deliberately no `ResponseInit` here. A redirect thrown from a server component reaches the client as a digest carrying only `status`/`statusText`/`location`/`reloadDocument`/`replace` (`createRedirectErrorDigest`), so headers hung off the `Response` are silently dropped on exactly the path you write most often — they survive only from a loader, where `generateRedirectResponse` copies them onto the 202. `response().headers` and `response().cookies` have no such hole: `finalizeResponse` merges them onto whatever response comes out, 3xx included.
+
+**`renderLock` does not extend a redirect's deadline.** The rest of the response API flushes on the finalize snapshot, which a lock holds open ([§8.5](#85-renderlock)). A redirect's deadline is the Fizz shell flush instead, which is upstream of that buffering — once the shell is out, react-router degrades to `<meta http-equiv="refresh">` and no lock can undo it (see [Redirect before you stream](#redirect-before-you-stream)).
+
+Client components redirect with `useNavigate()` / `<Navigate>` instead — unlike next.js, there is no client-callable `redirect()` here.
 
 ### Three transports, one API
 
@@ -915,7 +925,7 @@ A redirect reaches the browser by a different route depending on where it was th
 
 **Write app-relative paths — never include the basename.** That is what the client router expects: it prepends `basename` itself when it navigates on a redirect payload, so a pre-prefixed path would double up (`/app/app/about`).
 
-Document responses are the exception — the browser needs the full path in `Location` — so the prefix is applied once at the boundary by `applyBasename` in [`rsc.tsx`](../src/server/middleware/render/rsc.tsx), which rewrites `Location` on 3xx responses only. It skips absolute URLs and is idempotent, which matters: react-router *does* prepend the basename itself for redirects coming out of form actions.
+Document responses are the exception — the browser needs the full path in `Location` — so the prefix is applied once at the boundary by [`applyBasename`](../src/server/middleware/render/basename.ts), called from `rsc.tsx`, which rewrites `Location` on 3xx responses only. It skips absolute URLs and is idempotent, which matters: react-router *does* prepend the basename itself for redirects coming out of form actions.
 
 ### Where to put redirect logic
 
