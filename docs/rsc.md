@@ -911,13 +911,17 @@ Three deliberate differences from `react-router`'s own `redirect`:
 
 ### `<Redirect />` — the client-component half
 
-`response()` is server-only, so client components get a component instead of a function:
+`response()` is server-only, so client components get a component instead of a function. Dogfooded in [`SessionGate`](../src/client/components/private-client/index.tsx), the `/private-client` route — the same cookie gate as [`private`](../src/client/pages/private/index.tsx), moved across the `'use client'` boundary so the two can be compared directly:
 
 ```tsx
+'use client'
+import { useCookies } from 'react-cookie'
 import { Redirect } from '@/utils'
 
-export const Gate = ({ authorized, authUrl }: Props) => {
-    if (!authorized) return <Redirect href={authUrl} />
+export const SessionGate = () => {
+    const [cookies] = useCookies(['session'])
+
+    if (!cookies.session) return <Redirect to='/' />
     // …
 }
 ```
@@ -929,7 +933,7 @@ export const Gate = ({ authorized, authUrl }: Props) => {
 
 `to` and `href` are mutually exclusive at the type level. `to` is app-relative and carries no basename, exactly like `<Link to>`; `href` is an absolute URL. `status` and `replace` mean what they do on `response().redirect`, and `status` is only observable on the initial document — a client navigation has no HTTP response to put it on.
 
-**Why a component and not a function.** A redirect from the client is two different things depending on how you got there, and a component is the only shape that can be both. On the initial document the component renders on the *server*, during the SSR pass, and throws — so the browser gets a real 3xx instead of HTML it would immediately discard. On a client navigation it never touches the server at all; it renders `<Navigate>` (or `location.assign` for an absolute `href`, in an effect, since that leaves the router's world entirely).
+**Why a component and not a function.** A redirect from the client is two different things depending on how you got there, and a component is the only shape that can be both. On the initial document the component renders on the *server*, during the SSR pass, and throws — so the browser gets a real 3xx instead of HTML it would immediately discard. On a client navigation it never touches the server at all: it fires the navigation (`navigate(to)`, or `location.assign`/`replace` for an absolute `href`) in a microtask during render, then **suspends on a promise that never settles**. Not `<Navigate>`, and not an effect — both of those need a *commit*, which paints a frame of the redirecting page before leaving. Suspending means this component never commits: react-router runs navigations inside `startTransition`, so React keeps the previous page painted until the redirect takes it away. (That hold is transition-scoped — a `<Redirect>` mounted by a plain state update, like the cookie flip in `SessionGate`, suspends outside a transition and shows the nearest `<Suspense>` fallback for the microtask instead.) A `once` guard keyed by target, released on the next macrotask, swallows StrictMode's synchronous double render without blocking a legitimate later redirect to the same URL.
 
 **It mints its own error digest.** `routeRSCServerRequest`'s `onError` recognises a render-time redirect *only* by a `REACT_ROUTER_ERROR:REDIRECT:{…}` digest string — a thrown `Response` is ignored and 500s. Server components get that digest for free, because the Flight renderer mints it when it encodes the error; a client component throws during the SSR pass, downstream of that, so [`redirect.util.ts`](../src/client/utils/redirect/redirect.util.ts) rebuilds the string itself. That mirrors react-router's unexported `createRedirectErrorDigest` and is **pinned to react-router 8.2.0** — `decodeRedirectErrorDigest` type-checks every field, so a shape change downgrades the redirect to a 500 rather than failing quietly.
 
@@ -946,7 +950,7 @@ A redirect reaches the browser by a different route depending on where it was th
 | route `loader` / `action` | `generateRedirectResponse` → **202** + `{type:'redirect'}` Flight payload | `routeRSCServerRequest` pre-decodes the payload and returns a real 3xx before any HTML renders (§3.4 step 2) | 202 passes through; `RSCHydratedRouter` navigates on the payload |
 | server component | Flight `onError` → `REACT_ROUTER_ERROR:REDIRECT:{…}` digest embedded in the stream | Fizz `onError` decodes the digest → real 3xx, or `<meta http-equiv="refresh">` if the shell already flushed (§3.4 step 5) | 200 with the digest in the payload; `RSCErrorHandler` calls `router.navigate()` |
 | server function (`'use server'`) | react-router captures it on its own ALS (`ctx.redirect`) → 202 payload | 3xx (no-JS form POST) | `createCallServer` navigates on the `redirect` payload |
-| client component (`<Redirect />`) | throws a hand-built redirect digest during the SSR pass | Fizz `onError` decodes it → real 3xx, same path as a server component | never runs on the server; renders `<Navigate>` in the browser |
+| client component (`<Redirect />`) | throws a hand-built redirect digest during the SSR pass | Fizz `onError` decodes it → real 3xx, same path as a server component | never runs on the server; fires `navigate()` in the browser and suspends so the outgoing page stays painted |
 
 ### Basename ownership
 
@@ -992,6 +996,16 @@ Checked against the dev server, with `CLIENT_HOST` at both `/` and `/app`:
 | `<Redirect to>` document | `307` + `Location: /about` (`/app/about` under basename) |
 | `<Redirect to status={308}>` document | `308` + `Location` |
 | `<Redirect href>` document | `307` + `Location: https://example.com/`, left unprefixed under basename |
-| `<Redirect to>` client navigation | `<Navigate>` runs in the browser; lands on `/about`, 2 history entries |
+| `<Redirect to>` client navigation | `navigate()` fires in the browser; lands on `/about`, 2 history entries |
 | `<Redirect to replace>` client navigation | lands on `/about`, 1 history entry — the redirecting one is replaced |
 | `<Redirect href>` client navigation | `location.assign` → full document load (`navigation.type === 'navigate'`) |
+
+And through `/private-client`, the cookie gate itself:
+
+| Case | Result |
+|---|---|
+| `GET /private-client`, no cookie | `307` + `Location: /` — byte-identical to the server-gated `/private` |
+| `GET /private-client`, `Cookie: session=1` | `200`, page renders |
+| client navigation, no cookie | never reaches the server; `navigate()` lands on `/` |
+| **cookie cleared while on the page** | redirects to `/` in the same document, no round trip — the case a server component structurally cannot handle |
+| hydration | no console errors; `useCookies` is seeded from the request header, so server and client agree |

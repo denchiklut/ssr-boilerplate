@@ -1,9 +1,37 @@
 'use client'
 
-import { type FC, useEffect } from 'react'
-import { Navigate } from 'react-router'
+import { type FC, use } from 'react'
+import { useNavigate } from 'react-router'
 
 import { redirectError } from './redirect.util'
+
+/**
+ * Never settles. react-router applies its navigation state inside
+ * `startTransition`, so suspending here makes React keep the *previous* page
+ * painted instead of committing this one — the redirect leaves without ever
+ * showing a blank frame. Released by the browser leaving the page, nothing else.
+ */
+const NEVER = new Promise<never>(() => {})
+
+/**
+ * Fires `fn` once per target. Render is not normally a safe place for a side
+ * effect, but suspending means this component never commits and never runs an
+ * effect, so render is the only phase left — and the page is on its way out, so
+ * there is no state left to keep consistent.
+ *
+ * The key is released on the next macrotask rather than kept forever: it only
+ * needs to swallow StrictMode's synchronous double render, and a permanent guard
+ * would silently no-op a legitimate second redirect to the same target later in
+ * the session, leaving the component suspended with nothing to release it.
+ */
+const fired = new Set<string>()
+const once = (key: string, fn: () => void) => {
+	if (fired.has(key)) return
+
+	fired.add(key)
+	setTimeout(() => fired.delete(key), 0)
+	fn()
+}
 
 interface BaseProps {
 	/**
@@ -49,12 +77,27 @@ export const Redirect: FC<RedirectProps> = ({ to, href, status = 307, replace = 
 		})
 	}
 
-	// An absolute URL is outside the router's world, so `<Navigate>` can't serve
-	// it — and calling `location.assign` during render would re-fire on every
-	// re-render before the browser has torn the page down.
-	useEffect(() => {
-		if (href) window.location[replace ? 'replace' : 'assign'](href)
-	}, [href, replace])
+	// Below the throw on purpose: `IS_SERVER` is a build constant, so the server
+	// bundle never reaches a hook and the client bundle drops the branch entirely.
+	const navigate = useNavigate()
 
-	return to ? <Navigate to={to} replace={replace} /> : null
+	// An absolute URL is outside the router's world: every programmatic path
+	// (`<Navigate>`, `useNavigate`, the router's own `normalizeTo`) runs `resolveTo`,
+	// which treats a string with no leading `/` as *relative* — `https://example.com/`
+	// resolves to `/<current>/https:/example.com/` and lands on the catch-all 404.
+	// Only `<Link>` knows about external URLs, and that needs a click.
+	//
+	// Both branches defer a microtask: `navigate` because the router's state update
+	// must land outside this render, `location` so a full-document unload never
+	// starts in the middle of a render pass React might still be working through.
+	if (href) {
+		once(`href:${href}`, () =>
+			queueMicrotask(() => window.location[replace ? 'replace' : 'assign'](href))
+		)
+	} else {
+		once(`to:${to}`, () => queueMicrotask(() => navigate(to as string, { replace })))
+	}
+
+	// Hold the outgoing page on screen until one of the above takes it away.
+	return use(NEVER)
 }

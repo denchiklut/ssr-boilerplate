@@ -7,7 +7,8 @@ export default async function Layout() {
 		<>
 			<nav>
 				<Link to='/'>Home</Link> / <Link to='/about'>About</Link> /{' '}
-				<Link to='/private'>Private</Link>
+				<Link to='/private'>Private</Link> /{' '}
+				<Link to='/private-client'>Private (client)</Link>
 			</nav>
 
 			<NavigationLoader>

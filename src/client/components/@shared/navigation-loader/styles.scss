@@ -1,0 +1,10 @@
+.wrapper {
+	transition: opacity 0.2s ease;
+}
+
+// Delayed so quick navigations never visibly dim — only a navigation slow enough
+// to notice gets feedback. Restores instantly, since the delay is on this rule only.
+.wrapper[aria-busy='true'] {
+	opacity: 0.6;
+	transition-delay: 0.3s;
+}
