@@ -15,9 +15,9 @@ export default defineConfig({
 	mode: env.IS_DEV ? 'development' : 'production',
 	entry: './src/server/index.ts',
 	output: {
-		filename: 'index.js',
 		path: join(env.DIST_DIR, 'server'),
-		library: { type: 'commonjs2' }
+		filename: 'index.js',
+		module: true
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],
@@ -31,6 +31,10 @@ export default defineConfig({
 	module: {
 		rules: [rules.typescript]
 	},
-	externals: [nodeExternals() as ExternalItem, /app.server.js/],
+	externalsType: 'node-commonjs',
+	externals: [
+		nodeExternals({ importType: 'node-commonjs' as 'commonjs' }) as ExternalItem,
+		/app\.server\.cjs/
+	],
 	ignoreWarnings: [{ module: /express\/lib\/view\.js/ }]
 })

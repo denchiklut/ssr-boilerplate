@@ -82,7 +82,7 @@ export const css = {
 			loader: 'postcss-loader',
 			options: {
 				postcssOptions: {
-					config: './config/postcss/postcss.js'
+					config: './config/postcss/postcss.cjs'
 				}
 			}
 		},

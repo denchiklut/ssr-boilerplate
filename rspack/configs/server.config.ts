@@ -18,9 +18,9 @@ export default defineConfig({
 	entry: rscEntry,
 	output: {
 		path: join(env.DIST_DIR, 'client'),
-		filename: 'js/app.server.js',
-		library: { type: 'commonjs2' },
-		publicPath: env.PUBLIC_PATH
+		filename: 'js/app.server.cjs',
+		publicPath: env.PUBLIC_PATH,
+		library: { type: 'commonjs2' }
 	},
 	resolve: {
 		modules: ['src', 'node_modules'],

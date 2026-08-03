@@ -66,7 +66,7 @@ Design decisions that shape everything below:
 
 | Decision | Consequence |
 |---|---|
-| Keep the pre-RSC file structure (no dedicated `rsc.entry.ts` / `server.entry.ts` from the rspack guide) | One server bundle (`app.server.js`) exporting a `handler(Request) → Response`; the RSC/SSR split happens via **layers inside** that bundle, not via separate entries |
+| Keep the pre-RSC file structure (no dedicated `rsc.entry.ts` / `server.entry.ts` from the rspack guide) | One server bundle (`app.server.cjs`) exporting a `handler(Request) → Response`; the RSC/SSR split happens via **layers inside** that bundle, not via separate entries |
 | Asset injection is done manually from client-compiler stats ([§4](#4-bundle-assets)) | We control `bootstrapScripts`, CSS `<link>` tags, nonces — the plugin's built-in asset conventions are not used |
 | Per-request data flows through a single `AsyncLocalStorage` ([§7](#7-request-api--request)) | Server components call `request()` instead of receiving loader data through router context |
 | The whole document (`<html>…`) is a server component (`Html`) | There is no HTML template; CSS links, favicons, the manifest, env bootstrap — all rendered by React |
@@ -81,16 +81,21 @@ Design decisions that shape everything below:
 
 | Config | Entry | Target | Output | RSC transform | Externals |
 |---|---|---|---|---|---|
-| [express.config.ts](../rspack/configs/express.config.ts) | `src/server/index.ts` | `node` | `dist/server/index.js` (cjs) | **no** (`rules.typescript`) | `webpack-node-externals` **+ `/app.server.js/`** |
+| [express.config.ts](../rspack/configs/express.config.ts) | `src/server/index.ts` | `node` | `dist/server/index.js` (esm) | **no** (`rules.typescript`) | `webpack-node-externals` **+ `/app.server.cjs/`** |
 | [client.config.ts](../rspack/configs/client.config.ts) | `src/client/index.tsx` | `browserslist` | `dist/client/js/[name].[fullhash].js` | yes | — |
-| [server.config.ts](../rspack/configs/server.config.ts) | `src/server/middleware/render/rsc.tsx` | `node` | `dist/client/js/app.server.js` (cjs) | yes | **none — everything is bundled** |
+| [server.config.ts](../rspack/configs/server.config.ts) | `src/server/middleware/render/rsc.tsx` | `node` | `dist/client/js/app.server.cjs` (cjs) | yes | **none — everything is bundled** |
 
 Why three, and why split this way:
 
-- **`express`** is the plain HTTP server: middleware, routing, logging. It knows nothing about React. It is *not* part of the RSC compiler pair, so it can be built and watched independently — which is what makes the dev loop work ([§9](#9-dev-workflow--hmr)). The `/app.server.js/` external keeps `require('../client/js/app.server.js')` as a literal runtime `require` instead of bundling the render bundle into the express bundle.
+- **`express`** is the plain HTTP server: middleware, routing, logging. It knows nothing about React. It is *not* part of the RSC compiler pair, so it can be built and watched independently — which is what makes the dev loop work ([§9](#9-dev-workflow--hmr)). The `/app.server.cjs/` external keeps `require('../client/js/app.server.cjs')` as a runtime require instead of bundling the render bundle into the express bundle.
+- The express bundle is **esm** (`output.module`), which pulls three things along with it:
+  - `package.json` declares `"type": "module"`, so `dist/server/index.js` is loaded as ESM without Node having to sniff the syntax.
+  - Every external must be reached through `createRequire`, not a bare `require` — hence `externalsType: 'node-commonjs'` **and** the matching `importType` handed to `webpack-node-externals`. Miss either and rspack emits `module.exports = require(...)`, which dies at startup with `require is not defined in ES module scope`.
+  - The render bundle stays **cjs**, and therefore has to be named `.cjs`: under `"type": "module"` a `.js` file is ESM, but this one is loaded by `require-from-string` in dev and `createRequire` in prod — both CommonJS loaders. Same reason [config/postcss/postcss.cjs](../config/postcss/postcss.cjs) carries the extension.
+  - `tsconfig.json` uses `"module": "preserve"` rather than `nodenext`. Under `"type": "module"`, `nodenext` would demand explicit `.js` extensions on every relative import — Node's rules applied to source that rspack bundles anyway.
 - **`client`** is the browser bundle. It carries the HMR/react-refresh plumbing in dev and the `ClientPlugin` half of the RSC plugin pair.
 - **`server`** is the *render* bundle. Its entry is the RSC handler itself. Two non-obvious choices:
-  - `output.path` is `dist/client` — it's emitted **next to the client assets**, so in prod the express bundle finds it at `../client/js/app.server.js` relative to `dist/server`, and in dev it lives in the same in-memory filesystem `@rspack/dev-middleware` already manages.
+  - `output.path` is `dist/client` — it's emitted **next to the client assets**, so in prod the express bundle finds it at `../client/js/app.server.cjs` relative to `dist/server`, and in dev it lives in the same in-memory filesystem `@rspack/dev-middleware` already manages.
   - **No `webpack-node-externals`.** `react`, `react-dom`, `react-router` and `react-server-dom-rspack` *must* be bundled, because the two layers inside this bundle need to resolve *different builds of the same packages* (see next section). If they were externalized, Node's runtime resolution would pick one build for both layers and the whole scheme collapses.
 
 > ⚠️ The `client` and `server` configs are **coupled** by the RSC plugin pair and must always run in the same multi-compiler build. `rspack --configName=client` alone deadlocks — the ClientPlugin waits for information from the ServerPlugin that never arrives.
@@ -276,7 +281,7 @@ express()
 
 1. **Express → Web `Request`** (`toWebRequest`): URL rebuilt from `req.protocol` + `Host` header + `req.originalUrl`; all headers copied (array values appended); for non-GET/HEAD the express stream becomes the body via `Readable.toWeb(req)` with `duplex: 'half'` (required by undici for streaming request bodies — this is what lets server-function POSTs stream through untouched).
 2. **Assets**: a `ChunkExtractor` is built from the client compiler's stats (`getStats(res)`, [§4](#4-bundle-assets)).
-3. **Handler resolution** (`getRender(res)`, [§4](#4-bundle-assets)): prod — `require('../client/js/app.server.js')`; dev — the freshest bundle read out of dev-middleware's in-memory fs and evaluated with `require-from-string`.
+3. **Handler resolution** (`getRender(res)`, [§4](#4-bundle-assets)): prod — `require('../client/js/app.server.cjs')`; dev — the freshest bundle read out of dev-middleware's in-memory fs and evaluated with `require-from-string`.
 4. **Invoke** the bundle's `handler(webRequest, options)` with:
    - `nonce` — from the nonce middleware,
    - `linkTags` — CSS preload+stylesheet descriptors (rendered later *by a server component*, [§7](#7-request-api--request)),
@@ -378,8 +383,8 @@ We do **not** use the rspack RSC guide's server-entry asset convention. The serv
 **1. Build time (client compiler only).** In prod, [`stats.plugin.ts`](../rspack/plugins/stats.plugin.ts) hooks `processAssets` at the REPORT stage and emits a trimmed `dist/client/stats.json` with exactly the fields the extractor needs — `assets`, `chunkGroups`, `chunkGroupChildren`, chunk→files, hash/ids, `publicPath`, `outputPath`. This is the client compiler's *own* view of what it emitted, so hashed filenames are always in sync with the build.
 
 **2. Request time — obtaining stats** ([`render.util.ts`](../src/server/middleware/render/render.util.ts) `getStats`). Two paths, same shape out:
-   - **Prod** — read `dist/client/stats.json` from disk. (`getRender` alongside it is a plain `require('../client/js/app.server.js')`, cached by Node's module cache — the bundle is evaluated once per process.)
-   - **Dev** — `@rspack/dev-middleware` runs with `serverSideRender: true`, exposing the latest `MultiStats` on `res.locals.webpack.devMiddleware.stats`; `getStats` calls `toJson(statsOptions)` and picks the child named `client`. (`getRender` picks the child named `server`, finds `js/app.server.js` in `assetsByChunkName.main`, reads it from dev-middleware's **in-memory output filesystem** and evaluates it with `require-from-string` — on every request, so a rebuilt server bundle is picked up with zero express restarts.)
+   - **Prod** — read `dist/client/stats.json` from disk. (`getRender` alongside it is a plain `require('../client/js/app.server.cjs')`, cached by Node's module cache — the bundle is evaluated once per process.)
+   - **Dev** — `@rspack/dev-middleware` runs with `serverSideRender: true`, exposing the latest `MultiStats` on `res.locals.webpack.devMiddleware.stats`; `getStats` calls `toJson(statsOptions)` and picks the child named `client`. (`getRender` picks the child named `server`, finds `js/app.server.cjs` in `assetsByChunkName.main`, reads it from dev-middleware's **in-memory output filesystem** and evaluates it with `require-from-string` — on every request, so a rebuilt server bundle is picked up with zero express restarts.)
 
    Because both paths produce the same stats shape, dev and prod behave identically downstream.
 
@@ -803,7 +808,7 @@ All of the following was exercised against the dev server (July 2026), with the 
 
 1. `predev` — one-shot build of the **express config only**;
 2. `dev:build` — `rspack --watch --configName=express` (rebuilds the express bundle on server-code changes);
-3. `dev:serve` — `nodemon --inspect dist/server` (restarts express when that bundle changes).
+3. `dev:serve` — `nodemon --inspect dist/server/index.js` (restarts express when that bundle changes).
 
 The client and server (render) compilers are **not** run by the CLI. They're created *inside the express process* by the [`hmr` middleware](../src/server/middleware/hmr/index.ts):
 
@@ -827,18 +832,18 @@ flowchart TD
     A["edit a file"] --> B{what is it?}
     B -->|"express/server infra code<br/>(src/server, non-render)"| C["rspack --watch rebuilds dist/server<br/>→ nodemon restarts express"]
     B -->|"client component ('use client')"| D["client compiler emits hot update<br/>→ whm SSE (/__webpack_hmr)<br/>→ react-refresh patches in place"]
-    B -->|"server component / routes / rsc-layer code"| E["server compiler rebuilds app.server.js<br/>→ ServerPlugin.onServerComponentChanges<br/>→ onRscChange → hot.publish({action:'rsc-update'})<br/>→ client subscribeAll → router.revalidate()"]
+    B -->|"server component / routes / rsc-layer code"| E["server compiler rebuilds app.server.cjs<br/>→ ServerPlugin.onServerComponentChanges<br/>→ onRscChange → hot.publish({action:'rsc-update'})<br/>→ client subscribeAll → router.revalidate()"]
 ```
 
 - **Client-component HMR** is stock: `HotModuleReplacementPlugin` + `ReactRefreshRspackPlugin` (dev-only, [hmr.plugin.ts](../rspack/plugins/hmr.plugin.ts) / [refresh.plugin.ts](../rspack/plugins/refresh.plugin.ts)) and the `webpack-hot-middleware/client?name=client` entry prefix (`name=client` matters — whm must read the `client` child of the multi-compiler stats).
-- **Server-component changes cannot hot-patch the browser** — their output exists only as Flight data; there's no browser module to swap. Instead the bridge revalidates: the ServerPlugin hook fires after the server compiler rebuild, the middleware publishes a custom `rsc-update` event on whm's SSE channel, and the client entry's `subscribeAll` handler calls `window.__reactRouterDataRouter.revalidate()`. The revalidation fetch goes through `wdm` (which holds it until the rebuild finishes) and the render middleware `require-from-string`s the *new* `app.server.js` from the in-memory fs — so the refetched Flight payload is always fresh, and client state (component state, scroll, focus) survives. If the event lands before hydration has exposed the router on `window`, the handler falls back to a full reload.
+- **Server-component changes cannot hot-patch the browser** — their output exists only as Flight data; there's no browser module to swap. Instead the bridge revalidates: the ServerPlugin hook fires after the server compiler rebuild, the middleware publishes a custom `rsc-update` event on whm's SSE channel, and the client entry's `subscribeAll` handler calls `window.__reactRouterDataRouter.revalidate()`. The revalidation fetch goes through `wdm` (which holds it until the rebuild finishes) and the render middleware `require-from-string`s the *new* `app.server.cjs` from the in-memory fs — so the refetched Flight payload is always fresh, and client state (component state, scroll, focus) survives. If the event lands before hydration has exposed the router on `window`, the handler falls back to a full reload.
 - A shared file (imported by both bundles) triggers both compilers in the same run; react-refresh patches the client modules *and* the revalidation refetches the Flight payload — both apply.
 
 ---
 
 ## 10. Production build
 
-`pnpm start` → `rimraf dist && rspack --nodeEnv=production` (all three configs in one run — again keeping the RSC pair together) → `node --enable-source-maps dist/server`.
+`pnpm start` → `rimraf dist && rspack --nodeEnv=production` (all three configs in one run — again keeping the RSC pair together) → `node --enable-source-maps dist/server/index.js`.
 
 What changes vs dev:
 

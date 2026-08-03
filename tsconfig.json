@@ -13,7 +13,7 @@
 		"noUnusedParameters": true,
 		"noUnusedLocals": true,
 		"noFallthroughCasesInSwitch": true,
-		"module": "nodenext",
+		"module": "preserve",
 		"target": "esnext",
 		"jsx": "react-jsx",
 		"lib": ["esnext", "dom", "webworker", "DOM.Iterable"],

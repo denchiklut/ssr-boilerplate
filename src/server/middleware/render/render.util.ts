@@ -36,7 +36,7 @@ export const getStats = (res: ServerResponse): ChunkExtractorOptions => {
 }
 
 export const getRender = (res: ServerResponse): { handler: typeof handler } => {
-	if (IS_PROD) return require('../client/js/app.server.js')
+	if (IS_PROD) return require('../client/js/app.server.cjs')
 
 	const stats = res.locals?.webpack?.devMiddleware?.stats?.toJson(statsOptions)
 	const statsCompilation = stats?.children?.find(child => child.name === 'server')
@@ -44,7 +44,7 @@ export const getRender = (res: ServerResponse): { handler: typeof handler } => {
 
 	const { assetsByChunkName, outputPath } = statsCompilation
 	const outputFileSystem = res.locals?.webpack?.devMiddleware?.outputFileSystem
-	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'js/app.server.js')
+	const serverAppFileName = assetsByChunkName?.main?.find(asset => asset === 'js/app.server.cjs')
 
 	if (!(serverAppFileName && outputPath && outputFileSystem?.readFileSync)) {
 		throw Error('Render file not found')

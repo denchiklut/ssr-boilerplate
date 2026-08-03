@@ -132,7 +132,7 @@ The app starts on `http://localhost:3000`.
 | Command | What it does |
 |---|---|
 | `pnpm dev` | dev server — express rebuild + nodemon, client & RSC compilers run in-process |
-| `pnpm start` | `rimraf dist` → production build (all three configs) → `node dist/server` |
+| `pnpm start` | `rimraf dist` → production build (all three configs) → `node dist/server/index.js` |
 | `pnpm test` | jest + coverage |
 | `pnpm ts-check` | `tsc --noEmit` |
 | `pnpm lint` | biome (scripts) + stylelint (styles), both with `--fix` |
